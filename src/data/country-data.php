@@ -77,10 +77,11 @@ class CountryDataController extends DataController {
 
       // Who is the first owner of this level
       if ($completed_level) {
-        $owner = await Team::getOwnerLevel($level->getId());
+        $owner = await Team::genFirstCapture($level->getId());
         $owner = $owner->getName();
-      } else
+      } else {
         $owner = 'Uncaptured';
+      }
       $country_data = (object) array(
         'level_id'    => $level->getId(),
         'title'       => $level->getTitle(),
