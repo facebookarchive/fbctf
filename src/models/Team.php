@@ -490,6 +490,17 @@ class Team extends Model {
     return intval(idx($result->mapRows()[0], 'COUNT(*)'));
   }
 
+  public static async function getOwnerLevel(
+    int $level_id,
+  ): Awaitable<Team> {
+    $db = await self::genDb();
+    $result = await $db->queryf(
+      'SELECT * FROM teams WHERE id = (SELECT team_id FROM scores_log WHERE level_id = %d ORDER BY ts LIMIT 0,1) AND visible = 1 AND active = 1',
+      $level_id,
+    );
+   return self::teamFromRow($result->mapRows()[0]);
+  }
+
   public static async function genCompletedLevel(
     int $level_id,
   ): Awaitable<array<Team>> {
