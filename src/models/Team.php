@@ -490,7 +490,7 @@ class Team extends Model {
     return intval(idx($result->mapRows()[0], 'COUNT(*)'));
   }
 
-  public static async function getOwnerLevel(
+  public static async function genFirstCapture(
     int $level_id,
   ): Awaitable<Team> {
     $db = await self::genDb();
