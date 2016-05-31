@@ -2,7 +2,8 @@
 #
 # Facebook CTF: Provision script for vagrant dev environment
 #
-# Usage: ./provision.sh [dev | prod] [path_to_code] [path_to_destination]
+# Usage: 
+#  ./provision.sh [dev | prod] [path_to_code] [path_to_destination]
 #
 
 # We want the provision script to fail as soon as there are any errors
@@ -84,7 +85,7 @@ sudo npm install -g flow-bin
 # Run grunt to generate JS files
 run_grunt "$CTF_PATH" "$MODE"
 
-# Install nginx
+# Install nginx and certificates
 install_nginx "$CTF_PATH" "$MODE"
 
 # Install unison 2.48.3
