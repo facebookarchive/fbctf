@@ -125,7 +125,7 @@ function install_nginx() {
   log "Deploying certificates"
   sudo mkdir -p "$__certs_path"
 
-  if [[ $__certs = "dev" ]]; then
+  if [[ $__mode = "dev" ]]; then
     local __cert="$__certs_path/dev.crt"
     local __key="$__certs_path/dev.key"
     self_signed_cert "$__cert" "$__key"
