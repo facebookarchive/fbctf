@@ -85,11 +85,11 @@ function run_grunt() {
 
 function self_signed_cert() {
   local __csr="/etc/nginx/certs/dev.csr"
-  local __cert="/etc/nginx/certs/dev.crt"
-  local __key="/etc/nginx/certs/dev.key"
+  local __devcert=$1
+  local __devkey=$2
 
-  sudo openssl req -nodes -newkey rsa:2048 -keyout "$__key" -out "$__csr" -subj "/O=Facebook CTF"
-  sudo openssl x509 -req -days 365 -in "$__csr" -signkey "$__key" -out "$__cert"
+  sudo openssl req -nodes -newkey rsa:2048 -keyout "$__devkey" -out "$__csr" -subj "/O=Facebook CTF"
+  sudo openssl x509 -req -days 365 -in "$__csr" -signkey "$__devkey" -out "$__devcert"
 }
 
 function letsencrypt_cert() {
@@ -99,17 +99,18 @@ function letsencrypt_cert() {
   read -p ' -> What is the domain for the SSL Certificate? ' __mydomain
   
   /usr/bin/certbot-auto certonly --standalone --standalone-supported-challenges tls-sni-01 -d "$__mydomain"
-  sudo ln -s "/etc/letsencrypt/live/$__mydomain/cert.pem" "/etc/nginx/certs/fbctf.crt"
-  sudo ln -s "/etc/letsencrypt/live/$__mydomain/privkey.pem" "/etc/nginx/certs/fbctf.key"
+  sudo ln -s "/etc/letsencrypt/live/$__mydomain/cert.pem" "$1"
+  sudo ln -s "/etc/letsencrypt/live/$__mydomain/privkey.pem" "$2"
 }
 
 function own_cert() {
-  local __cert="/etc/nginx/certs/fbctf.crt"
-  local __key="/etc/nginx/certs/fbctf.key"
+  local __owncert=$1
+  local __ownkey=$2
+
   read -p ' -> SSL Certificate file location? ' __mycert
   read -p ' -> SSL Key Certificate file location? ' __mykey
-  sudo cp "$__mycert" "$__cert"
-  sudo cp "$__mykey" "$__key"
+  sudo cp "$__mycert" "$__owncert"
+  sudo cp "$__mykey" "$__ownkey"
 }
 
 function install_nginx() {
@@ -117,21 +118,27 @@ function install_nginx() {
   local __mode=$2
   local __certs=$3
 
+  local __certs_path="/etc/nginx/certs"
+
   package nginx
 
   log "Deploying certificates"
-  sudo mkdir -p /etc/nginx/certs
+  sudo mkdir -p "$__certs_path"
 
   if [[ $__certs = "dev" ]]; then
-    self_signed_cert
+    local __cert="$__certs_path/dev.crt"
+    local __key="$__certs_path/dev.key"
+    self_signed_cert "$__cert" "$__key"
   elif [[ $__mode = "prod" ]]; then
+    local __cert="$__certs_path/fbctf.crt"
+    local __key="__certs_path/fbctf.key"
     read -p ' -> Do you want to generate a SSL Certificate using letsencrypt? [Y/n]' __answercert
     case $response in
       [nN])
-        own_cert
+        own_cert "$__cert" "$__key"
       ;;
       *)
-        letsencrypt_cert
+        letsencrypt_cert "$__cert" "$__key"
       ;;
     esac
   fi
