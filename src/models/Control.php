@@ -69,8 +69,21 @@ class Control extends Model {
     await Configuration::genUpdate('start_ts', strval($start_ts));
 
     // Calculate timestamp of the end
-    $config = await Configuration::gen('game_duration');
-    $duration = intval($config->getValue());
+    $config = await Configuration::gen('game_duration_value');
+    $duration_value = intval($config->getValue());
+    $config = await Configuration::gen('game_duration_unit');
+    $duration_unit = $config->getValue();
+    switch ($duration_unit) {
+    case 'd':
+      $duration = $duration_value * 60 * 60 * 24;
+      break;
+    case 'h':
+      $duration = $duration_value * 60 * 60;
+      break;
+    case 'm':
+      $duration = $duration_value * 60;
+      break;
+    }
     $end_ts = $start_ts + $duration;
     await Configuration::genUpdate('end_ts', strval($end_ts));
 

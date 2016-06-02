@@ -150,24 +150,28 @@ class AdminController extends Controller {
   }
 
   private async function genConfigurationDurationSelect(): Awaitable<:xhp> {
-    $config = await Configuration::gen('game_duration');
-    $duration = intval($config->getValue());
-    $select = <select name="fb--conf--game_duration"></select>;
+    $config = await Configuration::gen('game_duration_unit');
+    $duration_unit = $config->getValue();
+    $config = await Configuration::gen('game_duration_value');
+    $duration_value = $config->getValue();
 
-    for ($i = 1; $i <= 48; $i++) {
-      $x = 60 * 60 * $i;
-      $x_str = ($i > 1) ? ($i." ".tr('Hours')) : ($i." ".tr('Hour'));
-      $select->appendChild(
-        <option
-          class="fb--conf--game_duration"
-          value={(string) $x}
-          selected={($duration === $x)}>
-          {$x_str}
-        </option>,
-      );
-    }
+    $minute_selected = $duration_unit === 'm';
+    $hour_selected = $duration_unit === 'h';
+    $day_selected = $duration_unit === 'd';
 
-    return $select;
+    return
+      <div class="fb-column-container">
+        <div class="col col-1-2">
+          <input type="number" value={$duration_value} name="fb--conf--game_duration_value" />
+        </div>
+        <div class="col col-2-2">
+          <select name="fb--conf--game_duration_unit">
+            <option class="fb--conf--game_duration" value="m" selected={$minute_selected}>Minutes</option>
+            <option class="fb--conf--game_duration" value="h" selected={$hour_selected}>Hours</option>
+            <option class="fb--conf--game_duration" value="d" selected={$day_selected}>Days</option>
+          </select>
+        </div>
+      </div>;
   }
 
   private async function genLanguageSelect(): Awaitable<:xhp> {

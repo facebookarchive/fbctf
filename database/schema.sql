@@ -184,7 +184,8 @@ CREATE TABLE `configuration` (
 LOCK TABLES `configuration` WRITE;
 INSERT INTO `configuration` (field, value, description) VALUES("game", "0", "(Boolean) Game is ongoing");
 INSERT INTO `configuration` (field, value, description) VALUES("next_game", "0", "(Date) Next game to happen");
-INSERT INTO `configuration` (field, value, description) VALUES("game_duration", "10800", "(Integer) Duration of game in seconds");
+INSERT INTO `configuration` (field, value, description) VALUES("game_duration_value", "3", "(Integer) Value of the duration of the game");
+INSERT INTO `configuration` (field, value, description) VALUES("game_duration_unit", "h", "(Character) Unit of the duration of the game");
 INSERT INTO `configuration` (field, value, description) VALUES("start_ts", "0", "(Integer) Timestamp of start");
 INSERT INTO `configuration` (field, value, description) VALUES("end_ts", "0", "(Integer) Timestamp of end");
 INSERT INTO `configuration` (field, value, description) VALUES("timer", "0", "(Boolean) Timer is enabled");
