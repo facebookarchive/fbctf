@@ -40,6 +40,9 @@ source "$CTF_PATH/extra/lib.sh"
 # Ascii art is always appreciated
 set_motd "$CTF_PATH"
 
+# We only run this once so provisioning is faster
+sudo apt-get update
+
 # Some people need this language pack installed or HHVM will report errors
 package language-pack-en
 
@@ -47,9 +50,6 @@ package language-pack-en
 if [[ "$MODE" = "dev" ]]; then
     repo_mycli
 fi
-
-# We only run this once so provisioning is faster
-sudo apt-get update
 
 # Packages to be installed in dev mode
 if [[ "$MODE" = "dev" ]]; then
