@@ -48,7 +48,7 @@ Note that if you don't want to use the Vagrant VM (not recommended), you can pro
 sudo apt-get install git
 git clone https://github.com/facebook/fbctf
 cd fbctf
-./extra/provision.sh dev $PWD
+./extra/provision.sh -m dev -s $PWD
 ```
 
 ### Production
@@ -59,7 +59,7 @@ The target system needs to be 64 bit Ubuntu 14.04. Run the following commands:
 sudo apt-get install git
 git clone https://github.com/facebook/fbctf
 cd fbctf
-./extra/provision.sh prod $PWD
+./extra/provision.sh -m prod -s $PWD
 ```
 
 *Note*: Because this is a production environment, the password will be randomly generated when the provision script finishes. This ensures that you can't forget to change the default password after provisioning. Make sure to watch the very end of the provision script, as the password will be printed out. It will not be stored elsewhere, so either keep track of it or change it. In order to change the password, run the following command:

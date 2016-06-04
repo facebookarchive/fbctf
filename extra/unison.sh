@@ -3,18 +3,19 @@
 # Facebook CTF: Script to install unison 2.48.3
 # https://keylocation.sg/blog/vagrant-and-unison-without-a-plugin/
 #
-# Usage: ./unison.sh [path_to_ctf_code]
+# Usage: ./unison.sh [path_to_ctf_code] [unison_full_path]
 #
 
-if [[ "$#" -ne 1 ]]; then
+if [[ "$#" -lt 1 ]]; then
   echo "[!] Need path to CTF folder"
   exit 1
 fi
 
 CODE_PATH="$1"
+UNISON="$2"
 
 # Make sure the right version is installed
-if [[ "$(unison -version | awk '{print $3}')" != "2.48.3" ]]; then
+if [[ "$($UNISON -version | awk '{print $3}')" != "2.48.3" ]]; then
   echo "Sorry, you need unison 2.48.3"
   exit 1
 fi
@@ -51,7 +52,7 @@ cd $UNISONDIR
 echo "$PROFILE" > "$UNISONDIR/.unison/fbctf.prf"
 
 echo "[+] Sync'ing project in the background..."
-unison "fbctf" &
+$UNISON "fbctf" &
 
 echo "[+] Done"
 exit 0

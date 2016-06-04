@@ -7,6 +7,10 @@ function log() {
   echo "[+] $1"
 }
 
+function error() {
+  echo "[!] $1" 
+}
+
 function dl() {
   local __url=$1
   local __dest=$2
@@ -93,12 +97,24 @@ function self_signed_cert() {
 }
 
 function letsencrypt_cert() {
+  local __email=$3
+  local __domain=$4
+
   sudo dl "https://dl.eff.org/certbot-auto" /usr/bin/certbot-auto
   sudo chmod a+x /usr/bin/certbot-auto
 
-  read -p ' -> What is the domain for the SSL Certificate? ' __mydomain
+  if [[ $__email == "none" ]]; then
+    read -p ' -> What is the email for the SSL Certificate recovery? ' __myemail
+  else
+    __myemail=$__email
+  fi
+  if [[ $__domain == "none" ]]; then
+    read -p ' -> What is the domain for the SSL Certificate? ' __mydomain
+  else
+    __mydomain=$__domain
+  fi
   
-  /usr/bin/certbot-auto certonly --standalone --standalone-supported-challenges tls-sni-01 -d "$__mydomain"
+  /usr/bin/certbot-auto certonly -n --standalone --standalone-supported-challenges tls-sni-01 -m "$__myemail" -d "$__mydomain"
   sudo ln -s "/etc/letsencrypt/live/$__mydomain/cert.pem" "$1"
   sudo ln -s "/etc/letsencrypt/live/$__mydomain/privkey.pem" "$2"
 }
@@ -117,6 +133,8 @@ function install_nginx() {
   local __path=$1
   local __mode=$2
   local __certs=$3
+  local __email=$4
+  local __domain=$5
 
   local __certs_path="/etc/nginx/certs"
 
@@ -132,13 +150,22 @@ function install_nginx() {
   elif [[ $__mode = "prod" ]]; then
     local __cert="$__certs_path/fbctf.crt"
     local __key="__certs_path/fbctf.key"
-    read -p ' -> Do you want to generate a SSL Certificate using letsencrypt? [Y/n]' __answercert
-    case $response in
-      [nN])
+    case "$__certs" in
+      self)
+        self_signed_cert "$__cert" "$__key"
+        break
+      ;;
+      own)
         own_cert "$__cert" "$__key"
+        break
+      ;;
+      certbot)
+        letsencrypt_cert "$__cert" "$__key" "$__email" "$__domain"
+        break
       ;;
       *)
-        letsencrypt_cert "$__cert" "$__key"
+        error "Unrecognized type of certificate"
+        exit 1
       ;;
     esac
   fi
