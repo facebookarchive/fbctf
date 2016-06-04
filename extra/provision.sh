@@ -69,9 +69,9 @@ function usage() {
   printf "  -s PATH, --code PATH \t\tPath to fbctf code. Default is /vagrant\n"
   printf "  -D PATH, --destination PATH \tDestination path to place the fbctf folder. Default is /var/www/fbctf\n"
   printf "\nExamples:\n"
-  printf "  Provision fbctf in development mode:\n" 
+  printf "  Provision fbctf in development mode:\n"
   printf "\t%s -m dev -s /home/foobar/fbctf -D /var/fbctf\n" "${0}"
-  printf "  Provision fbctf in production mode using my own certificate:\n" 
+  printf "  Provision fbctf in production mode using my own certificate:\n"
   printf "\t%s -m prod -c own -k /etc/certs/my.key -C /etc/certs/cert.crt -s /home/foobar/fbctf -D /var/fbctf\n" "${0}"
 }
 
@@ -153,9 +153,6 @@ source "$CTF_PATH/extra/lib.sh"
 # Ascii art is always appreciated
 set_motd "$CTF_PATH"
 
-# Some people need this language pack installed or HHVM will report errors
-package language-pack-en
-
 # Repos to be added in dev mode
 if [[ "$MODE" == "dev" ]]; then
     repo_mycli
@@ -163,6 +160,9 @@ fi
 
 # We only run this once so provisioning is faster
 sudo apt-get update
+
+# Some people need this language pack installed or HHVM will report errors
+package language-pack-en
 
 # Packages to be installed in dev mode
 if [[ "$MODE" == "dev" ]]; then
