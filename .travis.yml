@@ -4,6 +4,6 @@ language: generic
 sudo: required
 dist: trusty
 
-install: ./extra/provision.sh dev $TRAVIS_BUILD_DIR $TRAVIS_BUILD_DIR
+install: ./extra/provision.sh -m dev -s $TRAVIS_BUILD_DIR -D $TRAVIS_BUILD_DIR
 
 script: ./extra/run_tests.sh $TRAVIS_BUILD_DIR
