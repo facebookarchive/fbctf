@@ -12,7 +12,11 @@ if [[ "$#" -lt 1 ]]; then
 fi
 
 CODE_PATH="$1"
-UNISON="$2"
+if [[ -z "$2" ]]; then
+  UNISON="unison"
+else
+  UNISON="$2"
+fi
 
 # Make sure the right version is installed
 if [[ "$($UNISON -version | awk '{print $3}')" != "2.48.3" ]]; then
