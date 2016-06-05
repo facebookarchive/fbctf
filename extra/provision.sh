@@ -9,9 +9,11 @@
 #   -m MODE, --mode MODE  Mode of operation. Default value is dev
 #   -c TYPE, --cert TYPE  Type of certificate to use. Default value is self
 #
-# Arguments:
+# Arguments for MODE:
 #   dev    Provision will run in development mode. Certificate will be self-signed.
 #   prod   Provision will run in production mode.
+#
+# Arguments for TYPE:
 #   self   Provision will use a self-signed SSL certificate that will be generated.
 #   own    Provision will use the SSL certificate provided by the user.
 #   certbot Provision will generate a SSL certificate using letsencrypt/certbot. More info here: https://certbot.eff.org/
@@ -19,16 +21,16 @@
 # Optional Parameters:
 #   -k PATH, --keyfile PATH      Path to supplied SSL key file.
 #   -C PATH, --certfile PATH     Path to supplied SSL certificate pem file.
-#   -d DOMAIN, --domain DOMAIN   Domain for the SSL certificate to be generated using letsencrypt.
-#   -m EMAIL, --email EMAIL      Domain for the SSL certificate to be generated using letsencrypt.
+#   -D DOMAIN, --domain DOMAIN   Domain for the SSL certificate to be generated using letsencrypt.
+#   -e EMAIL, --email EMAIL      Domain for the SSL certificate to be generated using letsencrypt.
 #   -s PATH, --code PATH         Path to fbctf code.
-#   -D PATH, --destination PATH  Destination path to place the fbctf folder.
+#   -d PATH, --destination PATH  Destination path to place the fbctf folder.
 #
 # Examples:
 #   Provision fbctf in development mode:
-#     usage -m dev -s /home/foobar/fbctf -D /var/fbctf
+#     usage -m dev -s /home/foobar/fbctf -d /var/fbctf
 #   Provision fbctf in production mode using my own certificate:
-#     usage -m prod -c own -k /etc/certs/my.key -C /etc/certs/cert.crt -s /home/foobar/fbctf -D /var/fbctf
+#     usage -m prod -c own -k /etc/certs/my.key -C /etc/certs/cert.crt -s /home/foobar/fbctf -d /var/fbctf
 
 # We want the provision script to fail as soon as there are any errors
 set -e
@@ -55,24 +57,25 @@ function usage() {
   printf "  -h, --help \t\tShows this help message and exit.\n"
   printf "  -m MODE, --mode MODE \tMode of operation. Default value is dev\n"
   printf "  -c TYPE, --cert TYPE \tType of certificate to use. Default value is self\n"
-  printf "\nArguments:\n"
+  printf "\nArguments for MODE:\n"
   printf "  dev \tProvision will run in development mode. Certificate will be self-signed.\n"
   printf "  prod \tProvision will run in production mode.\n"
+  printf "\nArguments for TYPE:\n"
   printf "  self \tProvision will use a self-signed SSL certificate that will be generated.\n"
   printf "  own \tProvision will use the SSL certificate provided by the user.\n"
   printf "  cerbot Provision will generate a SSL certificate using letsencrypt/certbot. More info here: https://certbot.eff.org/\n"
   printf "\nOptional Parameters:\n"
   printf "  -k PATH, --keyfile PATH \tPath to supplied SSL key file.\n"
   printf "  -C PATH, --certfile PATH \tPath to supplied SSL certificate pem file.\n"
-  printf "  -d DOMAIN, --domain DOMAIN \tDomain for the SSL certificate to be generated using letsencrypt.\n"
-  printf "  -m EMAIL, --email EMAIL \tDomain for the SSL certificate to be generated using letsencrypt.\n"
+  printf "  -D DOMAIN, --domain DOMAIN \tDomain for the SSL certificate to be generated using letsencrypt.\n"
+  printf "  -e EMAIL, --email EMAIL \tDomain for the SSL certificate to be generated using letsencrypt.\n"
   printf "  -s PATH, --code PATH \t\tPath to fbctf code. Default is /vagrant\n"
-  printf "  -D PATH, --destination PATH \tDestination path to place the fbctf folder. Default is /var/www/fbctf\n"
+  printf "  -d PATH, --destination PATH \tDestination path to place the fbctf folder. Default is /var/www/fbctf\n"
   printf "\nExamples:\n"
   printf "  Provision fbctf in development mode:\n"
-  printf "\t%s -m dev -s /home/foobar/fbctf -D /var/fbctf\n" "${0}"
+  printf "\t%s -m dev -s /home/foobar/fbctf -d /var/fbctf\n" "${0}"
   printf "  Provision fbctf in production mode using my own certificate:\n"
-  printf "\t%s -m prod -c own -k /etc/certs/my.key -C /etc/certs/cert.crt -s /home/foobar/fbctf -D /var/fbctf\n" "${0}"
+  printf "\t%s -m prod -c own -k /etc/certs/my.key -C /etc/certs/cert.crt -s /home/foobar/fbctf -d /var/fbctf\n" "${0}"
 }
 
 ARGS=$(getopt -n "$0" -o hm:c:k:C:d:m:s:D: -l "help,mode:,cert:,keyfile:,certfile:,domain:,email:,code:,destination:" -- "$@")
@@ -101,11 +104,11 @@ while true; do
       CERTFILE=$2
       shift 2
       ;;
-    -d|--domain)
+    -D|--domain)
       DOMAIN=$2
       shift 2
       ;;
-    -m|--email)
+    -e|--email)
       EMAIL=$2
       shift 2
       ;;
@@ -113,7 +116,7 @@ while true; do
       CODE_PATH=$2
       shift 2
       ;;
-    -D|--destination)
+    -d|--destination)
       CTF_PATH=$2
       shift 2
       ;;
@@ -211,6 +214,6 @@ import_empty_db "root" "$P_ROOT" "$DB" "$CTF_PATH" "$MODE"
 sudo chmod 777 "$CTF_PATH/src/data/attachments"
 sudo chmod 777 "$CTF_PATH/src/data/attachments/deleted"
 
-log 'fbctf deployment is complete! Ready in https://10.10.10.5'
+ok_log 'fbctf deployment is complete! Ready in https://10.10.10.5'
 
 exit 0

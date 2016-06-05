@@ -7,8 +7,16 @@ function log() {
   echo "[+] $1"
 }
 
-function error() {
-  echo "[!] $1" 
+function error_log() {
+  RED='\033[0;31m'
+  NORMAL='\033[0m'
+  echo "${RED} [!] $1 ${NC}"
+}
+
+function ok_log() {
+  GREEN='\033[0;32m'
+  NORMAL='\033[0m'
+  echo "${GREEN} [+] $1 ${NC}"
 }
 
 function dl() {
@@ -113,7 +121,7 @@ function letsencrypt_cert() {
   else
     __mydomain=$__domain
   fi
-  
+
   /usr/bin/certbot-auto certonly -n --standalone --standalone-supported-challenges tls-sni-01 -m "$__myemail" -d "$__mydomain"
   sudo ln -s "/etc/letsencrypt/live/$__mydomain/cert.pem" "$1"
   sudo ln -s "/etc/letsencrypt/live/$__mydomain/privkey.pem" "$2"
@@ -149,7 +157,7 @@ function install_nginx() {
     self_signed_cert "$__cert" "$__key"
   elif [[ $__mode = "prod" ]]; then
     local __cert="$__certs_path/fbctf.crt"
-    local __key="__certs_path/fbctf.key"
+    local __key="$__certs_path/fbctf.key"
     case "$__certs" in
       self)
         self_signed_cert "$__cert" "$__key"
@@ -164,7 +172,7 @@ function install_nginx() {
         break
       ;;
       *)
-        error "Unrecognized type of certificate"
+        error_log "Unrecognized type of certificate"
         exit 1
       ;;
     esac
@@ -172,9 +180,9 @@ function install_nginx() {
 
   __dhparam="/etc/nginx/certs/dhparam.pem"
   sudo openssl dhparam -out "$__dhparam" 2048
-  
+
   cat "$__path/extra/nginx.conf" | sed "s|CTFPATH|$__path/src|g" | sed "s|CER_FILE|$__cert|g" | sed "s|KEY_FILE|$__key|g" | sed "s|DHPARAM_FILE|$__dhparam|g" | sudo tee /etc/nginx/sites-available/fbctf.conf
-  
+
   sudo rm /etc/nginx/sites-enabled/default
   sudo ln -s /etc/nginx/sites-available/fbctf.conf /etc/nginx/sites-enabled/fbctf.conf
 
