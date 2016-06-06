@@ -149,6 +149,8 @@ done
 
 echo "[+] Provisioning in $MODE mode"
 echo "[+] Using $TYPE certificate"
+echo "[+] Source code folder $CODE_PATH"
+echo "[+] Destination folder $CTF_PATH"
 
 # We only create a new directory and rsync files over if it's different from the
 # original code path

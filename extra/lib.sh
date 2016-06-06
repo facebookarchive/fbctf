@@ -10,13 +10,13 @@ function log() {
 function error_log() {
   RED='\033[0;31m'
   NORMAL='\033[0m'
-  echo "${RED} [!] $1 ${NC}"
+  echo "${RED} [!] $1 ${NORMAL}"
 }
 
 function ok_log() {
   GREEN='\033[0;32m'
   NORMAL='\033[0m'
-  echo "${GREEN} [+] $1 ${NC}"
+  echo "${GREEN} [+] $1 ${NORMAL}"
 }
 
 function dl() {
