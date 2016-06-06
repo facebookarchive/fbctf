@@ -50,6 +50,10 @@ EMAIL="none"
 CODE_PATH="/vagrant"
 CTF_PATH="/var/www/fbctf"
 
+# Arrays with valid arguments
+VALID_MODE=("dev" "prod")
+VALID_TYPE=("self" "own" "certbot")
+
 function usage() {
   printf "\nfbctf provisioning script\n"
   printf "\nUsage: %s [-h|--help] [PARAMETER [ARGUMENT]] [PARAMETER [ARGUMENT]] ...\n" "${0}"
@@ -89,12 +93,24 @@ while true; do
       exit 0
       ;;
     -m|-mode)
-      MODE=$2
-      shift 2
+      GIVEN_ARG=$2
+      if [[ "${VALID_MODE[@]}" =~ "${GIVEN_ARG}" ]]; then
+        MODE=$2
+        shift 2
+      else
+        usage
+        exit 1
+      fi
       ;;
     -c|--cert)
-      TYPE=$2
-      shift 2
+      GIVEN_ARG=$2
+      if [[ "${VALID_TYPE[@]}" =~ "${GIVEN_ARG}" ]]; then
+        TYPE=$2
+        shift 2
+      else
+        usage
+        exit 1
+      fi
       ;;
     -k|--keyfile)
       KEYFILE=$2
