@@ -484,6 +484,11 @@ $module-margin: 20px;
           letter-spacing: .1em;
         }
 
+        span.three-digit{
+          width: 80px;
+          letter-spacing: 0;
+        }
+
         span:before {
           content: "00";
           position: absolute;
@@ -491,6 +496,10 @@ $module-margin: 20px;
           left: 0;
           right: 0;
           top: 0;
+        }
+
+        span.three-digit:before {
+          content: "000"
         }
 
         span:after {
@@ -505,6 +514,10 @@ $module-margin: 20px;
           @include translate(-50%, 0);
 
           text-transform: uppercase;
+        }
+
+        .clock-days:after {
+          content: "day";
         }
 
         .clock-hours:after {
