@@ -72,13 +72,36 @@ set_password new_password ctf ctf fbctf $PWD
 
 This will set the password to 'new_password', assuming the database user/password is ctf/ctf and the database name is fbctf (these are the defaults).
 
-By default, the provision script will place the code in the `/var/www/fbctf` directory, install all dependencies, and start the server. In order to run in production mode, we require that you use SSL. You can choose between generating new self-signed, using your own or generate valid SSL certificates using [Let's Encrypt](https://letsencrypt.org/). The provision script uses [certbot](https://certbot.eff.org/) to assist with the generation of valid SSL certificates. Use the help to see all the available options with the command:
+By default, the provision script will place the code in the `/var/www/fbctf` directory, install all dependencies, and start the server. In order to run in production mode, we require that you use SSL. You can choose between generating new self-signed, using your own or generate valid SSL certificates using [Let's Encrypt](https://letsencrypt.org/). The provision script uses [certbot](https://certbot.eff.org/) to assist with the generation of valid SSL certificates.
 
-```
-./extra/provision -h
-```
+#### Production Certificates
+
+As mentioned above, there are three different type of certificates that the provision script will use:
+
+1. 	Self-signed certificate: ```-c self```
+	It is the same type of certificate than the development mode provisioning. Both the CRT and the key files will be generated and the command could be:
+
+	```
+	./extra/provision.sh -m prod -c self -s $PWD
+	``` 
+
+2. 	Use of own certificate: ```-c own```
+	If we already have a valid SSL certificate for our domain and want to use it. If the path for bith CRT and key files is not provided, it will be prompted. Example command:
+
+	```
+	./extra/provision.sh -m prod -c own -k /path/to/my.key -C /path/to/cert.crt -s $PWD
+	```	
+
+3. 	Generate new certificate using Let's Encrypt: ```-c certbot```
+	A new valid SSL certificate will be generated using [certbot](https://certbot.eff.org/). There are few needed parameters that if not provided, will be prompted:
+
+	```
+	./extra/provision.sh -m prod -c certbot -D test.mydomain.com -e myemail@mydomain.com -s $PWD
+	```
+	Note that certbot will run a challenge-response to validate the server so it will need Internet access.
 
 Once you've provisioned the VM, go to the URL/IP of the server. Click the "Login" link at the top right, enter the admin credentials, and you'll be redirected to the admin page. Enter the credentials you received at the end of the provision script to log in.
+
 
 #### Optional installation
 
