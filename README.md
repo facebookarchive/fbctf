@@ -78,21 +78,21 @@ By default, the provision script will place the code in the `/var/www/fbctf` dir
 
 As mentioned above, there are three different type of certificates that the provision script will use:
 
-1. 	Self-signed certificate: ```-c self```
+1. 	Self-signed certificate (```-c self```):
 	It is the same type of certificate than the development mode provisioning. Both the CRT and the key files will be generated and the command could be:
 
 	```
 	./extra/provision.sh -m prod -c self -s $PWD
 	``` 
 
-2. 	Use of own certificate: ```-c own```
+2. 	Use of own certificate (```-c own```):
 	If we already have a valid SSL certificate for our domain and want to use it. If the path for bith CRT and key files is not provided, it will be prompted. Example command:
 
 	```
 	./extra/provision.sh -m prod -c own -k /path/to/my.key -C /path/to/cert.crt -s $PWD
 	```	
 
-3. 	Generate new certificate using Let's Encrypt: ```-c certbot```
+3. 	Generate new certificate using Let's Encrypt (```-c certbot```):
 	A new valid SSL certificate will be generated using [certbot](https://certbot.eff.org/). There are few needed parameters that if not provided, will be prompted:
 
 	```
