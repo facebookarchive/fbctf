@@ -24,9 +24,9 @@ function dl() {
   local __dest=$2
 
   if [ -n "$(which wget)" ]; then
-    wget -q "$__url" -O "$__dest"
+    sudo wget -q "$__url" -O "$__dest"
   else
-    curl -s "$__url" -o "$__dest"
+    sudo curl -s "$__url" -o "$__dest"
   fi
 }
 
@@ -108,7 +108,7 @@ function letsencrypt_cert() {
   local __email=$3
   local __domain=$4
 
-  sudo dl "https://dl.eff.org/certbot-auto" /usr/bin/certbot-auto
+  dl "https://dl.eff.org/certbot-auto" /usr/bin/certbot-auto
   sudo chmod a+x /usr/bin/certbot-auto
 
   if [[ $__email == "none" ]]; then
