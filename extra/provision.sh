@@ -82,7 +82,7 @@ function usage() {
   printf "\t%s -m prod -c own -k /etc/certs/my.key -C /etc/certs/cert.crt -s /home/foobar/fbctf -d /var/fbctf\n" "${0}"
 }
 
-ARGS=$(getopt -n "$0" -o hm:c:k:C:d:m:s:D: -l "help,mode:,cert:,keyfile:,certfile:,domain:,email:,code:,destination:" -- "$@")
+ARGS=$(getopt -n "$0" -o hm:c:k:C:D:e:s:d: -l "help,mode:,cert:,keyfile:,certfile:,domain:,email:,code:,destination:" -- "$@")
 
 eval set -- "$ARGS"
 
