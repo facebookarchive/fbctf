@@ -202,6 +202,7 @@ INSERT INTO `configuration` (field, value, description) VALUES("login_strongpass
 INSERT INTO `configuration` (field, value, description) VALUES("password_type", "1", "(Integer) Type of passwords: See password_types");
 INSERT INTO `configuration` (field, value, description) VALUES("default_bonus", "30", "(Integer) Default value for bonus in levels");
 INSERT INTO `configuration` (field, value, description) VALUES("default_bonusdec", "10", "(Integer) Default bonus decrement in levels");
+INSERT INTO `configuration` (field, value, description) VALUES("language", "en", "(String) Language of the system");
 UNLOCK TABLES;
 
 --

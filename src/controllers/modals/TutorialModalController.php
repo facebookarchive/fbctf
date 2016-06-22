@@ -6,15 +6,15 @@ class TutorialModalController extends ModalController {
       case 'tool-bars':
         $content =
           <div class="main-text">
-            <p>Tool bars are located on all edges of the gameboard. Tap a category to expand and close each tool bar.</p>
+            <p>{tr('Tool bars are located on all edges of the gameboard. Tap a category to expand and close each tool bar.')}</p>
           </div>;
-        return tuple($step, 'Tool_Bars', 'game-clock', null, $content);
+        return tuple($step, tr('Tool_Bars'), 'game-clock', null, $content);
       case 'game-clock':
         $content =
           <div class="main-text">
-            <p>Tap the "Game Clock" to keep track of time during gameplay. Don’t let time get the best of you.</p>
+            <p>{tr('Tap the "Game Clock" to keep track of time during gameplay. Don’t let time get the best of you.')}</p>
           </div>;
-        return tuple($step, 'Game_Clock', 'captures', null, $content);
+        return tuple($step, tr('Game_Clock'), 'captures', null, $content);
       case 'captures':
         $header =
           <div class="header-graphic">
@@ -22,10 +22,10 @@ class TutorialModalController extends ModalController {
           </div>;
         $content =
           <div class="main-text">
-            <p>Countries marked with an <svg class="icon--team-indicator your-team"><use href="#icon--team-indicator"></use></svg> are captured by you.</p>
-            <p>Countries marked with an <svg class="icon--team-indicator opponent-team"><use href="#icon--team-indicator"></use></svg> are owned by others.</p>
+            <p>{tr('Countries marked with an ')}<svg class="icon--team-indicator your-team"><use href="#icon--team-indicator"></use></svg> {tr('are captured by you.')}</p>
+            <p>{tr('Countries marked with an ')}<svg class="icon--team-indicator opponent-team"><use href="#icon--team-indicator"></use></svg>{tr(' are owned by others.')}</p>
           </div>;
-        return tuple($step, 'Captures', 'zoom', $header, $content);
+        return tuple($step, tr('Captures'), 'zoom', $header, $content);
       case 'zoom':
         $header =
           <div class="header-graphic">
@@ -34,9 +34,9 @@ class TutorialModalController extends ModalController {
           </div>;
         $content =
           <div class="main-text">
-            <p>Tap Plus[+] to Zoom In. Tap Minus[-] to Zoom Out.</p><p>Click and Drag to move left, right, up and down.</p>
+            <p>{tr('Tap Plus[+] to Zoom In. Tap Minus[-] to Zoom Out.')}</p><p>{tr('Click and Drag to move left, right, up and down.')}</p>
           </div>;
-        return tuple($step, 'Zoom', 'command-lines', $header, $content);
+        return tuple($step, tr('Zoom'), 'command-lines', $header, $content);
       case 'command-lines':
         $header =
           <div class="header-graphic">
@@ -53,27 +53,27 @@ class TutorialModalController extends ModalController {
           </div>;
         $content =
           <div class="main-text">
-            <p>Tap Forward Slash [/] to activate computer commands. A list of commands can be found under "Rules".</p>
+            <p>{tr('Tap Forward Slash [/] to activate computer commands. A list of commands can be found under "Rules".')}</p>
           </div>;
-        return tuple($step, 'Command_Line', 'navigation', $header, $content);
+        return tuple($step, tr('Command_Line'), 'navigation', $header, $content);
       case 'navigation':
         $content =
           <div class="main-text">
-            <p>Click "Nav" to access main navigation links like Rules of Play, Registration, Blog, Jobs & more.</p>
+            <p>{tr('Click "Nav" to access main navigation links like Rules of Play, Registration, Blog, Jobs & more.')}</p>
           </div>;
-        return tuple($step, 'Navigation', 'scoreboard', null, $content);
+        return tuple($step, tr('Navigation'), 'scoreboard', null, $content);
       case 'scoreboard':
         $content =
           <div class="main-text">
-            <p>Track your competition by clicking "scorboard" to access real-time game statistics and graphs.</p>
+            <p>{tr('Track your competition by clicking "scorboard" to access real-time game statistics and graphs.')}</p>
           </div>;
-        return tuple($step, 'Scoreboard', 'game-on', null, $content);
+        return tuple($step, tr('Scoreboard'), 'game-on', null, $content);
       case 'game-on':
         $content =
           <div class="main-text">
-            <p>Have fun, be the best and conquer the world.</p>
+            <p>{tr('Have fun, be the best and conquer the world.')}</p>
           </div>;
-        return tuple($step, 'Game_On', '', null, $content);
+        return tuple($step, tr('Game_On'), '', null, $content);
       default:
         invariant(false, 'invalid tutorial name');
     }
@@ -87,19 +87,19 @@ class TutorialModalController extends ModalController {
       <div class="fb-modal-content fb-tutorial" data-tutorial-step={$step}>
         {$header}
         <div class="modal-title">
-          <h4>tutorial_<span class="highlighted">{$name}</span></h4>
+          <h4>{tr('tutorial_')}<span class="highlighted">{$name}</span></h4>
         </div>
         <div class="tutorial-content">
           {$content}
           <div class="tutorial-navigation fb-column-container">
             <ul class="tutorial-progress"></ul>
             <div class="tutorial-actionable">
-              <a href="#" class="fb-cta cta--yellow" data-next-tutorial={$next_step}>Next</a>
+              <a href="#" class="fb-cta cta--yellow" data-next-tutorial={$next_step}>{tr('Next')}</a>
             </div>
           </div>
         </div>
         <div class="tutorial-skip">
-          <a href="#" class="fb-cta js-close-tutorial">Skip to play</a>
+          <a href="#" class="fb-cta js-close-tutorial">{tr('Skip to play')}</a>
         </div>
       </div>;
   }

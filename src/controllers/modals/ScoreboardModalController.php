@@ -71,7 +71,7 @@ class ScoreboardModalController extends ModalController {
     return
       <div class="fb-modal-content fb-row-container">
         <div class="modal-title row-fixed">
-          <h4>scoreboard_</h4>
+          <h4>{tr('scoreboard_')}</h4>
           <a href="#" class="js-close-modal">
             <svg class="icon icon--close">
               <use href="#icon--close"/>
@@ -83,20 +83,20 @@ class ScoreboardModalController extends ModalController {
         </div>
         <div class="game-progress fb-progress-bar fb-cf row-fixed">
           {$indicator}
-          <span class="label label--left">[Start]</span>
-          <span class="label label--right">[End]</span>
+          <span class="label label--left">[{tr('Start')}]</span>
+          <span class="label label--right">[{tr('End')}]</span>
         </div>
         <div class="game-scoreboard fb-row-container">
           <table class="row-fixed">
             <thead>
               <tr>
-                <th style="width: 10%;">filter_</th>
-                <th style="width: 10%;">rank_</th>
-                <th style="width: 40%;">team_name_</th>
-                <th style="width: 10%;">quiz_pts_</th>
-                <th style="width: 10%;">flag_pts_</th>
-                <th style="width: 10%;">base_pts_</th>
-                <th style="width: 10%;">total_pts_</th>
+                <th style="width: 10%;">{tr('filter_')}</th>
+                <th style="width: 10%;">{tr('rank_')}</th>
+                <th style="width: 40%;">{tr('team_name_')}</th>
+                <th style="width: 10%;">{tr('quiz_pts_')}</th>
+                <th style="width: 10%;">{tr('flag_pts_')}</th>
+                <th style="width: 10%;">{tr('base_pts_')}</th>
+                <th style="width: 10%;">{tr('total_pts_')}</th>
               </tr>
             </thead>
           </table>

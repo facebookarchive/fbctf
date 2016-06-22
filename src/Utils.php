@@ -51,24 +51,24 @@ function time_ago(string $ts): string {
   $elapsed = time() - $ts_epoc;
 
   if ($elapsed < 1) {
-    return 'just now';
+    return tr('just now');
   }
 
-  $w = array(24 * 60 * 60  =>  'd',
-                  60 * 60  =>  'hr',
-                       60  =>  'min',
-                        1  =>  'sec'
+  $w = array(24 * 60 * 60  =>  tr('d'),
+                  60 * 60  =>  tr('hr'),
+                       60  =>  tr('min'),
+                        1  =>  tr('sec')
   );
-  $w_s = array('d'    => 'd',
-               'hr'   => 'hrs',
-               'min' => 'mins',
-               'sec' => 'secs'
+  $w_s = array(tr('d')    => tr('ds'),
+               tr('hr')   => tr('hrs'),
+               tr('min') => tr('mins'),
+               tr('sec') => tr('secs')
   );
   foreach ($w as $secs => $str) {
     $d = $elapsed / $secs;
     if ($d >= 1) {
       $r = round($d);
-      return $r . ' ' . ($r > 1 ? $w_s[$str] : $str) . ' ago';
+      return $r . ' ' . ($r > 1 ? $w_s[$str] : $str) . ' ' . tr('ago');
     }
   }
   return '';

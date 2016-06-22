@@ -115,8 +115,13 @@ class Country extends Model {
 
     $countries = array();
     foreach ($rows as $row) {
-      $countries[] = self::countryFromRow($row);
+      $countries[] = await self::countryFromRow($row);
     }
+
+    usort($countries, function($a, $b)
+    {
+      return strcmp($a->name, $b->name);
+    });
 
     return $countries;
   }
@@ -124,7 +129,7 @@ class Country extends Model {
   public static async function genAllCountries(
   ): Awaitable<array<Country>> {
     return await self::genAll(
-      'SELECT * FROM countries ORDER BY name',
+      'SELECT * FROM countries ORDER BY iso_code',
       self::MC_KEY_ALL_COUNTRIES,
     );
   }
@@ -140,7 +145,7 @@ class Country extends Model {
   public static async function genAllEnabledCountries(
   ): Awaitable<array<Country>> {
     return await self::genAll(
-      'SELECT * FROM countries WHERE enabled = 1 ORDER BY name',
+      'SELECT * FROM countries WHERE enabled = 1',
       self::MC_KEY_ALL_ENABLED_COUNTRIES,
     );
   }
@@ -161,13 +166,18 @@ class Country extends Model {
     $db = await self::genDb();
 
     $result = await $db->queryf(
-      'SELECT * FROM countries WHERE enabled = 1 AND used = 0 ORDER BY name',
+      'SELECT * FROM countries WHERE enabled = 1 AND used = 0',
     );
 
     $countries = array();
     foreach ($result->mapRows() as $row) {
-      $countries[] = self::countryFromRow($row->toArray());
+      $countries[] = await self::countryFromRow($row->toArray());
     }
+
+    usort($countries, function($a, $b)
+    {
+      return strcmp($a->name, $b->name);
+    });
 
     return $countries;
   }
@@ -199,7 +209,8 @@ class Country extends Model {
     );
 
     invariant($result->numRows() === 1, 'Expected exactly one result');
-    return self::countryFromRow(firstx($result->mapRows())->toArray());
+    $new_country = await self::countryFromRow(firstx($result->mapRows())->toArray());
+    return $new_country;
   }
 
   // Get a random enabled, unused country ID
@@ -215,11 +226,14 @@ class Country extends Model {
     return intval(firstx($result->mapRows())['id']);
   }
 
-  private static function countryFromRow(array<string, string> $row): Country {
+  private static async function countryFromRow(array<string, string> $row): Awaitable<Country> {
+    $config = await Configuration::gen('language');
+    $language = $config->getValue();
+    $translated_name = locale_get_display_region('-'.must_have_idx($row, 'iso_code'), $language);
     return new Country(
       intval(must_have_idx($row, 'id')),
       must_have_idx($row, 'iso_code'),
-      must_have_idx($row, 'name'),
+      $translated_name,
       intval(must_have_idx($row, 'used')),
       intval(must_have_idx($row, 'enabled')),
       must_have_idx($row, 'd'),

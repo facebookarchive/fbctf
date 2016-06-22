@@ -3,7 +3,7 @@
 class ViewModeController extends Controller {
   <<__Override>>
   protected function getTitle(): string {
-    return 'Facebook CTF | View mode';
+    return tr('Facebook CTF') . ' | ' . tr('View mode');
   }
 
   <<__Override>>
@@ -43,9 +43,9 @@ class ViewModeController extends Controller {
         </div>
         <div class="fb-map"></div>
         <div class="fb-module-container container--row">
-          <aside data-name="Leaderboard" class="module--outer-left active" data-module="leaderboard-viewmode"></aside>
-          <aside data-name="Activity" class="module--inner-right activity-viewmode active" data-module="activity-viewmode"></aside>
-          <aside data-name="Game Clock" class="module--outer-right active" data-module="game-clock"></aside>
+          <aside data-name={tr('Leaderboard')} class="module--outer-left active" data-module="leaderboard-viewmode"></aside>
+          <aside data-name={tr('Activity')} class="module--inner-right activity-viewmode active" data-module="activity-viewmode"></aside>
+          <aside data-name={tr('Game Clock')} class="module--outer-right active" data-module="game-clock"></aside>
         </div>
       </div>;
   }

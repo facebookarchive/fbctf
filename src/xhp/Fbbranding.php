@@ -11,7 +11,7 @@ class :fbbranding extends :x:element {
         <svg class="icon icon--social-facebook">
           <use href="#icon--social-facebook" />
         </svg>
-        <span class="has-icon"> Powered By Facebook</span>
+        <span class="has-icon"> {tr('Powered By Facebook')}</span>
       </span>;
   }
 }

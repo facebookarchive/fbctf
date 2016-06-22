@@ -45,6 +45,7 @@ class ClockModuleController {
   }
 
   public async function genRender(): Awaitable<:xhp> {
+    await tr_start();
     $timer  = await Configuration::gen('timer');
     $start_ts = await Configuration::gen('start_ts');
     $end_ts = await Configuration::gen('end_ts');
@@ -85,15 +86,15 @@ class ClockModuleController {
     return
       <div>
         <header class="module-header">
-          <h6>Game Clock</h6>
+          <h6>{tr('Game Clock')}</h6>
         </header>
         <div class="module-content module-scrollable">
           <div class="game-clock fb-numbers">
             <span class="clock-hours">{$hours}</span>:<span class="clock-minutes">{$minutes}</span>:<span class="clock-seconds">{$seconds}</span>:<span class="clock-milliseconds">{$milliseconds}</span>
           </div>
           <div class="game-progress fb-progress-bar">
-            <span class="label label--left">[Start]</span>
-            <span class="label label--right">[End]</span>
+            <span class="label label--left">[{tr('Start')}]</span>
+            <span class="label label--right">[{tr('End')}]</span>
             {$indicator}
           </div>
         </div>

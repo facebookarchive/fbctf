@@ -8,12 +8,13 @@ SessionUtils::enforceLogin();
 
 class FilterModuleController {
   public async function genRender(): Awaitable<:xhp> {
+    await tr_start();
     $categories_ul = <ul class="radio-list"></ul>;
     $categories_ul->appendChild(
       <li>
         <input type="radio" name="fb--module--filter--category" value="all" id="fb--module--filter--category--all" checked={true}/>
         <label for="fb--module--filter--category--all" class="click-effect">
-          <span>All</span>
+          <span>{tr('All')}</span>
         </label>
       </li>
     );
@@ -35,18 +36,18 @@ class FilterModuleController {
     return
       <div>
         <header class="module-header">
-          <h6>Filter</h6>
+          <h6>{tr('Filter')}</h6>
         </header>
         <div class="module-content">
           <div class="fb-section-border">
             <div class="radio-tabs">
               <input type="radio" name="fb--module--filter" value="category" id="fb--module--filter--category" checked={true}/>
               <label for="fb--module--filter--category" class="click-effect">
-                <span>Category</span>
+                <span>{tr('Category')}</span>
               </label>
               <input type="radio" name="fb--module--filter" value="status" id="fb--module--filter--status"/>
               <label for="fb--module--filter--status" class="click-effect">
-                <span>Status</span>
+                <span>{tr('Status')}</span>
               </label>
             </div>
             <div class="tab-content-container module-scrollable">
@@ -58,19 +59,19 @@ class FilterModuleController {
                   <li>
                     <input type="radio" name="fb--module--filter--status" value="all" id="fb--module--filter--status--all" checked={true}/>
                     <label for="fb--module--filter--status--all" class="click-effect">
-                      <span>All</span>
+                      <span>{tr('All')}</span>
                     </label>
                   </li>
                   <li>
                     <input type="radio" name="fb--module--filter--status" value="completed" id="fb--module--filter--status--completed"/>
                     <label for="fb--module--filter--status--completed" class="click-effect">
-                      <span>Completed</span>
+                      <span>{tr('Completed')}</span>
                     </label>
                   </li>
                   <li>
                     <input type="radio" name="fb--module--filter--status" value="remaining" id="fb--module--filter--status--remaining"/>
                     <label for="fb--module--filter--status--remaining" class="click-effect">
-                      <span>Remaining</span>
+                      <span>{tr('Remaining')}</span>
                     </label>
                   </li>
                 </ul>
