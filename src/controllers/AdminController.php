@@ -492,14 +492,15 @@ class AdminController extends Controller {
               <div class="col col-pad col-1-3">
                 <div class="form-el el--block-label el--full-text">
                   <div class="admin-buttons">
-                    <button class="fb-cta cta--yellow" data-action="export-game">Export Game</button>
+                    <button class="fb-cta cta--red" data-action="import-game">Import Full Game</button>
+                    <input class="completely-hidden" id="import-game_file" type="file" name="game_file"/>
                   </div>
                 </div>
               </div>
               <div class="col col-pad col-1-3">
                 <div class="form-el el--block-label el--full-text">
                   <div class="admin-buttons">
-                    <button class="fb-cta cta--yellow" data-action="import-game">Import Game</button>
+                    <button class="fb-cta cta--yellow" data-action="export-game">Export Full Game</button>
                   </div>
                 </div>
               </div>
@@ -510,6 +511,36 @@ class AdminController extends Controller {
               <h3>Teams</h3>
             </header>
             <div class="fb-column-container">
+              <div class="col col-pad col-1-4">
+                <div class="form-el el--block-label el--full-text">
+                  <div class="admin-buttons">
+                    <button class="fb-cta cta--red" data-action="import-teams">Import Teams</button>
+                    <input class="completely-hidden" id="import-teams_file" type="file" name="teams_file"/>
+                  </div>
+                </div>
+              </div>
+              <div class="col col-pad col-1-4">
+                <div class="form-el el--block-label el--full-text">
+                  <div class="admin-buttons">
+                    <button class="fb-cta cta--yellow" data-action="export-teams">Export Teams</button>
+                  </div>
+                </div>
+              </div>
+              <div class="col col-pad col-1-4">
+                <div class="form-el el--block-label el--full-text">
+                  <div class="admin-buttons">
+                    <button class="fb-cta cta--red" data-action="import-logos">Import Logos</button>
+                    <input class="completely-hidden" id="import-logos_file" type="file" name="logos_file"/>
+                  </div>
+                </div>
+              </div>
+              <div class="col col-pad col-1-4">
+                <div class="form-el el--block-label el--full-text">
+                  <div class="admin-buttons">
+                    <button class="fb-cta cta--yellow" data-action="export-logos">Export Logos</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
           <section class="admin-box">
@@ -517,6 +548,36 @@ class AdminController extends Controller {
               <h3>Levels</h3>
             </header>
             <div class="fb-column-container">
+              <div class="col col-pad col-1-4">
+                <div class="form-el el--block-label el--full-text">
+                  <div class="admin-buttons">
+                    <button class="fb-cta cta--red" data-action="import-levels">Import Levels</button>
+                    <input class="completely-hidden" id="import-levels_file" type="file" name="levels_file"/>
+                  </div>
+                </div>
+              </div>
+              <div class="col col-pad col-1-4">
+                <div class="form-el el--block-label el--full-text">
+                  <div class="admin-buttons">
+                    <button class="fb-cta cta--yellow" data-action="export-levels">Export Levels</button>
+                  </div>
+                </div>
+              </div>
+              <div class="col col-pad col-1-4">
+                <div class="form-el el--block-label el--full-text">
+                  <div class="admin-buttons">
+                    <button class="fb-cta cta--red" data-action="import-categories">Import Categories</button>
+                    <input class="completely-hidden" id="import-categories_file" type="file" name="categories_file"/>
+                  </div>
+                </div>
+              </div>
+              <div class="col col-pad col-1-4">
+                <div class="form-el el--block-label el--full-text">
+                  <div class="admin-buttons">
+                    <button class="fb-cta cta--yellow" data-action="export-categories">Export Categories</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         </div>
@@ -2196,7 +2257,7 @@ class AdminController extends Controller {
         <nav class="admin-nav-links row-fluid">
           <ul>
             <li><a href="/index.php?p=admin&page=configuration">Configuration</a></li>
-            <!--<li><a href="/index.php?p=admin&page=controls">Controls</a></li>-->
+            <li><a href="/index.php?p=admin&page=controls">Controls</a></li>
             <li><a href="/index.php?p=admin&page=announcements">Announcements</a></li>
             <li><a href="/index.php?p=admin&page=quiz">Levels: Quiz</a></li>
             <li><a href="/index.php?p=admin&page=flags">Levels: Flags</a></li>
