@@ -37,11 +37,11 @@ class Logo extends Model {
 
   // Check to see if the logo exists.
   public static async function genCheckExists(
-    string $logo,
+    string $name,
   ): Awaitable<bool> {
-    $all_logos = await self::genAllEnabledLogos();
+    $all_logos = await self::genAllLogos();
     foreach ($all_logos as $l) {
-      if ($logo === $l->getName()) {
+      if ($name === $l->getName()) {
         return true;
       }
     }
@@ -118,5 +118,35 @@ class Logo extends Model {
       must_have_idx($row, 'name'),
       must_have_idx($row, 'logo'),
     );
+  }
+
+  // Create logo.
+  public static async function genCreate(
+    bool $used,
+    bool $enabled,
+    bool $protected,
+    string $name,
+    string $logo,
+  ): Awaitable<int> {
+    $db = await self::genDb();
+
+    // Create category
+    await $db->queryf(
+      'INSERT INTO logos (used, enabled, protected, name, logo) VALUES (%d, %d, %d, %s, %s)',
+      $used ? 1 : 0,
+      $enabled ? 1 : 0,
+      $protected ? 1 : 0,
+      $name,
+      $logo,
+    );
+
+    // Return newly created category_id
+    $result = await $db->queryf(
+      'SELECT id FROM logos WHERE logo = %s LIMIT 1',
+      $name,
+    );
+
+    invariant($result->numRows() === 1, 'Expected exactly one result');
+    return intval($result->mapRows()[0]['id']);
   }
 }
