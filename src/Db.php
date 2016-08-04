@@ -16,7 +16,7 @@ class Db {
 
   private function __construct() {
     $this->config = parse_ini_file($this->settings_file);
-    $this->pool = new AsyncMysqlConnectionPool(array());
+    $this->pool = new AsyncMysqlConnectionPool(array("per_key_connection_limit: => 1000"));
   }
 
   private function __clone(): void {}
