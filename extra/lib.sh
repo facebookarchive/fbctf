@@ -126,7 +126,7 @@ function letsencrypt_cert() {
   fi
 
   /usr/bin/certbot-auto certonly -n --agree-tos --standalone --standalone-supported-challenges tls-sni-01 -m "$__myemail" -d "$__mydomain"
-  sudo ln -s "/etc/letsencrypt/live/$__mydomain/cert.pem" "$1" || true
+  sudo ln -s "/etc/letsencrypt/live/$__mydomain/fullchain.pem" "$1" || true
   sudo ln -s "/etc/letsencrypt/live/$__mydomain/privkey.pem" "$2" || true
 }
 
