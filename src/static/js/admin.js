@@ -712,9 +712,9 @@ function toggleTeam(radio_id) {
   var action_value = (radio_id.split('--')[3] === 'on') ? 1 : 0;
   var toggle_data = {
     action: 'toggle_' + radio_action + '_team',
-    team_id: team_id,
-    [radio_action]: action_value
+    team_id: team_id
   };
+  toggle_data[radio_action] = action_value;
   if (team_id && radio_action) {
     sendAdminRequest(toggle_data, false);
   }
@@ -748,9 +748,9 @@ function toggleLevel(radio_id) {
   var action_value = (radio_id.split('--')[3] === 'on') ? 1 : 0;
   var toggle_data = {
     action: 'toggle_' + radio_action + '_level',
-    level_id: level_id,
-    [radio_action]: action_value
+    level_id: level_id
   };
+  toggle_data[radio_action] = action_value;
   if (level_id && radio_action) {
     sendAdminRequest(toggle_data, false);
   }
