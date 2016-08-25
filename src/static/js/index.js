@@ -161,9 +161,9 @@ module.exports = {
     if (team && password) {
       var login_data = {
         action: 'login_team',
-        [teamParam]: team,
         password: password
       };
+      login_data[teamParam] = team;
       sendIndexRequest(login_data);
     }
   },

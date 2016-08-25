@@ -48,7 +48,7 @@ require('hoverintent-jqplugin')(jQuery);
         }
 
         // render a line of text
-        function renderLine(chunk) {
+        var renderLine = function(chunk) {
           if (lineIndex > lines.length) {
             options.callback();
             return;
@@ -74,7 +74,7 @@ require('hoverintent-jqplugin')(jQuery);
               }
             }, 20);
           }
-        }
+        };
 
         renderLine(lines[lineIndex]);
       }
