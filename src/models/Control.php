@@ -1,7 +1,6 @@
 <?hh // strict
 
 class Control extends Model {
-
   public static async function genStartScriptLog(
     int $pid,
     string $name,
@@ -106,21 +105,93 @@ class Control extends Model {
     await Progressive::genStop();
   }
 
-  public static function importGame(): void {}
+  public static async function importGame(): Awaitable<bool> {
+    $files = Utils::getFILES();
+    if ($files->contains('game_file')) {
+      $importer = new JSONImporterController();
+      $result = await $importer->importGame($files['game_file']['tmp_name']);
+      return $result;
+    } else {
+      return false;
+    }
+  }
 
-  public static function exportGame(): void {
-    $levels = (object) array();
-    $teams = (object) array();
-    $data = (object) array();
+  public static async function importTeams(): Awaitable<bool> {
+    $files = Utils::getFILES();
+    if ($files->contains('teams_file')) {
+      $importer = new JSONImporterController();
+      $result = await $importer->importTeams($files['teams_file']['tmp_name']);
+      return $result;
+    } else {
+      return false;
+    }
+  }
 
-    /* HH_FIXME[2011] */
-    /* HH_FIXME[1002] */
-    $data->{"teams"} = $teams;
-    $data->{"levels"} = $levels;
+  public static async function importLogos(): Awaitable<bool> {
+    $files = Utils::getFILES();
+    if ($files->contains('logos_file')) {
+      $importer = new JSONImporterController();
+      $result = await $importer->importLogos($files['logos_file']['tmp_name']);
+      return $result;
+    } else {
+      return false;
+    }
+  }
 
-    header('Content-Type: application/json');
-    header('Content-Disposition: attachment; filename=fbctf.json');
-    print json_encode($data, JSON_PRETTY_PRINT);
+  public static async function importLevels(): Awaitable<bool> {
+    $files = Utils::getFILES();
+    if ($files->contains('levels_file')) {
+      $importer = new JSONImporterController();
+      $result = await $importer->importLevels($files['levels_file']['tmp_name']);
+      return $result;
+    } else {
+      return false;
+    }
+  }
+
+  public static async function importCategories(): Awaitable<bool> {
+    $files = Utils::getFILES();
+    if ($files->contains('categories_file')) {
+      $importer = new JSONImporterController();
+      $result = await $importer->importCategories($files['categories_file']['tmp_name']);
+      return $result;
+    } else {
+      return false;
+    }
+  }
+
+  public static async function exportGame(): Awaitable<void> {
+    $exporter = new JSONExporterController();
+    $game = await $exporter->genData('game');
+    JSONExporterController::sendJSON($game, 'fbctf_game.json');
+    exit();
+  }
+
+  public static async function exportTeams(): Awaitable<void> {
+    $exporter = new JSONExporterController();
+    $teams = await $exporter->genData('teams');
+    JSONExporterController::sendJSON($teams, 'fbctf_teams.json');
+    exit();
+  }
+
+  public static async function exportLogos(): Awaitable<void> {
+    $exporter = new JSONExporterController();
+    $logos = await $exporter->genData('logos');
+    JSONExporterController::sendJSON($logos, 'fbctf_logos.json');
+    exit();
+  }
+
+  public static async function exportLevels(): Awaitable<void> {
+    $exporter = new JSONExporterController();
+    $levels = await $exporter->genData('levels');
+    JSONExporterController::sendJSON($levels, 'fbctf_levels.json');
+    exit();
+  }
+
+  public static async function exportCategories(): Awaitable<void> {
+    $exporter = new JSONExporterController();
+    $categories = await $exporter->genData('categories');
+    JSONExporterController::sendJSON($categories, 'fbctf_categories.json');
     exit();
   }
 

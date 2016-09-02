@@ -35,6 +35,11 @@ class AdminAjaxController extends AjaxController {
           'options' => array('regexp' => '/^[\w\-\.]+$/'),
         ),
         'attachment_file' => FILTER_UNSAFE_RAW,
+        'game_file'   => FILTER_UNSAFE_RAW,
+        'teams_file'  => FILTER_UNSAFE_RAW,
+        'levels_file' => FILTER_UNSAFE_RAW,
+        'categories_file' => FILTER_UNSAFE_RAW,
+        'logos_file'  => FILTER_UNSAFE_RAW,
         'link_id' => FILTER_VALIDATE_INT,
         'link' => FILTER_UNSAFE_RAW,
         'category_id' => FILTER_VALIDATE_INT,
@@ -117,6 +122,16 @@ class AdminAjaxController extends AjaxController {
       'end_game',
       'reset_game',
       'backup_db',
+      'export_game',
+      'export_teams',
+      'export_logos',
+      'export_levels',
+      'export_categories',
+      'import_game',
+      'import_teams',
+      'import_logos',
+      'import_levels',
+      'import_categories'
     );
   }
 
@@ -410,7 +425,55 @@ class AdminAjaxController extends AjaxController {
         Control::backupDb();
         return Utils::ok_response('Success', 'admin');
       case 'export_game':
-        Control::exportGame();
+        await Control::exportGame();
+        return Utils::ok_response('Success', 'admin');
+      case 'export_teams':
+        await Control::exportTeams();
+        return Utils::ok_response('Success', 'admin');
+      case 'export_logos':
+        await Control::exportLogos();
+        return Utils::ok_response('Success', 'admin');
+      case 'export_levels':
+        await Control::exportLevels();
+        return Utils::ok_response('Success', 'admin');
+      case 'export_categories':
+        await Control::exportCategories();
+        return Utils::ok_response('Success', 'admin');
+      case 'import_game':
+        $result = await Control::importGame();
+        if ($result) {
+          return Utils::ok_response('Success', 'admin');
+        } else {
+          return Utils::error_response('Error importing', 'admin');  
+        }
+      case 'import_teams':
+        $result = await Control::importTeams();
+        if ($result) {
+          return Utils::ok_response('Success', 'admin');
+        } else {
+          return Utils::error_response('Error importing', 'admin');  
+        }
+      case 'import_logos':
+        $result = await Control::importLogos();
+        if ($result) {
+          return Utils::ok_response('Success', 'admin');
+        } else {
+          return Utils::error_response('Error importing', 'admin');  
+        }
+      case 'import_levels':
+        $result = await Control::importLevels();
+        if ($result) {
+          return Utils::ok_response('Success', 'admin');
+        } else {
+          return Utils::error_response('Error importing', 'admin');  
+        }
+      case 'import_categories':
+        $result = await Control::importCategories();
+        if ($result) {
+          return Utils::ok_response('Success', 'admin');
+        } else {
+          return Utils::error_response('Error importing', 'admin');  
+        }
         return Utils::ok_response('Success', 'admin');
       default:
         return Utils::error_response('Invalid action', 'admin');

@@ -381,10 +381,110 @@ function databaseBackup() {
   window.location.href = url;
 }
 
-// Export to JSON and download current game
+// Export and download current game
 function exportCurrentGame() {
   var csrf_token = $('input[name=csrf_token]')[0].value;
   var action = 'export_game';
+  var url = 'index.php?p=admin&ajax=true&action=' + action + '&csrf_token=' + csrf_token;
+  window.location.href = url;
+}
+
+// Generic function to submit the import file.
+function submitImport(type_file, action_file) {
+  var import_file = $('input[name=' + type_file + ']')[0].files[0];
+  var csrf_token = $('input[name=csrf_token]')[0].value;
+  var formData = new FormData();
+  formData.append(type_file, import_file);
+  formData.append('action', action_file);
+  formData.append('csrf_token', csrf_token);
+
+  $.ajax({
+    url: 'index.php?p=admin&ajax=true',
+   type: 'POST',
+   data: formData,
+   enctype: 'multipart/form-data',
+   processData: false,
+   contentType: false
+  }).done(function(data) {
+    var responseData = JSON.parse(data);
+    if (responseData.result == 'OK') {
+      console.log('OK');
+       Modal.loadPopup('p=action&modal=import-done', 'action-import');
+    } else {
+      // TODO: Make this a modal
+      console.log('Failed');
+    }
+  });
+}
+
+// Import and replace whole game
+function importGame() {
+  $('#import-game_file').trigger('click');
+  $('#import-game_file').change(function() {
+    submitImport('game_file', 'import_game');
+  });
+}
+
+// Import and replace current teams
+function importTeams() {
+  $('#import-teams_file').trigger('click');
+  $('#import-teams_file').change(function() {
+    submitImport('teams_file', 'import_teams');
+  });
+}
+
+// Import and replace current categories
+function importCategories() {
+  $('#import-categories_file').trigger('click');
+  $('#import-categories_file').change(function() {
+    submitImport('categories_file', 'import_categories');
+  });
+}
+
+// Import and replace current logos
+function importLogos() {
+  $('#import-logos_file').trigger('click');
+  $('#import-logos_file').change(function() {
+    submitImport('logos_file', 'import_logos');
+  });
+}
+
+// Import and replace current levels
+function importLevels() {
+  $('#import-levels_file').trigger('click');
+  $('#import-levels_file').change(function() {
+    submitImport('levels_file', 'import_levels');
+  });
+}
+
+// Export and download current teams
+function exportCurrentTeams() {
+  var csrf_token = $('input[name=csrf_token]')[0].value;
+  var action = 'export_teams';
+  var url = 'index.php?p=admin&ajax=true&action=' + action + '&csrf_token=' + csrf_token;
+  window.location.href = url;
+}
+
+// Export and download current logos
+function exportCurrentLogos() {
+  var csrf_token = $('input[name=csrf_token]')[0].value;
+  var action = 'export_logos';
+  var url = 'index.php?p=admin&ajax=true&action=' + action + '&csrf_token=' + csrf_token;
+  window.location.href = url;
+}
+
+// Export and download current levels
+function exportCurrentLevels() {
+  var csrf_token = $('input[name=csrf_token]')[0].value;
+  var action = 'export_levels';
+  var url = 'index.php?p=admin&ajax=true&action=' + action + '&csrf_token=' + csrf_token;
+  window.location.href = url;
+}
+
+// Export and download current categories
+function exportCurrentCategories() {
+  var csrf_token = $('input[name=csrf_token]')[0].value;
+  var action = 'export_categories';
   var url = 'index.php?p=admin&ajax=true&action=' + action + '&csrf_token=' + csrf_token;
   window.location.href = url;
 }
@@ -876,12 +976,34 @@ module.exports = {
         createAnnouncement($section);
       } else if (action === 'backup-db') {
         databaseBackup();
+      } else if (action === 'import-game') {
+        importGame();
       } else if (action === 'create-tokens') {
         createTokens($section);
       } else if (action === 'export-tokens') {
         exportTokens($section);
       } else if (action === 'export-game') {
         exportCurrentGame();
+      } else if (action === 'import-teams') {
+        importTeams();
+      } else if (action === 'export-teams') {
+        exportCurrentTeams();
+      } else if (action === 'import-logos') {
+        importLogos();
+      } else if (action === 'export-logos') {
+        exportCurrentLogos();
+      } else if (action === 'import-levels') {
+        importLevels();
+      } else if (action === 'export-levels') {
+        exportCurrentLevels();
+      } else if (action === 'import-categories') {
+        importCategories();
+      } else if (action === 'export-categories') {
+        exportCurrentCategories();
+      } else if (action === 'create-tokens') {
+        createTokens();
+      } else if (action === 'export-tokens') {
+        exportTokens();
       } else if (action === 'edit') {
         $section.removeClass(lockClass);
         $('input[type="text"], input[type="password"], textarea', $section).prop('disabled', false);

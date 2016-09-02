@@ -247,9 +247,9 @@ $translations = array(
     'Általános',
   'Back Up Database' =>
     'Adatbázis másolatának mentése',
-  'Export Game' =>
+  'Export Full Game' =>
     'Játék exportálása',
-  'Import Game' =>
+  'Import Full Game' =>
     'Játék importálása',
   'Levels' =>
     'Feladatok',

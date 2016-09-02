@@ -182,6 +182,44 @@ class Team extends Model {
     return intval($result->mapRows()[0]['id']);
   }
 
+  // Create a team (all the fields) and return the created team id.
+  public static async function genCreateAll(
+    bool $active,
+    string $name,
+    string $password_hash,
+    int $points,
+    string $logo,
+    bool $admin,
+    bool $protected,
+    bool $visible,
+  ): Awaitable<int> {
+    $db = await self::genDb();
+
+    // Create team
+    await $db->queryf(
+      'INSERT INTO teams (name, password_hash, points, logo, active, admin, protected, visible, created_ts) VALUES (%s, %s, %d, %s, %d, %d, %d, %d, NOW())',
+      $name,
+      $password_hash,
+      $points,
+      $logo,
+      $active ? 1 : 0,
+      $admin ? 1 : 0,
+      $protected ? 1 : 0,
+      $visible ? 1 : 0,
+    );
+
+    // Return newly created team_id
+    $result = await $db->queryf(
+      'SELECT id FROM teams WHERE name = %s AND password_hash = %s AND logo = %s LIMIT 1',
+      $name,
+      $password_hash,
+      $logo,
+    );
+
+    invariant($result->numRows() === 1, 'Expected exactly one result');
+    return intval($result->mapRows()[0]['id']);
+  }
+
   // Add data to a team.
   public static async function genAddTeamData(
     string $name,

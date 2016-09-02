@@ -876,4 +876,27 @@ class Level extends Model {
     // Mark process as stopped
     await Control::genStopScriptLog($pid);
   }
+
+  // Check if a level already exists by type, title and entity.
+  public static async function genAlreadyExist(
+    string $type,
+    string $title,
+    string $entity_name,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    $result = await $db->queryf(
+      'SELECT COUNT(*) FROM levels WHERE type = %s AND title = %s AND entity_id IN (SELECT id FROM countries WHERE name = %s)',
+      $type,
+      $title,
+      $entity_name,
+    );
+
+    if ($result->numRows() > 0) {
+      invariant($result->numRows() === 1, 'Expected exactly one result');
+      return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
+    } else {
+      return false;
+    }
+  }
 }

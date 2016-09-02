@@ -111,7 +111,7 @@ class Category extends Model {
     );
   }
 
-  // Get category.
+  // Get category by id.
   public static async function genSingleCategory(
     int $category_id,
   ): Awaitable<Category> {
@@ -126,5 +126,41 @@ class Category extends Model {
     $category = self::categoryFromRow($result->mapRows()[0]);
 
     return $category;
+  }
+
+  // Get category by name.
+  public static async function genSingleCategoryByName(
+    string $category,
+  ): Awaitable<Category> {
+    $db = await self::genDb();
+
+    $result = await $db->queryf(
+      'SELECT * FROM categories WHERE category = %s LIMIT 1',
+      $category,
+    );
+
+    invariant($result->numRows() === 1, 'Expected exactly one result');
+    $category = self::categoryFromRow($result->mapRows()[0]);
+
+    return $category;
+  }
+
+  // Check if a category is already created.
+  public static async function genCheckExists(
+    string $category,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    $result = await $db->queryf(
+      'SELECT COUNT(*) FROM categories WHERE category = %s',
+      $category,
+    );
+
+    if ($result->numRows() > 0) {
+      invariant($result->numRows() === 1, 'Expected exactly one result');
+      return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
+    } else {
+      return false;
+    }
   }
 }
