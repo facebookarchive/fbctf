@@ -122,6 +122,23 @@ class ActionModalController extends ModalController {
             </div>
           </div>;
         return tuple($title, $content);
+      case 'import-done':
+        $title =
+          <h4>
+            {tr('status_')}<span class="highlighted">{tr('Imported')}</span>
+          </h4>;
+        $content =
+          <div class="action-main">
+            <p>{tr('Items have been imported successfully')}</p>
+            <div class="action-actionable">
+              <a
+                href="#"
+                class="fb-cta cta--yellow js-close-modal js-confirm-save">
+                {tr('OK')}
+              </a>
+            </div>
+          </div>;
+        return tuple($title, $content);
       default:
         invariant(false, "Invalid modal name $modal");
     }

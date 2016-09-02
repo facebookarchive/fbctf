@@ -247,10 +247,26 @@ $translations = array(
     'General',
   'Back Up Database' =>
     'Back Up Database',
-  'Export Game' =>
-    'Export Game',
-  'Import Game' =>
-    'Import Game',
+  'Export Full Game' =>
+    'Export Full Game',
+  'Import Full Game' =>
+    'Import Full Game',
+  'Import Teams' =>
+    'Import Teams',
+  'Export Teams' =>
+    'Export Teams',
+  'Import Logos' =>
+    'Import Logos',
+  'Export Logos' =>
+    'Export Logos',
+  'Import Levels' =>
+    'Import Levels',
+  'Export Levels' =>
+    'Export Levels',
+  'Import Categories' =>
+    'Import Categories',
+  'Export Categories' =>
+    'Export Categories',
   'Levels' =>
     'Levels',
   'New Quiz Level' =>

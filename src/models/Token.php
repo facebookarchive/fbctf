@@ -72,7 +72,7 @@ class Token extends Model {
 
     $tokens = array_map($m ==> $m['token'], $result->mapRows());
 
-    header('Content-Type: application/json');
+    header('Content-Type: application/json;charset=utf-8');
     header('Content-Disposition: attachment; filename=tokens.json');
     print json_encode($tokens, JSON_PRETTY_PRINT);
     exit();

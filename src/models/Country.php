@@ -195,7 +195,7 @@ class Country extends Model {
     return intval(firstx($result->mapRows())['COUNT(*)']) > 0;
   }
 
-  // Get a country by id
+  // Get a country by id.
   public static async function gen(int $country_id): Awaitable<Country> {
     $db = await self::genDb();
 
@@ -208,6 +208,20 @@ class Country extends Model {
     $new_country =
       await self::countryFromRow(firstx($result->mapRows())->toArray());
     return $new_country;
+  }
+
+  // Get a country by name.
+  public static async function genCountry(
+    string $country,
+  ): Awaitable<Country> {
+    $db = await self::genDb();
+    $result = await $db->queryf(
+      'SELECT * FROM countries WHERE name = %s LIMIT 1',
+      $country,
+    );
+
+    invariant($result->numRows() === 1, 'Expected exactly one result');
+    return await self::countryFromRow(firstx($result->mapRows())->toArray());
   }
 
   // Get a random enabled, unused country ID
@@ -241,6 +255,25 @@ class Country extends Model {
       must_have_idx($row, 'd'),
       must_have_idx($row, 'transform'),
     );
+  }
+
+  // Check if a country already exists, by name.
+  public static async function genCheckExists(
+    string $country,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    $result = await $db->queryf(
+      'SELECT COUNT(*) FROM countries WHERE name = %s',
+      $country,
+    );
+
+    if ($result->numRows() > 0) {
+      invariant($result->numRows() === 1, 'Expected exactly one result');
+      return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
+    } else {
+      return false;
+    }
   }
 
   private static async function genDeleteAllMemcacheKeys(): Awaitable<void> {
