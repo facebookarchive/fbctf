@@ -25,7 +25,7 @@ abstract class ExporterController {
     return $all_teams_data;
   }
 
-  public async function genLevels(): Awaitable<mixed> {
+  public async function genLevels(): Awaitable<array<mixed>> {
     $all_levels_data = array();
     $all_levels = \HH\Asio\join(Level::genAllLevels());
 
@@ -52,7 +52,7 @@ abstract class ExporterController {
     return $all_levels_data;
   }
 
-  public async function genCategories(): Awaitable<mixed> {
+  public async function genCategories(): Awaitable<array<mixed>> {
     $all_categories_data = array();
     $all_categories = \HH\Asio\join(Category::genAllCategories());
 
@@ -66,7 +66,7 @@ abstract class ExporterController {
     return $all_categories_data;
   }
 
-  public async function genLogos(): Awaitable<mixed> {
+  public async function genLogos(): Awaitable<array<mixed>> {
     $all_logos_data = array();
     $all_logos = \HH\Asio\join(Logo::genAllLogos());
 
@@ -83,17 +83,16 @@ abstract class ExporterController {
     return $all_logos_data;
   }
 
-  public async function genAll(): Awaitable<mixed> {
+  public async function genAll(): Awaitable<array<mixed>> {
     $categories = $this->genCategories();
     $levels = $this->genLevels();
     $teams = $this->genTeams();
     $logos = $this->genLogos();
-    $all_data = array(
+    return array(
       'categories' => $categories,
       'levels' => $levels,
       'teams' => $teams,
       'logos' => $logos
     );
-    return $all_data;
   }
 }

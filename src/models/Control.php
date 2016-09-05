@@ -111,9 +111,8 @@ class Control extends Model {
       $importer = new JSONImporterController();
       $result = await $importer->importGame($files['game_file']['tmp_name']);
       return $result;
-    } else {
-      return false;
     }
+    return false;
   }
 
   public static async function importTeams(): Awaitable<bool> {
@@ -122,9 +121,8 @@ class Control extends Model {
       $importer = new JSONImporterController();
       $result = await $importer->importTeams($files['teams_file']['tmp_name']);
       return $result;
-    } else {
-      return false;
     }
+    return false;
   }
 
   public static async function importLogos(): Awaitable<bool> {
@@ -133,9 +131,8 @@ class Control extends Model {
       $importer = new JSONImporterController();
       $result = await $importer->importLogos($files['logos_file']['tmp_name']);
       return $result;
-    } else {
-      return false;
     }
+    return false;
   }
 
   public static async function importLevels(): Awaitable<bool> {
@@ -144,9 +141,8 @@ class Control extends Model {
       $importer = new JSONImporterController();
       $result = await $importer->importLevels($files['levels_file']['tmp_name']);
       return $result;
-    } else {
-      return false;
     }
+    return false;
   }
 
   public static async function importCategories(): Awaitable<bool> {
@@ -155,9 +151,8 @@ class Control extends Model {
       $importer = new JSONImporterController();
       $result = await $importer->importCategories($files['categories_file']['tmp_name']);
       return $result;
-    } else {
-      return false;
     }
+    return false;
   }
 
   public static async function exportGame(): Awaitable<void> {

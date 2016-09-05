@@ -443,38 +443,32 @@ class AdminAjaxController extends AjaxController {
         $result = await Control::importGame();
         if ($result) {
           return Utils::ok_response('Success', 'admin');
-        } else {
-          return Utils::error_response('Error importing', 'admin');  
         }
+        return Utils::error_response('Error importing', 'admin');
       case 'import_teams':
         $result = await Control::importTeams();
         if ($result) {
           return Utils::ok_response('Success', 'admin');
-        } else {
-          return Utils::error_response('Error importing', 'admin');  
         }
+        return Utils::error_response('Error importing', 'admin');
       case 'import_logos':
         $result = await Control::importLogos();
         if ($result) {
           return Utils::ok_response('Success', 'admin');
-        } else {
-          return Utils::error_response('Error importing', 'admin');  
         }
+        return Utils::error_response('Error importing', 'admin');
       case 'import_levels':
         $result = await Control::importLevels();
         if ($result) {
           return Utils::ok_response('Success', 'admin');
-        } else {
-          return Utils::error_response('Error importing', 'admin');  
         }
+        return Utils::error_response('Error importing', 'admin');
       case 'import_categories':
         $result = await Control::importCategories();
         if ($result) {
           return Utils::ok_response('Success', 'admin');
-        } else {
-          return Utils::error_response('Error importing', 'admin');  
         }
-        return Utils::ok_response('Success', 'admin');
+        return Utils::error_response('Error importing', 'admin');
       default:
         return Utils::error_response('Invalid action', 'admin');
     }
