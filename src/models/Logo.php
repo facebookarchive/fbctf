@@ -172,7 +172,7 @@ class Logo extends Model implements Importable, Exportable {
       $logo,
     );
 
-    // Return newly created category_id
+    // Return newly created logo_id
     $result = await $db->queryf(
       'SELECT id FROM logos WHERE logo = %s LIMIT 1',
       $name,
