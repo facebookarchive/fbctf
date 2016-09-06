@@ -105,88 +105,134 @@ class Control extends Model {
     await Progressive::genStop();
   }
 
-  public static async function importGame(): Awaitable<bool> {
+  // Helper function to read JSON file to import
+  public static function readJSON(string $file_name): mixed {
     $files = Utils::getFILES();
-    if ($files->contains('game_file')) {
-      $importer = new JSONImporterController();
-      $result = await $importer->importGame($files['game_file']['tmp_name']);
-      return $result;
+    if ($files->contains($file_name)) {
+      $input_filename = $files[$file_name]['tmp_name'];
+      $data_raw = json_decode(file_get_contents($input_filename), true);
+      if (json_last_error() !== JSON_ERROR_NONE) {
+        return false;
+      }
+      return $data_raw;
+    }
+    return false;
+  }
+
+  public static async function importGame(): Awaitable<bool> {
+    $data_game = self::readJSON('game_file');
+    if ($data_game) {
+      $logos = must_have_idx($data_game, 'logos');
+      $logos_result = await Logo::import($logos);
+      if (!$logos_result) {
+        return false;
+      }
+      $teams = must_have_idx($data_game, 'teams');
+      $teams_result = await Team::import($teams);
+      if (!$teams_result) {
+        return false;
+      }
+      $categories = must_have_idx($data_game, 'categories');
+      $categories_result = await Category::import($categories);
+      if (!$categories_result) {
+        return false;
+      }
+      $levels = must_have_idx($data_game, 'levels');
+      $levels_result = await Level::import($levels);
+      if (!$levels_result) {
+        return false;
+      }
+      return true;
     }
     return false;
   }
 
   public static async function importTeams(): Awaitable<bool> {
-    $files = Utils::getFILES();
-    if ($files->contains('teams_file')) {
-      $importer = new JSONImporterController();
-      $result = await $importer->importTeams($files['teams_file']['tmp_name']);
-      return $result;
+    $data_teams = self::readJSON('teams_file');
+    if ($data_teams) {
+      $teams = must_have_idx($data_teams, 'teams');
+      return await Team::import($teams);
     }
     return false;
   }
 
   public static async function importLogos(): Awaitable<bool> {
-    $files = Utils::getFILES();
-    if ($files->contains('logos_file')) {
-      $importer = new JSONImporterController();
-      $result = await $importer->importLogos($files['logos_file']['tmp_name']);
-      return $result;
+    $data_logos = self::readJSON('logos_file');
+    if ($data_logos) {
+      $logos = must_have_idx($data_logos, 'logos');
+      return await Logo::import($logos);
     }
     return false;
   }
 
   public static async function importLevels(): Awaitable<bool> {
-    $files = Utils::getFILES();
-    if ($files->contains('levels_file')) {
-      $importer = new JSONImporterController();
-      $result = await $importer->importLevels($files['levels_file']['tmp_name']);
-      return $result;
+    $data_levels = self::readJSON('levels_file');
+    if ($data_levels) {
+      $levels = must_have_idx($data_levels, 'levels');
+      return await Level::import($levels);
     }
     return false;
   }
 
   public static async function importCategories(): Awaitable<bool> {
-    $files = Utils::getFILES();
-    if ($files->contains('categories_file')) {
-      $importer = new JSONImporterController();
-      $result = await $importer->importCategories($files['categories_file']['tmp_name']);
-      return $result;
+    $data_categories = self::readJSON('categories_file');
+    if ($data_categories) {
+      $categories = must_have_idx($data_categories, 'categories');
+      return await Category::import($categories);
     }
     return false;
   }
 
   public static async function exportGame(): Awaitable<void> {
-    $exporter = new JSONExporterController();
-    $game = await $exporter->genData('game');
-    JSONExporterController::sendJSON($game, 'fbctf_game.json');
+    $game = array();
+    $logos = await Logo::export();
+    $game['logos'] = $logos;
+    $teams = await Team::export();
+    $game['teams'] = $teams;
+    $categories = await Category::export();
+    $game['categories'] = $categories;
+    $levels = await Level::export();
+    $game['levels'] = $levels;
+    $output_file = 'fbctf_game.json';
+    self::sendJSON($game, $output_file);
     exit();
   }
 
+  public static function genJSON(mixed $data): string { 
+    return json_encode($data, JSON_PRETTY_PRINT);   
+  }
+  
+  public static function sendJSON(mixed $data, string $json_file='fbctf.json'): void {
+    header('Content-Type: application/json;charset=utf-8');
+    header('Content-Disposition: attachment; filename='.$json_file);
+    echo self::genJSON($data);
+  }
+
   public static async function exportTeams(): Awaitable<void> {
-    $exporter = new JSONExporterController();
-    $teams = await $exporter->genData('teams');
-    JSONExporterController::sendJSON($teams, 'fbctf_teams.json');
+    $teams = await Team::export();
+    $output_file = 'fbctf_teams.json';
+    self::sendJSON($teams, $output_file);
     exit();
   }
 
   public static async function exportLogos(): Awaitable<void> {
-    $exporter = new JSONExporterController();
-    $logos = await $exporter->genData('logos');
-    JSONExporterController::sendJSON($logos, 'fbctf_logos.json');
+    $logos = await Logo::export();
+    $output_file = 'fbctf_logos.json';
+    self::sendJSON($logos, $output_file);
     exit();
   }
 
   public static async function exportLevels(): Awaitable<void> {
-    $exporter = new JSONExporterController();
-    $levels = await $exporter->genData('levels');
-    JSONExporterController::sendJSON($levels, 'fbctf_levels.json');
+    $levels = await Level::export();
+    $output_file = 'fbctf_levels.json';
+    self::sendJSON($levels, $output_file);
     exit();
   }
 
   public static async function exportCategories(): Awaitable<void> {
-    $exporter = new JSONExporterController();
-    $categories = await $exporter->genData('categories');
-    JSONExporterController::sendJSON($categories, 'fbctf_categories.json');
+    $categories = await Category::export();
+    $output_file = 'fbctf_categories.json';
+    self::sendJSON($categories, $output_file);
     exit();
   }
 

@@ -1,6 +1,6 @@
 <?hh // strict
 
-class Level extends Model {
+class Level extends Model implements Importable, Exportable {
   private function __construct(
     private int $id,
     private int $active,
@@ -114,6 +114,70 @@ class Level extends Model {
     } else {
       return null;
     }
+  }
+
+  // Import levels.
+  public static async function import(
+    array<string, array<string, mixed>> $elements
+  ): Awaitable<bool> {
+    foreach ($elements as $level) {
+      $title = must_have_string($level, 'title');
+      $type = must_have_string($level, 'type');
+      $entity_name = must_have_string($level, 'entity_name');
+      $c = must_have_string($level, 'category');
+      $exist = await self::genAlreadyExist($type, $title, $entity_name);
+      $entity_exist = await Country::genCheckExists($entity_name);
+      $category_exist = await Category::genCheckExists($c);
+      if (!$exist && $entity_exist && $category_exist) {
+        $entity = await Country::genCountry($entity_name);
+        $category = await Category::genSingleCategoryByName($c);
+        await self::genCreate(
+          $type,
+          $title,
+          must_have_string($level, 'description'),
+          $entity->getId(),
+          $category->getId(),
+          must_have_int($level, 'points'),
+          must_have_int($level, 'bonus'),
+          must_have_int($level, 'bonus_dec'),
+          must_have_int($level, 'bonus_fix'),
+          must_have_string($level, 'flag'),
+          must_have_string($level, 'hint'),
+          must_have_int($level, 'penalty'),
+        );
+      }
+    }
+    return true;
+  }
+
+  // Export levels.
+  public static async function export(): Awaitable<array<string, array<string, mixed>>> {
+    $all_levels_data = array();
+    $all_levels = await self::genAllLevels();
+
+    foreach ($all_levels as $level) {
+      $entity = await Country::gen($level->getEntityId());
+      $category = await Category::genSingleCategory($level->getCategoryId());
+      $one_level = array(
+        'type' => $level->getType(),
+        'title' => $level->getTitle(),
+        'active' => $level->getActive(),
+        'description' => $level->getDescription(),
+        'entity_name' => $entity->getName(),
+        'category' => $category->getCategory(),
+        'points' => $level->getPoints(),
+        'bonus' => $level->getBonus(),
+        'bonus_dec' => $level->getBonusDec(),
+        'bonus_fix' => $level->getBonusFix(),
+        'flag' => $level->getFlag(),
+        'hint' => $level->getHint(),
+        'penalty' => $level->getPenalty()
+      );
+      array_push($all_levels_data, $one_level);
+    }
+    return array(
+      'levels' => $all_levels_data
+    );
   }
 
   // Check to see if the level is active.
