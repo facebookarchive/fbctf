@@ -1,6 +1,6 @@
 <?hh // strict
 
-class Category extends Model {
+class Category extends Model implements Importable, Exportable {
   private function __construct(
     private int $id,
     private string $category,
@@ -30,6 +30,40 @@ class Category extends Model {
       must_have_idx($row, 'category'),
       intval(must_have_idx($row, 'protected')),
       must_have_idx($row, 'created_ts'),
+    );
+  }
+
+  // Import levels.
+  public static async function import(
+    array<string, array<string, mixed>> $elements
+  ): Awaitable<bool> {
+    foreach ($elements as $category) {
+      $c = must_have_string($category, 'category');
+      $exist = await self::genCheckExists($c);
+      if (!$exist) {
+        await self::genCreate(
+          $c,
+          (bool)must_have_idx($category, 'protected')
+        );
+      }
+    }
+    return true;
+  }
+
+  // Export levels.
+  public static async function export(): Awaitable<array<string, array<string, mixed>>> {
+    $all_categories_data = array();
+    $all_categories = await self::genAllCategories();
+
+    foreach ($all_categories as $category) {
+      $one_category = array(
+        'category' => $category->getCategory(),
+        'protected' => $category->getProtected()
+      );
+      array_push($all_categories_data, $one_category);
+    }
+    return array(
+      'categories' => $all_categories_data
     );
   }
 
