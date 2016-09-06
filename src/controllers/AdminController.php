@@ -153,7 +153,7 @@ class AdminController extends Controller {
     $config = await Configuration::gen('game_duration_unit');
     $duration_unit = $config->getValue();
     $config = await Configuration::gen('game_duration_value');
-    $duration_value = intval($config->getValue());
+    $duration_value = $config->getValue();
 
     $minute_selected = $duration_unit === 'm';
     $hour_selected = $duration_unit === 'h';
