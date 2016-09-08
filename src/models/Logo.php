@@ -113,7 +113,7 @@ class Logo extends Model implements Importable, Exportable {
   }
 
   // Import logos.
-  public static async function import(
+  public static async function importAll(
     array<string, array<string, mixed>> $elements
   ): Awaitable<bool> {
     foreach ($elements as $logo) {
@@ -133,7 +133,7 @@ class Logo extends Model implements Importable, Exportable {
   }
 
   // Export logos.
-  public static async function export(): Awaitable<array<string, array<string, mixed>>> {
+  public static async function exportAll(): Awaitable<array<string, array<string, mixed>>> {
     $all_logos_data = array();
     $all_logos = await self::genAllLogos();
 

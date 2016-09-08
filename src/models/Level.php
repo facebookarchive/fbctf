@@ -117,7 +117,7 @@ class Level extends Model implements Importable, Exportable {
   }
 
   // Import levels.
-  public static async function import(
+  public static async function importAll(
     array<string, array<string, mixed>> $elements
   ): Awaitable<bool> {
     foreach ($elements as $level) {
@@ -151,7 +151,7 @@ class Level extends Model implements Importable, Exportable {
   }
 
   // Export levels.
-  public static async function export(): Awaitable<array<string, array<string, mixed>>> {
+  public static async function exportAll(): Awaitable<array<string, array<string, mixed>>> {
     $all_levels_data = array();
     $all_levels = await self::genAllLevels();
 
