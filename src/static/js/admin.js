@@ -26,6 +26,8 @@ function endGame() {
  *
  * @param  request_data (request object)
  *   - the parameters for the request.
+ * @param  refresh_page (boolean)
+ *   - check if page should be refreshed.
  *
  * @return Boolean
  *   - whether or not the request was succesful
@@ -411,8 +413,10 @@ function submitImport(type_file, action_file) {
       console.log('OK');
        Modal.loadPopup('p=action&modal=import-done', 'action-import');
     } else {
-      // TODO: Make this a modal
       console.log('Failed');
+      Modal.loadPopup('p=action&modal=error', 'action-error', function() {
+        $('.error-text').html('<p>Sorry there was a problem importing the items. Please try again.</p>');
+      });
     }
   });
 }
