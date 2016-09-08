@@ -76,7 +76,7 @@ class Team extends Model implements Importable, Exportable {
   }
 
   // Import teams.
-  public static async function import(
+  public static async function importAll(
     array<string, array<string, mixed>> $elements
   ): Awaitable<bool> {
     foreach ($elements as $team) {
@@ -99,7 +99,7 @@ class Team extends Model implements Importable, Exportable {
   }
 
   // Export teams.
-  public static async function export(): Awaitable<array<string, array<string, mixed>>> {
+  public static async function exportAll(): Awaitable<array<string, array<string, mixed>>> {
     $all_teams_data = array();
     $all_teams = await self::genAllTeams();
 

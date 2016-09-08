@@ -1,5 +1,5 @@
 <?hh // strict
 
 interface Importable {
-  public static function import(array<string, array<string, mixed>> $elements): Awaitable<bool>;
+  public static function importAll(array<string, array<string, mixed>> $elements): Awaitable<bool>;
 }
