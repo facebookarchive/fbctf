@@ -226,6 +226,13 @@ function install_hhvm() {
   log "Installing HHVM"
   sudo apt-get update
   package hhvm
+  # The HHVM package version 3.15 is broken and crashes. See: https://github.com/facebook/hhvm/issues/7333
+  # Until this is fixed, install manually closest previous version, 3.14.5
+  sudo apt-get remove hhvm -y
+  sudo rm -Rf /var/run/hhvm/*
+  local __package="hhvm_3.14.5~$(lsb_release -sc)_amd64.deb"
+  dl "http://dl.hhvm.com/ubuntu/pool/main/h/hhvm/$__package" "/tmp/$__package"
+  sudo dpkg -i "/tmp/$__package"
 
   log "Copying HHVM configuration"
   cat "$__path/extra/hhvm.conf" | sed "s|CTFPATH|$__path/|g" | sudo tee /etc/hhvm/server.ini
