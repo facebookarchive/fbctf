@@ -16,7 +16,11 @@ class Db {
 
   private function __construct() {
     $this->config = parse_ini_file($this->settings_file);
-    $this->pool = new AsyncMysqlConnectionPool(array());
+    $options = array(
+      'idle_timeout_micros' => 200000,
+      'expiration_policy' => 'IdleTime'
+    );
+    $this->pool = new AsyncMysqlConnectionPool($options);
   }
 
   private function __clone(): void {}
@@ -36,9 +40,7 @@ class Db {
   }
 
   public async function genConnection(): Awaitable<AsyncMysqlConnection> {
-    if (!$this->isConnected()) {
-      await $this->genConnect();
-    }
+    await $this->genConnect();
     invariant($this->conn !== null, 'Connection cant be null.');
     return $this->conn;
   }
