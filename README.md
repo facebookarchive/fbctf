@@ -129,7 +129,7 @@ This step is not necessary if all development is done on the VM.
 
 This build command will provision fbctf in dev mode in docker:
 
-`docker build --build-arg MODE=dev -t="fbctf_in_dev" .`
+`docker build --build-arg MODE=dev -t="fbctf_in_dev" .` (don't forget the dot at the end)
 
 
 Run command:
@@ -142,7 +142,7 @@ Once you've started the container, go to the URL/IP of the server. Click the "Lo
 
 This build command will provision fbctf in prod mode in docker. Once you've started the container, Let's Encrypt will take YOUR_DOMAIN to obtain a trusted certificate at zero cost:
 
-`docker build --build-arg MODE=prod --build-arg DOMAIN=test.mydomain.com --build-arg EMAIL=myemail@mydomain.com --build-arg TYPE=certbot -t="fbctf_in_prod" .`
+`docker build --build-arg MODE=prod --build-arg DOMAIN=test.mydomain.com --build-arg EMAIL=myemail@mydomain.com --build-arg TYPE=certbot -t="fbctf_in_prod" .` (don't forget the dot at the end)
 
 Run command:
 
