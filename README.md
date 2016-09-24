@@ -60,7 +60,7 @@ cd fbctf
 ```
 
 ### Production
-
+Please note that your machine needs to have at least 2GB of RAM, otherwise the composer part of the installation will fail.
 The target system needs to be 64 bit Ubuntu 14.04. Run the following commands:
 
 ```bash
@@ -139,7 +139,7 @@ Run command:
 Once you've started the container, go to the URL/IP of the server. Click the "Login" link at the top right, enter the default admin credentials, and you'll be redirected to the admin page.
 
 ### Production
-
+Please note that your machine needs to have at least 2GB of RAM, otherwise the composer part of the installation will fail.
 This build command will provision fbctf in prod mode in docker. Once you've started the container, Let's Encrypt will take YOUR_DOMAIN to obtain a trusted certificate at zero cost:
 
 `docker build --build-arg MODE=prod --build-arg DOMAIN=test.mydomain.com --build-arg EMAIL=myemail@mydomain.com --build-arg TYPE=certbot -t="fbctf_in_prod" .` (don't forget the dot at the end)
