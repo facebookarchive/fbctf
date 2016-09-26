@@ -1,5 +1,5 @@
 <?hh // strict
-require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
+require_once (__DIR__.'/../../vendor/autoload.php');
 
 /* HH_IGNORE_ERROR[1002] */
 $lang = null;
