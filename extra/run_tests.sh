@@ -5,6 +5,8 @@
 # Usage: ./run_tests.sh [path_to_code]
 #
 
+set -e
+
 DB="fbctftests"
 CODE_PATH=${1:-/vagrant}
 DB_USER=${2:-root}
