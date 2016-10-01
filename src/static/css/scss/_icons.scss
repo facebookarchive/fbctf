@@ -32,8 +32,9 @@
 .icon--badge {
   fill: none;
   stroke: $teal-blue;
-  width: 80px;
-  height: 62px;
+  max-width: 80px;
+  max-height: 62px;
+  height: auto;
 }
 
 .icon--mini {

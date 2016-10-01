@@ -321,8 +321,9 @@
 .modal--team {
   .icon--badge {
     stroke: $yellow;
-    width: 110px;
-    height: 82px;
+    max-width: 110px;
+    max-height: 82px;
+    height: auto;
   }
 
   .fb-modal-main {

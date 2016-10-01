@@ -21,6 +21,51 @@
 }
 
 /* --------------------------------------------
+ * --registration
+ * -------------------------------------------- */
+
+.page--registration,
+.page--team-registration {
+  .custom-emblem {
+    text-align: center;
+    #custom-emblem-input {
+      display: none;
+    }
+    #custom-emblem-preview {
+      &[src=""] {
+        display: none;
+      }
+      margin-top: 20px;
+      max-width: 100px;
+      max-height: 100px;
+    }
+  }
+  #custom-emblem-carousel-notice {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 10;
+    display: none;
+    .center-wrapper {
+      display: table;
+      width: 100%;
+      height: 100%;
+    }
+    h6 {
+      display: table-cell;
+      vertical-align: middle;
+      text-align: center;
+    }
+    &.active {
+      display: block;
+    }
+  }
+}
+
+/* --------------------------------------------
  * --blog
  * -------------------------------------------- */
 

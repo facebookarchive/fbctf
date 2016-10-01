@@ -1,11 +1,23 @@
 <?hh // strict
 
 class Logo extends Model implements Importable, Exportable {
+
+  const string CUSTOM_LOGO_DIR = '/data/customlogos/';
+  const int MAX_CUSTOM_LOGO_SIZE_BYTES = 500000;
+  private static array<int, string> $CUSTOM_LOGO_TYPES = [
+    IMAGETYPE_JPEG => 'jpg',
+    IMAGETYPE_PNG => 'png',
+    IMAGETYPE_GIF => 'gif',
+  ];
+  // each base64 character (8 bits) encodes 6 bits
+  const double BASE64_BYTES_PER_CHAR = 0.75;
+
   private function __construct(
     private int $id,
     private int $used,
     private int $enabled,
     private int $protected,
+    private int $custom,
     private string $name,
     private string $logo,
   ) {}
@@ -32,6 +44,10 @@ class Logo extends Model implements Importable, Exportable {
 
   public function getProtected(): bool {
     return $this->protected === 1;
+  }
+
+  public function getCustom(): bool {
+    return $this->custom === 1;
   }
 
   // Check to see if the logo exists.
@@ -71,6 +87,22 @@ class Logo extends Model implements Importable, Exportable {
     return $result->mapRows()[0]['name'];
   }
 
+  // Logo model by name
+  public static async function genByName(
+    string $name,
+  ): Awaitable<Logo> {
+    $db = await self::genDb();
+
+    $result = await $db->queryf(
+      'SELECT * FROM logos WHERE name = %s',
+      $name,
+    );
+
+    invariant($result->numRows() === 1, 'Expected exactly one result');
+
+    return self::logoFromRow($result->mapRows()[0]);
+  }
+
   // All the logos.
   public static async function genAllLogos(): Awaitable<array<Logo>> {
     $db = await self::genDb();
@@ -107,6 +139,7 @@ class Logo extends Model implements Importable, Exportable {
       intval(must_have_idx($row, 'used')),
       intval(must_have_idx($row, 'enabled')),
       intval(must_have_idx($row, 'protected')),
+      intval(must_have_idx($row, 'custom')),
       must_have_idx($row, 'name'),
       must_have_idx($row, 'logo'),
     );
@@ -145,6 +178,7 @@ class Logo extends Model implements Importable, Exportable {
         'used' => $logo->getUsed(),
         'enabled' => $logo->getEnabled(),
         'protected' => $logo->getProtected(),
+        'custom' => $logo->getCustom(),
       );
       array_push($all_logos_data, $one_logo);
     }
@@ -156,28 +190,89 @@ class Logo extends Model implements Importable, Exportable {
     bool $used,
     bool $enabled,
     bool $protected,
+    bool $custom,
     string $name,
     string $logo,
-  ): Awaitable<int> {
+  ): Awaitable<Logo> {
     $db = await self::genDb();
 
     // Create category
     await $db->queryf(
-      'INSERT INTO logos (used, enabled, protected, name, logo) VALUES (%d, %d, %d, %s, %s)',
+      'INSERT INTO logos (used, enabled, protected, custom, name, logo) VALUES (%d, %d, %d, %d, %s, %s)',
       $used ? 1 : 0,
       $enabled ? 1 : 0,
       $protected ? 1 : 0,
+      $custom ? 1 : 0,
       $name,
       $logo,
     );
 
     // Return newly created logo_id
     $result = await $db->queryf(
-      'SELECT id FROM logos WHERE logo = %s LIMIT 1',
-      $name,
+      'SELECT * FROM logos WHERE logo = %s LIMIT 1',
+      $logo,
     );
 
     invariant($result->numRows() === 1, 'Expected exactly one result');
-    return intval($result->mapRows()[0]['id']);
+    return self::logoFromRow($result->mapRows()[0]);
+  }
+
+  // Create custom logo
+  public static async function genCreateCustom(
+    string $base64_data,
+  ): Awaitable<?Logo> {
+    // Check image size
+    $image_size_bytes = strlen($base64_data) * self::BASE64_BYTES_PER_CHAR;
+    if ($image_size_bytes > self::MAX_CUSTOM_LOGO_SIZE_BYTES) {
+      error_log('Logo file base64 not less than '.(self::MAX_CUSTOM_LOGO_SIZE_BYTES/1000).' kB, was '.($image_size_bytes/1000).' kB');
+      return null;
+    }
+    //invariant(
+      //$image_size_bytes < self::MAX_CUSTOM_LOGO_SIZE_BYTES,
+      //'Logo file base64 not less than '.(self::MAX_CUSTOM_LOGO_SIZE_BYTES/1000).' kB, was '.($image_size_bytes/1000).' kB'
+    //);
+
+    // Get image properties and verify mimetype
+    $base64_data = str_replace(' ', '+', $base64_data);
+    $binary_data = base64_decode(str_replace(' ', '+', $base64_data));
+    $image_info = getimagesizefromstring($binary_data);
+
+    $mimetype = $image_info[2];
+
+    if (!array_key_exists($mimetype, self::$CUSTOM_LOGO_TYPES)) {
+      error_log("Image type '$mimetype' not allowed");
+      return null;
+    }
+
+    $type_extension = self::$CUSTOM_LOGO_TYPES[$mimetype];
+
+    $filename = 'custom-'.time().'-'.md5($base64_data).'.'.$type_extension;
+    $filepath = self::CUSTOM_LOGO_DIR.$filename;
+    $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
+    $full_filepath = $document_root.$filepath;
+
+    error_log($full_filepath);
+    file_put_contents($full_filepath, $binary_data);
+    if (!chmod($full_filepath, 0444)) {
+      error_log("Could not set permissions on logo image at '$full_filepath'");
+    }
+
+    $db = await self::genDb();
+
+    $used = true;
+    $enabled = true;
+    $protected = false;
+    $custom = true;
+    $logo = await Logo::genCreate(
+      $used,
+      $enabled,
+      $protected,
+      $custom,
+      $filename,
+      $filepath,
+    );
+
+    // Return newly created logo_id
+    return $logo;
   }
 }

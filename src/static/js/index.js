@@ -54,13 +54,40 @@ function verifyTeamPassword() {
   }
 }
 
-function verifyTeamLogo() {
+function verifyTeamLogo(): {isCustom: boolean, type: string, logo: number, error?: any} {
   try {
+    // src is filled in by image preview, see fb-ctf.js
+    var customLogoSrc = $('#custom-emblem-preview').attr('src');
+    if (customLogoSrc) {
+      // parse filetype and get base64 data
+      // customLogoSrc should be something like data:image/png;base64,AAAFBfj42Pj4...
+      var filetypeBeginIdx = customLogoSrc.indexOf('/') + 1;
+      var filetypeEndIdx = customLogoSrc.indexOf(';');
+      var filetype = customLogoSrc.substring(filetypeBeginIdx, filetypeEndIdx);
+
+      var base64 = customLogoSrc.substring(customLogoSrc.indexOf(',') + 1);
+
+      return {
+        isCustom: true,
+        type: filetype,
+        logo: base64
+      };
+    }
+
     var teamLogo = $('.fb-slider .active .icon--badge use').attr('xlink:href').replace('#icon--badge-', '');
-    return teamLogo;
+    return {
+      isCustom: false,
+      type: null,
+      logo: teamLogo
+    };
   } catch (err) {
     teamLogoFormError();
-    return false;
+    return {
+      isCustom: null,
+      type: null,
+      logo: null,
+      error: err
+    };
   }
 }
 
@@ -94,18 +121,20 @@ module.exports = {
   registerTeam: function() {
     var name = verifyTeamName('register');
     var password = verifyTeamPassword();
-    var logo = verifyTeamLogo();
+    var logoInfo: {isCustom: boolean, type: string, logo: string, error?: any} = verifyTeamLogo();
     var token = '';
     if ($('.fb-form input[name="token"]').length > 0) {
       token = $('.fb-form input[name="token"]')[0].value;
     }
 
-    if (name && password && logo) {
+    if (name && password && !logoInfo.error) {
       var register_data = {
         action: 'register_team',
         teamname: name,
         password: password,
-        logo: logo,
+        logo: logoInfo.logo,
+        isCustomLogo: logoInfo.isCustom,
+        logoType: logoInfo.type,
         token: token
       };
       sendIndexRequest(register_data);
@@ -115,7 +144,7 @@ module.exports = {
   registerNames: function() {
     var name = verifyTeamName('register');
     var password = verifyTeamPassword();
-    var logo = verifyTeamLogo();
+    var logoInfo: {isCustom: boolean, type: string, logo: string, error?: any} = verifyTeamLogo();
     var token = '';
     if ($('.fb-form input[name="token"]').length > 0) {
       token = $('.fb-form input[name="token"]')[0].value;
@@ -131,12 +160,14 @@ module.exports = {
       emails.push(nameField.value);
     });
 
-    if (name && password && logo) {
+    if (name && password && !logoInfo.error) {
       var register_data = {
         action: 'register_names',
         teamname: name,
         password: password,
-        logo: logo,
+        logo: logoInfo.logo,
+        isCustomLogo: logoInfo.isCustom,
+        logoType: logoInfo.type,
         token: token,
         names: JSON.stringify(names),
         emails: JSON.stringify(emails)

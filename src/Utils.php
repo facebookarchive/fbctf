@@ -32,6 +32,15 @@ function must_have_int<Tk as string, Tv>(
   return $result;
 }
 
+function must_have_bool<Tk as string, Tv>(
+  ?KeyedContainer<Tk, Tv> $arr,
+  Tk $idx,
+): bool {
+  $result = must_have_idx($arr, $idx);
+  invariant(is_bool($result), "Expected $idx to be a bool");
+  return $result;
+}
+
 function firstx<T>(Traversable<T> $t): T {
   foreach ($t as $v) {
     return $v;

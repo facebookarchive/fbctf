@@ -55,6 +55,11 @@ class Team extends Model implements Importable, Exportable {
     return $this->logo;
   }
 
+  public async function getLogoModel(): Awaitable<Logo> {
+    $logo = await Logo::genByName($this->logo);
+    return $logo;
+  }
+
   public function getCreatedTs(): string {
     return $this->created_ts;
   }

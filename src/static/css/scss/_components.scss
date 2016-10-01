@@ -509,6 +509,7 @@
   }
 
   .emblem-carousel {
+    position: relative;
     background-color: $black;
     padding: 20px;
     margin-top: 20px;
@@ -617,10 +618,6 @@
 
   .user-avatar {
     @include flex(0 0 80px);
-
-    .icon--badge {
-      width: 100%;
-    }
   }
 
   .player-info {
