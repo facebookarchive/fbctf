@@ -642,8 +642,8 @@ $translations = array(
     'Command_Line',
   'Click "Nav" to access main navigation links like Rules of Play, Registration, Blog, Jobs & more.' =>
     'Click "Nav" to access main navigation links like Rules of Play, Registration, Blog, Jobs & more.',
-  'Track your competition by clicking "scorboard" to access real-time game statistics and graphs.' =>
-    'Track your competition by clicking "scorboard" to access real-time game statistics and graphs.',
+  'Track your competition by clicking "scoreboard" to access real-time game statistics and graphs.' =>
+    'Track your competition by clicking "scoreboard" to access real-time game statistics and graphs.',
   'Have fun, be the best and conquer the world.' =>
     'Have fun, be the best and conquer the world.',
   'Game_On' =>
