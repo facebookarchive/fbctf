@@ -629,7 +629,7 @@ $translations = array(
   'Track your competition by clicking "scorboard" to access real-time game statistics and graphs.' =>
     'Haz un seguimiento del juego haciendo clic en "scoreboard" para acceder a estadísticas y gráficas en tiempo real.',
   'Have fun, be the best and conquer the world.' =>
-    'Diviértete, se el mejor y conquista el mundo.',
+    'Diviértete, sé el mejor y conquista el mundo.',
   'Game_On' =>
     'Game_On',
   'tutorial_' =>
