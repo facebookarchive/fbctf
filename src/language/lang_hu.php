@@ -626,7 +626,7 @@ $translations = array(
     'Parancssor',
   'Click "Nav" to access main navigation links like Rules of Play, Registration, Blog, Jobs & more.' =>
     'Kattints a "Navigáció"-ra hogy elérd a különböző menüpontokat',
-  'Track your competition by clicking "scorboard" to access real-time game statistics and graphs.' =>
+  'Track your competition by clicking "scoreboard" to access real-time game statistics and graphs.' =>
     'Kövesd a verseny állását az "Eredményjelző"-re kattintva.',
   'Have fun, be the best and conquer the world.' =>
     'Élvezd a játékot, légy a legjobb és foglald el az egész világot!',
