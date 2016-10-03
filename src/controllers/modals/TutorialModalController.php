@@ -109,7 +109,7 @@ class TutorialModalController extends ModalController {
           <div class="main-text">
             <p>
               {tr(
-                'Track your competition by clicking "scorboard" to access real-time game statistics and graphs.',
+                'Track your competition by clicking "scoreboard" to access real-time game statistics and graphs.',
               )}
             </p>
           </div>;
