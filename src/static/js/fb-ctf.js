@@ -2289,7 +2289,7 @@ function setupInputListeners() {
     $body = $('body');
 
     $('#login_button').click(Index.loginTeam);
-    var names_required = $('#register_names').length > 0;
+    var names_required = $('input[name=action]').val() === 'register_names';
     if (names_required) {
       $('#register_button').click(Index.registerNames);
     } else {
