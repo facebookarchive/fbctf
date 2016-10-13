@@ -240,7 +240,7 @@ composer.phar install
 # Install NPM and grunt
 package npm
 package nodejs-legacy
-npm install
+npm install ## will this work with new Ubuntu 16?
 sudo npm install -g grunt
 sudo npm install -g flow-bin
 
