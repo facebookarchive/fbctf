@@ -462,7 +462,7 @@ class IndexController extends Controller {
         $login_select = "on";
         $login_team = <select name="team_id" />;
         $login_team->appendChild(<option value="0">{tr('Select')}</option>);
-        $all_active_teams = await Team::genAllActiveTeams();
+        $all_active_teams = await MultiTeam::genAllActiveTeams();
         foreach ($all_active_teams as $team) {
           error_log('Getting '.$team->getName());
           $login_team->appendChild(

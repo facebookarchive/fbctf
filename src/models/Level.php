@@ -843,7 +843,7 @@ class Level extends Model implements Importable, Exportable {
           }
 
           // Make sure team has enough points to pay
-          $team = await Team::genTeam($team_id);
+          $team = await MultiTeam::genTeam($team_id);
           if ($team->getPoints() < $penalty) {
             return null;
           }

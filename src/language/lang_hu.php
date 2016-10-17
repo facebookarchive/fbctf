@@ -437,6 +437,8 @@ $translations = array(
     'Létrehozás ideje',
   'Last Access' =>
     'Legutóbbi aktivitás',
+  'Last Page Access' =>
+    'Utolsó oldal Access',
   'Data' =>
     'Adat',
   'Sessions' =>

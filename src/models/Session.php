@@ -8,6 +8,7 @@ class Session extends Model {
     private int $team_id,
     private string $created_ts,
     private string $last_access_ts,
+    private string $last_page_access,
   ) {}
 
   public function getId(): int {
@@ -34,6 +35,10 @@ class Session extends Model {
     return $this->last_access_ts;
   }
 
+  public function getLastPageAccess(): string {
+    return $this->last_page_access;
+  }
+
   private static function decodeTeamId(string $data): int {
     // This is a bit janky
     $delim = explode('team_id|', $data)[1];
@@ -47,6 +52,7 @@ class Session extends Model {
     string $cookie,
     string $data,
   ): Awaitable<void> {
+    if (Router::isRequestAjax() || !Router::isRequestRouter()) return;
     $team_id = self::decodeTeamId($data);
     $db = await self::genDb();
     await $db->queryf(
@@ -64,6 +70,7 @@ class Session extends Model {
       intval(must_have_idx($row, 'team_id')),
       must_have_idx($row, 'created_ts'),
       must_have_idx($row, 'last_access_ts'),
+      must_have_idx($row, 'last_page_access'),
     );
   }
 
@@ -74,9 +81,10 @@ class Session extends Model {
   ): Awaitable<void> {
     $db = await self::genDb();
     await $db->queryf(
-      'INSERT INTO sessions (cookie, data, created_ts, last_access_ts, team_id) VALUES (%s, %s, NOW(), NOW(), 1)',
+      'INSERT INTO sessions (cookie, data, created_ts, last_access_ts, team_id, last_page_access) VALUES (%s, %s, NOW(), NOW(), 1, %s)',
       $cookie,
       $data,
+      Router::getRequestedPage(),
     );
   }
 
@@ -107,15 +115,30 @@ class Session extends Model {
     return intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0;
   }
 
+  public static async function genSessionDataIfExist(string $cookie): Awaitable<string> {
+    $db = await self::genDb();
+    $result = await $db->queryf(
+      'SELECT * FROM sessions WHERE cookie = %s LIMIT 1',
+      $cookie,
+    );
+
+    if ($result->numRows() === 1) {
+      $session = self::sessionFromRow($result->mapRows()[0]);
+      return $session->getData();
+    } else return '';
+  }
+
   // Update the session for a given cookie.
   public static async function genUpdate(
     string $cookie,
     string $data,
   ): Awaitable<void> {
+    if (Router::isRequestAjax() || !Router::isRequestRouter()) return;
     $db = await self::genDb();
     await $db->queryf(
-      'UPDATE sessions SET last_access_ts = NOW(), data = %s WHERE cookie = %s LIMIT 1',
+      'UPDATE sessions SET last_access_ts = NOW(), data = %s, last_page_access = %s WHERE cookie = %s LIMIT 1',
       $data,
+      Router::getRequestedPage(),
       $cookie,
     );
   }
@@ -140,6 +163,7 @@ class Session extends Model {
 
   // Does cleanup of cookies.
   public static async function genCleanup(int $maxlifetime): Awaitable<void> {
+    if (Router::isRequestAjax() || !Router::isRequestRouter()) return;
     $db = await self::genDb();
     // Clean up expired sessions
     await $db->queryf(

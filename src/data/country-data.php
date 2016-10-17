@@ -8,7 +8,7 @@ SessionUtils::enforceLogin();
 
 class CountryDataController extends DataController {
   public async function genGenerateData(): Awaitable<void> {
-    $my_team = await Team::genTeam(SessionUtils::sessionTeam());
+    $my_team = await MultiTeam::genTeam(SessionUtils::sessionTeam());
 
     $countries_data = (object) array();
 
@@ -79,14 +79,14 @@ class CountryDataController extends DataController {
 
       // All teams that have completed this level
       $completed_by = array();
-      $completed_level = await Team::genCompletedLevel($level->getId());
+      $completed_level = await MultiTeam::genCompletedLevel($level->getId());
       foreach ($completed_level as $c) {
         array_push($completed_by, $c->getName());
       }
 
       // Who is the first owner of this level
       if ($completed_level) {
-        $owner = await Team::genFirstCapture($level->getId());
+        $owner = await MultiTeam::genFirstCapture($level->getId());
         $owner = $owner->getName();
       } else {
         $owner = 'Uncaptured';

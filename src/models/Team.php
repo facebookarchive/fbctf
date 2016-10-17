@@ -59,7 +59,7 @@ class Team extends Model implements Importable, Exportable {
     return $this->created_ts;
   }
 
-  private static function teamFromRow(Map<string, string> $row): Team {
+  protected static function teamFromRow(Map<string, string> $row): Team {
     return new Team(
       intval(must_have_idx($row, 'id')),
       intval(must_have_idx($row, 'active')),
@@ -589,7 +589,7 @@ class Team extends Model implements Importable, Exportable {
   // Get rank position for a team
   public static async function genMyRank(int $team_id): Awaitable<int> {
     $rank = 1;
-    $leaderboard = await self::genLeaderboard();
+    $leaderboard = await MultiTeam::genLeaderboard();
     foreach ($leaderboard as $team) {
       if ($team_id === $team->getId()) {
         return $rank;

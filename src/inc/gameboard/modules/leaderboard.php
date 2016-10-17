@@ -11,13 +11,13 @@ class LeaderboardModuleController {
     await tr_start();
     $leaderboard_ul = <ul></ul>;
 
-    $my_team = await Team::genTeam(SessionUtils::sessionTeam());
+    $my_team = await MultiTeam::genTeam(SessionUtils::sessionTeam());
     $my_rank = await Team::genMyRank(SessionUtils::sessionTeam());
 
     // If refresing is enabled, do the needful
     $gameboard = await Configuration::gen('gameboard');
     if ($gameboard->getValue() === '1') {
-      $leaders = await Team::genLeaderboard();
+      $leaders = await MultiTeam::genLeaderboard();
       $rank = 1;
       $l_max = (count($leaders) > 5) ? 5 : count($leaders);
       for ($i = 0; $i < $l_max; $i++) {

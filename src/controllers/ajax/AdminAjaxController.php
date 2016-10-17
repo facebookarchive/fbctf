@@ -14,6 +14,7 @@ class AdminAjaxController extends AjaxController {
         'session_id' => FILTER_VALIDATE_INT,
         'cookie' => FILTER_SANITIZE_STRING,
         'data' => FILTER_UNSAFE_RAW,
+        'last_page_access' => FILTER_SANITIZE_STRING,
         'name' => FILTER_UNSAFE_RAW,
         'password' => FILTER_UNSAFE_RAW,
         'admin' => FILTER_VALIDATE_INT,

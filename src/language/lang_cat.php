@@ -453,6 +453,8 @@ $translations = array(
     'Creation Time',
   'Last Access' =>
     'Últim Acces',
+  'Last Page Access' =>
+    'Darrera Pàgina d\'Accés',
   'Data' =>
     'Dades',
   'Sessions' =>

@@ -10,7 +10,7 @@ class ScoresDataController extends DataController {
   public async function genGenerateData(): Awaitable<void> {
     $data = array();
 
-    $leaderboard = await Team::genLeaderboard();
+    $leaderboard = await MultiTeam::genLeaderboard();
     foreach ($leaderboard as $team) {
       $values = array();
       $i = 1;

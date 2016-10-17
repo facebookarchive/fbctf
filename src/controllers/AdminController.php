@@ -205,7 +205,7 @@ class AdminController extends Controller {
     $tokens = await Token::genAllTokens();
     foreach ($tokens as $token) {
       if ($token->getUsed()) {
-        $team = await Team::genTeam($token->getTeamId());
+        $team = await MultiTeam::genTeam($token->getTeamId());
         $token_status =
           <span class="highlighted--red">
             {tr('Used by')} {$team->getName()}
@@ -2973,7 +2973,7 @@ class AdminController extends Controller {
     $all_logos = await Logo::genAllLogos();
     foreach ($all_logos as $logo) {
       $xlink_href = '#icon--badge-'.$logo->getName();
-      $using_logo = await Team::genWhoUses($logo->getName());
+      $using_logo = await MultiTeam::genWhoUses($logo->getName());
       $current_use = (count($using_logo) > 0) ? tr('Yes') : tr('No');
       if ($logo->getEnabled()) {
         $highlighted_action = 'disable_logo';
@@ -3068,7 +3068,7 @@ class AdminController extends Controller {
     $all_sessions = await Session::genAllSessions();
     foreach ($all_sessions as $session) {
       $session_id = 'session_'.strval($session->getId());
-      $team = await Team::genTeam($session->getTeamId());
+      $team = await MultiTeam::genTeam($session->getTeamId());
       $adminsections->appendChild(
         <section class="admin-box section-locked">
           <form class="session_form" name={$session_id}>
@@ -3111,6 +3111,16 @@ class AdminController extends Controller {
                   <span class="highlighted">
                     <label class="admin-label">
                       {time_ago($session->getLastAccessTs())}
+                    </label>
+                  </span>
+                </div>
+              </div>
+              <div class="col col-1-3 col-pad">
+                <div class="form-el el--block-label el--full-text">
+                  <label class="admin-label">{tr('Last Page Access')}:</label>
+                  <span class="highlighted">
+                    <label class="admin-label">
+                      {$session->getLastPageAccess()}
                     </label>
                   </span>
                 </div>
@@ -3167,7 +3177,7 @@ class AdminController extends Controller {
           $log_entry =
             <span class="highlighted--red">{$gamelog->getEntry()}</span>;
         }
-        $team = await Team::genTeam($gamelog->getTeamId());
+        $team = await MultiTeam::genTeam($gamelog->getTeamId());
         $level = await Level::gen($gamelog->getLevelId());
         $country = await Country::gen($level->getEntityId());
         $level_str =

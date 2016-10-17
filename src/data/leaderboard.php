@@ -17,8 +17,8 @@ class LeaderboardDataController extends DataController {
       exit(1);
     }
 
-    $leaders = await Team::genLeaderboard();
-    $my_team = await Team::genTeam(SessionUtils::sessionTeam());
+    $leaders = await MultiTeam::genLeaderboard();
+    $my_team = await MultiTeam::genTeam(SessionUtils::sessionTeam());
     $my_rank = await Team::genMyRank(SessionUtils::sessionTeam());
     $my_team_data = (object) array(
       'badge' => $my_team->getLogo(),

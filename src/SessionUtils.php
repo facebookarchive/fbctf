@@ -54,13 +54,8 @@ class SessionUtils {
   }
 
   public function read(string $cookie): string {
-    $session_exists = \HH\Asio\join(Session::genSessionExist($cookie));
-    if ($session_exists) {
-      $session = \HH\Asio\join(Session::gen($cookie));
-      return $session->getData();
-    } else {
-      return '';
-    }
+    $session = \HH\Asio\join(Session::genSessionDataIfExist($cookie));
+    return $session;
   }
 
   public function write(string $cookie, string $data): bool {
@@ -145,4 +140,5 @@ class SessionUtils {
     /* HH_IGNORE_ERROR[2050] */
     return must_have_string($_SESSION, 'csrf_token');
   }
+
 }

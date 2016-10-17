@@ -9,7 +9,7 @@ SessionUtils::enforceLogin();
 class TeamModuleController {
   public async function genRender(): Awaitable<:xhp> {
     await tr_start();
-    $leaderboard = await Team::genLeaderboard();
+    $leaderboard = await MultiTeam::genLeaderboard();
     $rank = 1;
 
     $list = <ul class="grid-list"></ul>;

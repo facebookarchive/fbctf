@@ -46,7 +46,7 @@ class MapDataController extends DataController {
         } else if ($other_previous_score) {
           $captured_by = 'opponent';
           $completed_by =
-            await Team::genCompletedLevel($country_level->getId());
+            await MultiTeam::genCompletedLevel($country_level->getId());
           $data_captured = '';
           foreach ($completed_by as $c) {
             $data_captured .= ' '.$c->getName();

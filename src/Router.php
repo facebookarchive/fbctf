@@ -84,4 +84,23 @@ class Router {
         throw new NotFoundRedirectException();
     }
   }
+
+  public static function getRequestedPage(): string {
+    $page = idx(Utils::getGET(), 'page') ?: idx(Utils::getGET(), 'p');
+    if (!is_string($page)) {
+      $page = 'index';
+    }
+
+    return strval($page);
+  }
+
+  public static function isRequestAjax(): bool {
+    return Utils::getGET()->get('ajax') === 'true';
+  }
+
+  // Check to see if the request is going through the router
+  public static function isRequestRouter(): bool {
+    if (self::getRequestedPage() == "index") return false;
+    else return true;
+  }
 }

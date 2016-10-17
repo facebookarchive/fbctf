@@ -40,15 +40,15 @@ class ScoreboardModalController extends ModalController {
     $gameboard = await Configuration::gen('gameboard');
     if ($gameboard->getValue() === '1') {
       $rank = 1;
-      $leaderboard = await Team::genLeaderboard();
+      $leaderboard = await MultiTeam::genLeaderboard();
 
       foreach ($leaderboard as $team) {
         $team_id = 'fb-scoreboard--team-'.strval($team->getId());
         $color = '#'.substr(md5($team->getName()), 0, 6).';';
         $style = 'color: '.$color.'; background:'.$color.';';
-        $quiz = await Team::genPointsByType($team->getId(), 'quiz');
-        $flag = await Team::genPointsByType($team->getId(), 'flag');
-        $base = await Team::genPointsByType($team->getId(), 'base');
+        $quiz = await MultiTeam::genPointsByType($team->getId(), 'quiz');
+        $flag = await MultiTeam::genPointsByType($team->getId(), 'flag');
+        $base = await MultiTeam::genPointsByType($team->getId(), 'base');
         $scoreboard_tbody->appendChild(
           <tr>
             <td style="width: 10%;" class="el--radio">

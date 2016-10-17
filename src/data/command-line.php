@@ -48,7 +48,7 @@ class CommandsController extends DataController {
     // List of active teams.
     $teams_results = array();
     $teams_key = "teams";
-    $all_visible_teams = await Team::genAllVisibleTeams();
+    $all_visible_teams = await MultiTeam::genAllVisibleTeams();
     foreach ($all_visible_teams as $team) {
       array_push($teams_results, $team->getName());
     }

@@ -8,7 +8,7 @@ class LeaderboardModuleViewController {
     $leaderboard_ul = <ul></ul>;
 
     $rank = 1;
-    $leaderboard = await Team::genLeaderboard();
+    $leaderboard = await MultiTeam::genLeaderboard();
     foreach ($leaderboard as $team) {
       $xlink_href = '#icon--badge-'.$team->getLogo();
       $leaderboard_ul->appendChild(

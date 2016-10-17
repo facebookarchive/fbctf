@@ -71,7 +71,7 @@ class WorldMapController {
           } else if ($other_previous_score) {
             $map_indicator .= 'captured--opponent';
             $completed_by =
-              await Team::genCompletedLevel($level->getId());
+              await MultiTeam::genCompletedLevel($level->getId());
             $data_captured = '';
             foreach ($completed_by as $c) {
               $data_captured .= ' '.$c->getName();
