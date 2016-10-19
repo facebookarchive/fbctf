@@ -23,7 +23,7 @@ var widgetsList = [
 ];
 Widget.rememberWidgets(widgetsList);
 
-// This will be populated in loadSavedFilterModule
+// This Object will be populated in loadSavedFilterModule
 var filterList = {};
 
 // Capture enter key presses on login and registration forms
