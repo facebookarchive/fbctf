@@ -658,4 +658,12 @@ $translations = array(
     'Skip to play',
   'Powered By Facebook' =>
     'Powered By Facebook',
+  'Active Directory / LDAP' =>
+    'Active Directory / LDAP',
+  'LDAP Server' =>
+    'LDAP Server',
+  'LDAP Port' =>
+    'LDAP Port',
+  'LDAP Domain' =>
+    'LDAP Domain',
 );
