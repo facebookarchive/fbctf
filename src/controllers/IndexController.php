@@ -285,6 +285,13 @@ class IndexController extends Controller {
       $token_field = <div></div>;
     }
 
+    $ldap = await Configuration::gen('ldap');
+    $ldap_domain_suffix = "";
+    if ($ldap->getValue() === '1') {
+      $ldap_domain_suffix = await Configuration::gen('ldap_domain_suffix');
+      $ldap_domain_suffix = $ldap_domain_suffix->getValue();
+    }
+
     $logos_section = await $this->genRenderLogosSelection();
     return
       <main
@@ -315,7 +322,7 @@ class IndexController extends Controller {
                   name="teamname"
                   type="text"
                   maxlength={20}
-                />
+                /> {$ldap_domain_suffix}
               </div>
               <div class="form-el el--text">
                 <label for="">{tr('Password')}</label>
@@ -354,6 +361,13 @@ class IndexController extends Controller {
       $token_field = <div></div>;
     }
 
+    $ldap = await Configuration::gen('ldap');
+    $ldap_domain_suffix = "";
+    if ($ldap->getValue() === '1') {
+      $ldap_domain_suffix = await Configuration::gen('ldap_domain_suffix');
+      $ldap_domain_suffix = $ldap_domain_suffix->getValue();
+    }
+
     $logos_section = await $this->genRenderLogosSelection();
     return
       <main
@@ -380,7 +394,7 @@ class IndexController extends Controller {
                   name="teamname"
                   type="text"
                   maxlength={20}
-                />
+                /> {$ldap_domain_suffix}
               </div>
               <div class="form-el el--text">
                 <label for="">{tr('Password')}</label>
@@ -448,6 +462,12 @@ class IndexController extends Controller {
 
   public async function genRenderLoginContent(): Awaitable<:xhp> {
     $login = await Configuration::gen('login');
+    $ldap = await Configuration::gen('ldap');
+    $ldap_domain_suffix = "";
+    if ($ldap->getValue() === '1') {
+      $ldap_domain_suffix = await Configuration::gen('ldap_domain_suffix');
+      $ldap_domain_suffix = $ldap_domain_suffix->getValue();
+    }
     if ($login->getValue() === '1') {
       $login_team =
         <input
@@ -496,7 +516,7 @@ class IndexController extends Controller {
               <fieldset class="form-set fb-container container--small">
                 <div class="form-el el--text">
                   <label for="">{tr('Team Name')}</label>
-                  {$login_team}
+                  {$login_team} {$ldap_domain_suffix}
                 </div>
                 <div class="form-el el--text">
                   <label for="">{tr('Password')}</label>

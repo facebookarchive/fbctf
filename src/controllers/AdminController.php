@@ -278,6 +278,10 @@ class AdminController extends Controller {
       'login_select' => Configuration::gen('login_select'),
       'login_strongpasswords' => Configuration::gen('login_strongpasswords'),
       'registration_names' => Configuration::gen('registration_names'),
+      'ldap' => Configuration::gen('ldap'),
+      'ldap_server' => Configuration::gen('ldap_server'),
+      'ldap_port' => Configuration::gen('ldap_port'),
+      'ldap_domain_suffix' => Configuration::gen('ldap_domain_suffix'),
       'scoring' => Configuration::gen('scoring'),
       'gameboard' => Configuration::gen('gameboard'),
       'timer' => Configuration::gen('timer'),
@@ -297,6 +301,10 @@ class AdminController extends Controller {
     $login_select = $results['login_select'];
     $login_strongpasswords = $results['login_strongpasswords'];
     $registration_names = $results['registration_names'];
+    $ldap = $results['ldap'];
+    $ldap_server = $results['ldap_server'];
+    $ldap_port = $results['ldap_port'];
+    $ldap_domain_suffix = $results['ldap_domain_suffix'];
     $scoring = $results['scoring'];
     $gameboard = $results['gameboard'];
     $timer = $results['timer'];
@@ -313,6 +321,8 @@ class AdminController extends Controller {
     $login_off = $login->getValue() === '0';
     $login_select_on = $login_select->getValue() === '1';
     $login_select_off = $login_select->getValue() === '0';
+    $ldap_on = $ldap->getValue() === '1';
+    $ldap_off = $ldap->getValue() === '0';
     $strong_passwords_on = $login_strongpasswords->getValue() === '1';
     $strong_passwords_off = $login_strongpasswords->getValue() === '0';
     $registration_names_on = $registration_names->getValue() === '1';
@@ -528,6 +538,61 @@ class AdminController extends Controller {
                           {tr('Off')}
                         </label>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <section class="admin-box">
+                <header class="admin-box-header">
+                  <h3>{tr('Active Directory / LDAP')}</h3>
+                  <div class="admin-section-toggle radio-inline">
+                    <input
+                      type="radio"
+                      name="fb--conf--ldap"
+                      id="fb--conf--ldap--on"
+                      checked={$ldap_on}
+                    />
+                    <label for="fb--conf--ldap--on">{tr('On')}</label>
+                    <input
+                      type="radio"
+                      name="fb--conf--ldap"
+                      id="fb--conf--ldap--off"
+                      checked={$ldap_off}
+                    />
+                    <label for="fb--conf--ldap--off">{tr('Off')}</label>
+                  </div>
+                </header>
+                <div class="fb-column-container">
+                  <div class="col col-pad col-1-4">
+                    <div class="form-el el--block-label el--full-text">
+                      <label>{tr('LDAP Server')}</label>
+                      <input
+                        type="text"
+                        value={$ldap_server->getValue()}
+                        name="fb--conf--ldap_server"
+                      />
+                    </div>
+                  </div>
+                  <div class="col col-pad col-2-4">
+                    <div class="form-el el--block-label">
+                      <label>{tr('LDAP Port')}</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="65535"
+                        value={$ldap_port->getValue()}
+                        name="fb--conf--ldap_port"
+                      />
+                    </div>
+                  </div>
+                  <div class="col col-pad col-3-4">
+                    <div class="form-el el--block-label el--full-text">
+                      <label>{tr('LDAP Domain')}</label>
+                      <input
+                        type="text"
+                        value={$ldap_domain_suffix->getValue()}
+                        name="fb--conf--ldap_domain_suffix"
+                      />
                     </div>
                   </div>
                 </div>

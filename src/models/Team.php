@@ -168,6 +168,25 @@ class Team extends Model implements Importable, Exportable {
       invariant($result->numRows() === 1, 'Expected exactly one result');
       $team = self::teamFromRow($result->mapRows()[0]);
 
+      // Check if ldap is enabled and verify credentials if successful
+      // An exception is admin user, which is verified locally
+      $ldap = await Configuration::gen('ldap');
+      if ($ldap->getValue() === '1' && !$team->getAdmin()) {
+        // Get server information from configuration
+        $ldap_server = await Configuration::gen('ldap_server');
+        $ldap_port = await Configuration::gen('ldap_port');
+        $ldap_domain_suffix = await Configuration::gen('ldap_domain_suffix');
+        $ldapconn = ldap_connect($ldap_server->getValue(), intval($ldap_port->getValue()));
+        if (!$ldapconn)
+          return null;
+        $team_name = trim($team->getName());
+        $bind = ldap_bind($ldapconn, $team_name.$ldap_domain_suffix->getValue(), $password);
+        if (!$bind)
+          return null;
+        //Successful Login via LDAP
+        return $team;
+      }
+
       if (password_verify($password, $team->getPasswordHash())) {
         if (self::regenerateHash($team->getPasswordHash())) {
           $new_hash = self::generateHash($password);
