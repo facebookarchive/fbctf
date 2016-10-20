@@ -1100,11 +1100,11 @@ module.exports = {
     });
 
     // configuration fields
-    $('select,input[type="number"][name^="fb--conf"]').on('change', function() {
+    $('select,input[type="number"][name^="fb--conf"],input[type="text"][name^="fb--conf"]').on('change', function() {
       var $this = $(this);
       var field = $this.attr('name').split('--')[2];
       var value = '';
-      if ($this.attr('type') === 'number') {
+      if ($this.attr('type') === 'number' || $this.attr('type') === 'text') {
         value = $(this)[0].value;
       } else {
         value = $('option:selected', $this)[0].value;
