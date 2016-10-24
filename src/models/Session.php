@@ -52,7 +52,9 @@ class Session extends Model {
     string $cookie,
     string $data,
   ): Awaitable<void> {
-    if (Router::isRequestAjax() || !Router::isRequestRouter()) return;
+    if (Router::isRequestAjax() || !Router::isRequestRouter()) {
+      return;
+    }
     $team_id = self::decodeTeamId($data);
     $db = await self::genDb();
     await $db->queryf(
@@ -125,7 +127,9 @@ class Session extends Model {
     if ($result->numRows() === 1) {
       $session = self::sessionFromRow($result->mapRows()[0]);
       return $session->getData();
-    } else return '';
+    } else {
+      return '';
+    }
   }
 
   // Update the session for a given cookie.
@@ -133,7 +137,9 @@ class Session extends Model {
     string $cookie,
     string $data,
   ): Awaitable<void> {
-    if (Router::isRequestAjax() || !Router::isRequestRouter()) return;
+    if (Router::isRequestAjax() || !Router::isRequestRouter()) {
+      return;
+    }
     $db = await self::genDb();
     await $db->queryf(
       'UPDATE sessions SET last_access_ts = NOW(), data = %s, last_page_access = %s WHERE cookie = %s LIMIT 1',
@@ -163,7 +169,9 @@ class Session extends Model {
 
   // Does cleanup of cookies.
   public static async function genCleanup(int $maxlifetime): Awaitable<void> {
-    if (Router::isRequestAjax() || !Router::isRequestRouter()) return;
+    if (Router::isRequestAjax() || !Router::isRequestRouter()) {
+      return;
+    }
     $db = await self::genDb();
     // Clean up expired sessions
     await $db->queryf(

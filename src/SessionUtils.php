@@ -140,5 +140,4 @@ class SessionUtils {
     /* HH_IGNORE_ERROR[2050] */
     return must_have_string($_SESSION, 'csrf_token');
   }
-
 }

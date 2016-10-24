@@ -323,6 +323,7 @@ class Team extends Model implements Importable, Exportable {
       $password_hash,
       $team_id,
     );
+    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
   }
 
   // Delete team.
@@ -332,6 +333,7 @@ class Team extends Model implements Importable, Exportable {
       'DELETE FROM teams WHERE id = %d AND protected = 0 LIMIT 1',
       $team_id,
     );
+    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
   }
 
   // Enable or disable teams by passing 1 or 0.
@@ -345,6 +347,7 @@ class Team extends Model implements Importable, Exportable {
       $status ? 1 : 0,
       $team_id,
     );
+    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
   }
 
   // Enable or disable all teams by passing 1 or 0.
@@ -354,6 +357,7 @@ class Team extends Model implements Importable, Exportable {
       'UPDATE teams SET active = %d WHERE id > 0 AND protected = 0',
       $status ? 1 : 0,
     );
+    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
   }
 
   // Sets toggles team admin status.
@@ -367,6 +371,7 @@ class Team extends Model implements Importable, Exportable {
       $admin ? 1 : 0,
       $team_id,
     );
+    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
   }
 
   // Enable or disable team visibility by passing 1 or 0.
@@ -380,6 +385,7 @@ class Team extends Model implements Importable, Exportable {
       $visible ? 1 : 0,
       $team_id,
     );
+    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
   }
 
   // Check if a team name is already created.
