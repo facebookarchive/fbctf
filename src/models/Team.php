@@ -561,7 +561,7 @@ class Team extends Model implements Importable, Exportable {
     $db = await self::genDb();
     $result =
       await $db->queryf(
-        'SELECT * FROM teams WHERE id = (SELECT team_id FROM scores_log WHERE level_id = %d ORDER BY ts LIMIT 0,1) AND visible = 1 AND active = 1',
+        'SELECT * FROM teams WHERE id = (SELECT team_id FROM scores_log WHERE level_id = %d AND team_id IN (SELECT id FROM teams WHERE visible = 1 AND active = 1) ORDER BY ts LIMIT 0,1)',
         $level_id,
       );
     return self::teamFromRow($result->mapRows()[0]);
