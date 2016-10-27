@@ -12,9 +12,9 @@ $translations = array(
   'Play' =>
     'Gioca',
   'Welcome to the Facebook Capture the Flag Competition. By clicking "Play," you will be entered into the official CTF challenge. Good luck in your conquest.' =>
-    'Benvenuti alla competizione di Facebook cattura la bandiera. Cliccando su "Gioca" entrerai nella competizione ufficile CTF. Buona fornuta nella tua conquista.',
+    'Benvenuti alla competizione di Facebook "Cattura la bandiera". Cliccando su "Gioca" entrerai nella competizione ufficiale CTF. Buona fortuna nella tua conquista.',
   'Get ready for the CTF to start and access the gameboard now!' =>
-    'Preparati per iniziare la CFT accedi al pannello di gioco ora!',
+    'Preparati per iniziare la CTF. Accedi al pannello di gioco ora!',
   'Gameboard' =>
     'Pannello di gioco',
   'Register Team' =>
@@ -42,31 +42,31 @@ $translations = array(
   'Rule' =>
     'Regole',
   'Cooperation' =>
-    'Cooperazione',
+    'Collaborazione',
   'No cooperation between teams with independent accounts. Sharing of keys or providing revealing hints to other teams is cheating, don’t do it.' =>
-    'Non è permesso la cooperazione tra squadre con account indipendenti. Condividere chiavi o fornire suggerimenti alle altre squadre è barare, non farlo.',
+    'La collaborazione tra squadre con account indipendenti non è permessa. Condividere chiavi o fornire suggerimenti alle altre squadre è barare, non farlo.',
   'Attacking Scoreboard' =>
     'Tabella punti Attacchi',
   'No attacking the competition infrastructure. If bugs or vulns are found, please alert the competition organizers immediately.' =>
-    'Non attaccare le infrastrutture della concorrenza. Se vengono trovati errori o vulnerabilità, si prega di avvisare immediatamente gli organizzatori del concorso.',
+    'Non attaccare le infrastrutture degli avversari. Se vengono trovati errori o vulnerabilità, si prega di avvisare immediatamente gli organizzatori del concorso.',
   'Sabotage' =>
     'Sabotaggi',
   'Absolutely no sabotaging of other competing teams, or in any way hindering their independent progress.' =>
     'Non è assolutamente consentito sabotare le altre squadre in competizione, o in qualche modo ostacolare il loro progresso.',
   'Bruteforcing' =>
-    'Forza Bruta',
+    'Bruteforcing',
   'No brute forcing of challenge flag/ keys against the scoring site.' =>
-    'Non è permesso usare la forza bruta contro il sito dei punteggi al fine di trovare le bandiere/ chiavi',
+    'Non è permesso usare Bruteforcing contro il sito dei punteggi al fine di trovare le bandiere/ chiavi',
   'Denial Of Service' =>
     'Denial Of Service',
   'DoSing the CTF platform or any of the challenges is forbidden.' =>
-    'DDoS contro la piattaforma CTF o contro qualsia competizione è proibita.',
+    'DDoS contro la piattaforma CTF o contro qualsiasi competizione è proibita.',
   'Legal' =>
     'Legale',
   'Disclaimer' =>
     'Disclaimer',
   'By participating in the contest, you agree to release Facebook and its employees, and the hosting organization from any and all liability, claims or actions of any kind whatsoever for injuries, damages or losses to persons and property which may be sustained in connection with the contest. You acknowledge and agree that Facebook et al is not responsible for technical, hardware or software failures, or other errors or problems which may occur in connection with the contest.' =>
-    'Partecipando al concorso, l\'utente accetta di rilasciare Facebook ed i suoi dipendenti, e l\'organizzazione da ogni e qualsiasi responsabilità, pretese o azioni di qualsiasi tipo di lesioni, danni o perdite a persone e beni che possono essere sostenuti in connessione con il concorso. L\'utente prende atto ed accetta che Facebook ed altri non è responsabile per errori tecnici, hardware o software, o altri errori o problemi che possono verificarsi in relazione al concorso.',
+    'Partecipando al concorso, l\'utente accetta di liberare Facebook ed i suoi dipendenti, e l\'organizzazione da ogni e qualsiasi responsabilità, pretese o azioni di qualsiasi tipo di lesioni, danni o perdite a persone e beni che possono essere sostenuti in connessione con il concorso. L\'utente prende atto ed accetta che Facebook ed altri non sono responsabili per errori tecnici, hardware o software, o altri errori o problemi che possono verificarsi in relazione al concorso.',
   'If you have any questions about what is or is not allowed, please ask an organizer.' =>
     'Se avete domande su ciò che è o non è consentito, si prega di chiedere all\'organizzatore.',
   'Have fun!' =>
@@ -88,7 +88,7 @@ $translations = array(
   'Sign Up' =>
     'Registrazione',
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
-    'Registrati per giocare a catturare la bandiera. Una volta registrato, sarai collegato.',
+    'Registrati per giocare a Cattura la Bandiera. Una volta registrato, sarai collegato.',
   'Not Available' =>
     'Non Disponibile',
   'Team Registration will be open soon, stay tuned!' =>
@@ -100,7 +100,7 @@ $translations = array(
   'Team Login' =>
     'Login Squadra',
   'Please login here. If you have not registered, you may do so by clicking "Sign Up" below. ' =>
-    'Effettua il login qui. Se non sei ancora registrato, puoi farlo clicando su "Registrazione" ',
+    'Effettua il login qui. Se non sei ancora registrato, puoi farlo cliccando su "Registrazione"',
   'Team Login will be open soon, stay tuned!' =>
     'Il login delle squadre sarà aperto a breve, resta sintonizzato',
   'ERROR' =>
@@ -110,11 +110,11 @@ $translations = array(
   'Window is too small' =>
     'La finestra è troppo piccola',
   'For the best CTF experience, please make window size bigger.' =>
-    'Per una migliora esperienza della CTF, ingrandisci la dimensione della finestra.',
+    'Per una migliore esperienza, ingrandisci la dimensione della finestra.',
   'Thank you.' =>
     'Grazie.',
   'Logout' =>
-    'Disconettiti',
+    'Disconnettiti',
   'Registration' =>
     'Registrazione',
   'Play CTF' =>
@@ -196,7 +196,7 @@ $translations = array(
   'Off' =>
     'Off',
   'Player Names' =>
-    'Nomi Giocoatori',
+    'Nomi Giocatori',
   'Players Per Team' =>
     'Giocatori per Squadra',
   'Registration Type' =>
@@ -466,7 +466,7 @@ $translations = array(
   'Game Logs Timeline' =>
     'Timeline log di Gioco',
   'End Game' =>
-    'Fine del Gico',
+    'Fine del Gioco',
   'Begin Game' =>
     'Inizia il Gioco',
   'Game Admin' =>
@@ -555,11 +555,11 @@ $translations = array(
   'Error' =>
     'Errore',
   'Sorry your form was not saved. Please correct the all errors and save again.' =>
-    'Sorry your form was not saved. Please correct the all errors and save again.',
+    'Spiacente, il modulo non è stato salvato. Si prega di correggere gli errori e salvare nuovamente.',
   'cancel_' =>
     'cancel_',
   'Are you sure you want to cancel? You have unsaved changes that will be reverted.' =>
-    'Spiacente il modulo non è stato salvato. Si prega di correggere gli errori e salvare nuovamente.',
+    'Sei sicuro di voler annullare? Hai modifiche non salvate che saranno perdute.',
   'choose_logo' =>
     'scegli_logo',
   'captured_' =>
@@ -643,9 +643,9 @@ $translations = array(
   'Click "Nav" to access main navigation links like Rules of Play, Registration, Blog, Jobs & more.' =>
     'clicca su "Nav" per accedere alla navigazione principale come regole del gioco, registrazione, blog, lavori e altro.',
   'Track your competition by clicking "scorboard" to access real-time game statistics and graphs.' =>
-    'Tieni traccia della competizione cliccando su "Tabella punti" per accedere alla statistice e grafici in tempo reale del gioco.',
+    'Tieni traccia della competizione cliccando su "Tabella punti" per accedere alla statistiche e grafici in tempo reale del gioco.',
   'Have fun, be the best and conquer the world.' =>
-    'Buon divertimento, Diventa il migliore e conquista il mondo.',
+    'Buon divertimento, sii il migliore e conquista il mondo.',
   'Game_On' =>
     'Gioco_On',
   'tutorial_' =>
