@@ -1,4 +1,4 @@
-<?hh // strict
+<?hh // strict type
 
 /* HH_IGNORE_ERROR[1002] */
 $translations = array(
