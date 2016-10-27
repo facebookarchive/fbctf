@@ -233,7 +233,7 @@ fi
 
 # Install memcached
 package memcached
-
+# Error: Cannot find module 'ansi-regex' when installing flow-bin
 # Install MySQL
 install_mysql "$P_ROOT"
 
