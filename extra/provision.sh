@@ -276,6 +276,11 @@ if [[ "$MODE" == "prod" ]]; then
     hhvm_performance "$CTF_PATH"
 fi
 
-ok_log 'fbctf deployment is complete! Ready in https://10.10.10.5'
+# Display the final message, depending on the context
+if [[ -d "/vagrant" ]]; then
+  log 'fbctf deployment is complete! Ready in https://10.10.10.5'
+else
+  ok_log 'fbctf deployment is complete!'
+fi
 
 exit 0
