@@ -210,13 +210,13 @@ class Country extends Model {
     return $new_country;
   }
 
-  // Get a country by name.
+  // Get a country by iso_code.
   public static async function genCountry(
     string $country,
   ): Awaitable<Country> {
     $db = await self::genDb();
     $result = await $db->queryf(
-      'SELECT * FROM countries WHERE name = %s LIMIT 1',
+      'SELECT * FROM countries WHERE iso_code = %s LIMIT 1',
       $country,
     );
 
@@ -257,14 +257,14 @@ class Country extends Model {
     );
   }
 
-  // Check if a country already exists, by name.
+  // Check if a country already exists, by iso_code
   public static async function genCheckExists(
     string $country,
   ): Awaitable<bool> {
     $db = await self::genDb();
 
     $result = await $db->queryf(
-      'SELECT COUNT(*) FROM countries WHERE name = %s',
+      'SELECT COUNT(*) FROM countries WHERE iso_code = %s',
       $country,
     );
 
