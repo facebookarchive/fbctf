@@ -250,7 +250,7 @@ composer.phar install
 # Install NPM and grunt
 package npm
 package nodejs-legacy
-npm install
+sudo npm install
 sudo npm install -g grunt
 sudo npm install -g flow-bin
 
