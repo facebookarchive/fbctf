@@ -879,7 +879,11 @@ function changeConfiguration(field, value) {
     field: field,
     value: value
   };
-  sendAdminRequest(conf_data, false);
+  if (field === 'registration_type' || field === 'language') {
+    sendAdminRequest(conf_data, true);
+  }else {
+    sendAdminRequest(conf_data, false);
+  }
 }
 
 function toggleLogo(section) {
@@ -1107,9 +1111,6 @@ module.exports = {
       }
       if (!$(this).hasClass('not_configuration')) {
         changeConfiguration(field, value);
-        if (field === 'registration_type') {
-          location.reload();
-        }
       }
     });
 
