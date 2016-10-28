@@ -121,6 +121,17 @@ Note that the unison script will not sync NPM dependencies, so if you ever need 
 
 This step is not necessary if all development is done on the VM.
 
+
+#### Keep code updated
+
+If you are already running the fbctf platform and want to keep the code up to day, there is an easy way to do that with the provision script.
+For example, the following command will run in a production environment and it will pull master from Github and get it ready to run, from the folder ```/var/www/fbctf```:
+
+```
+./extra/provision.sh -m prod -U -s $PWD -d /var/www/fbctf
+```
+
+
 # Using Docker
 
 [Dockerfile](Dockerfile) is provided, you can use docker to deploy fbctf to both development and production.

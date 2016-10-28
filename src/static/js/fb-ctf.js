@@ -2,6 +2,7 @@
 
 var Index = require('./index');
 var Widget = require('./widget');
+var Filter = require('./filter');
 var Utils = require('./utils');
 var Modal = require('./modal');
 var Slider = require('./slider');
@@ -20,8 +21,10 @@ var widgetsList = [
   'Filter',
   'Game Clock'
 ];
-
 Widget.rememberWidgets(widgetsList);
+
+// This Object will be populated in loadSavedFilterModule
+var filterList = {};
 
 // Capture enter key presses on login and registration forms
 $(document).on('keypress', 'input', function(e) {
@@ -110,6 +113,9 @@ function setupInputListeners() {
   // filter the map based on category
   //
   $(document).on('click', 'input[name=fb--module--filter--category]', function() {
+    var cookieValue = Filter.getFilterName(this.id, filterList);
+    Filter.resetNotMainFilters();
+    Filter.setFilterState(cookieValue, 'on');
     toggleCountryGroup("category", $(this).val());
   });
 
@@ -117,6 +123,9 @@ function setupInputListeners() {
   // filter the map based on status
   //
   $(document).on('click', 'input[name=fb--module--filter--status]', function() {
+    var cookieValue = Filter.getFilterName(this.id, filterList);
+    Filter.resetNotMainFilters();
+    Filter.setFilterState(cookieValue, 'on');
     toggleCountryGroup("status", $(this).val());
   });
 
@@ -124,6 +133,10 @@ function setupInputListeners() {
   // filter the filters
   //
   $(document).on('click', 'input[name=fb--module--filter]', function() {
+    var cookieValue = Filter.getFilterName(this.id, filterList);
+    Filter.resetMainFilters();
+    Filter.setFilterState(cookieValue, 'on');
+
     var filter_type = $(this).val();
     if (filter_type === 'category') {
       $('#status-filter-content').removeClass('active');
@@ -463,8 +476,8 @@ function setupInputListeners() {
         FB_CTF.command_line.init();
 
         // Load initial filters
-        loadFilterModule();
-
+        loadSavedFilterModule();
+        
         // Load initial teams related modules and data
         loadTeamData();
         var loaded = loadTeamsModule();
@@ -484,7 +497,7 @@ function setupInputListeners() {
           loadConfData();
         }, FB_CTF.data.CONF.refreshConf);
 
-        // Countries
+        // Countries and other modules
         setInterval(function() {
           if (FB_CTF.data.CONF.gameboard === '1') {
             // Map
@@ -496,7 +509,7 @@ function setupInputListeners() {
             }
             // Filter
             if (Widget.getWidgetStatus('Filter') === 'open') {
-              loadFilterModule();
+              loadSavedFilterModule();
             }
             // Activity
             if (Widget.getWidgetStatus('Activity') === 'open') {
@@ -529,7 +542,7 @@ function setupInputListeners() {
         // Forcefully refreshing all modules every minute
         setInterval(function() {
           loadAnnouncementsModule();
-          loadFilterModule();
+          loadSavedFilterModule();
           loadActivityModule();
           loadTeamsModule();
           loadLeaderboardModule();
@@ -1341,13 +1354,16 @@ function setupInputListeners() {
     }
 
     /**
-     * load module generic
+     * load module generic, asynchronous
      */
-    function loadModuleGeneric(loadPath, targetSelector) {
+    function loadModuleGeneric(loadPath, targetSelector, success_callback) {
       return $.get(loadPath)
         .done(function(data) {
           var $target = $(targetSelector);
           $target.html(data);
+          if (success_callback) {
+            success_callback();
+          }
         })
         .error(function() {
           console.error("There was a problem retrieving the module.");
@@ -1426,7 +1442,23 @@ function setupInputListeners() {
       var filterModulePath = 'inc/gameboard/modules/filter.php';
       var filterTargetSelector = 'aside[data-module="filter"]';
 
-      return loadModuleGeneric(filterModulePath, filterTargetSelector);
+      return loadModuleGeneric(
+        filterModulePath, 
+        filterTargetSelector, 
+        function() {
+          Filter.rememberFilters(filterList);
+        }
+      );
+    }
+
+    /**
+     * wrapper to load and save/remember the filter module
+     */
+    function loadSavedFilterModule() {
+      // Update variable for all filters to remember them
+      filterList = Filter.detectFilters();
+      // Load filter module
+      return loadFilterModule();
     }
 
     /**

@@ -123,13 +123,13 @@ class Level extends Model implements Importable, Exportable {
     foreach ($elements as $level) {
       $title = must_have_string($level, 'title');
       $type = must_have_string($level, 'type');
-      $entity_name = must_have_string($level, 'entity_name');
+      $entity_iso_code = must_have_string($level, 'entity_iso_code');
       $c = must_have_string($level, 'category');
-      $exist = await self::genAlreadyExist($type, $title, $entity_name);
-      $entity_exist = await Country::genCheckExists($entity_name);
+      $exist = await self::genAlreadyExist($type, $title, $entity_iso_code);
+      $entity_exist = await Country::genCheckExists($entity_iso_code);
       $category_exist = await Category::genCheckExists($c);
       if (!$exist && $entity_exist && $category_exist) {
-        $entity = await Country::genCountry($entity_name);
+        $entity = await Country::genCountry($entity_iso_code);
         $category = await Category::genSingleCategoryByName($c);
         await self::genCreate(
           $type,
@@ -163,7 +163,7 @@ class Level extends Model implements Importable, Exportable {
         'title' => $level->getTitle(),
         'active' => $level->getActive(),
         'description' => $level->getDescription(),
-        'entity_name' => $entity->getName(),
+        'entity_iso_code' => $entity->getIsoCode(),
         'category' => $category->getCategory(),
         'points' => $level->getPoints(),
         'bonus' => $level->getBonus(),
@@ -945,15 +945,15 @@ class Level extends Model implements Importable, Exportable {
   public static async function genAlreadyExist(
     string $type,
     string $title,
-    string $entity_name,
+    string $entity_iso_code,
   ): Awaitable<bool> {
     $db = await self::genDb();
 
     $result = await $db->queryf(
-      'SELECT COUNT(*) FROM levels WHERE type = %s AND title = %s AND entity_id IN (SELECT id FROM countries WHERE name = %s)',
+      'SELECT COUNT(*) FROM levels WHERE type = %s AND title = %s AND entity_id IN (SELECT id FROM countries WHERE iso_code = %s)',
       $type,
       $title,
-      $entity_name,
+      $entity_iso_code,
     );
 
     if ($result->numRows() > 0) {

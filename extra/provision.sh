@@ -12,6 +12,7 @@
 # Arguments for MODE:
 #   dev    Provision will run in development mode. Certificate will be self-signed.
 #   prod   Provision will run in production mode.
+#   update Provision will update fbctf running in the machine.
 #
 # Arguments for TYPE:
 #   self   Provision will use a self-signed SSL certificate that will be generated.
@@ -19,19 +20,21 @@
 #   certbot Provision will generate a SSL certificate using letsencrypt/certbot. More info here: https://certbot.eff.org/
 #
 # Optional Parameters:
+#   -U,      --update      	 Pull from master GitHub branch and sync files to fbctf folder.
 #   -k PATH, --keyfile PATH      Path to supplied SSL key file.
 #   -C PATH, --certfile PATH     Path to supplied SSL certificate pem file.
 #   -D DOMAIN, --domain DOMAIN   Domain for the SSL certificate to be generated using letsencrypt.
 #   -e EMAIL, --email EMAIL      Domain for the SSL certificate to be generated using letsencrypt.
 #   -s PATH, --code PATH         Path to fbctf code.
 #   -d PATH, --destination PATH  Destination path to place the fbctf folder.
-#   --update                     Pull from master GitHub branch and sync files to fbctf folder
 #
 # Examples:
 #   Provision fbctf in development mode:
 #     provision.sh -m dev -s /home/foobar/fbctf -d /var/fbctf
 #   Provision fbctf in production mode using my own certificate:
 #     provision.sh -m prod -c own -k /etc/certs/my.key -C /etc/certs/cert.crt -s /home/foobar/fbctf -d /var/fbctf
+#   Update current fbctf in development mode, having code in /home/foobar/fbctf and running from /var/fbctf:
+#     provision.sh -m dev -U -s /home/foobar/fbctf -d /var/fbctf
 
 # We want the provision script to fail as soon as there are any errors
 set -e
@@ -65,26 +68,29 @@ function usage() {
   printf "\nArguments for MODE:\n"
   printf "  dev \tProvision will run in development mode. Certificate will be self-signed.\n"
   printf "  prod \tProvision will run in production mode.\n"
+  printf "  update \tProvision will update fbctf running in the machine.\n"
   printf "\nArguments for TYPE:\n"
   printf "  self \tProvision will use a self-signed SSL certificate that will be generated.\n"
   printf "  own \tProvision will use the SSL certificate provided by the user.\n"
   printf "  cerbot Provision will generate a SSL certificate using letsencrypt/certbot. More info here: https://certbot.eff.org/\n"
   printf "\nOptional Parameters:\n"
+  printf "  -U,      --update \t\tPull from master GitHub branch and sync files to fbctf folder.\n"
   printf "  -k PATH, --keyfile PATH \tPath to supplied SSL key file.\n"
   printf "  -C PATH, --certfile PATH \tPath to supplied SSL certificate pem file.\n"
   printf "  -D DOMAIN, --domain DOMAIN \tDomain for the SSL certificate to be generated using letsencrypt.\n"
   printf "  -e EMAIL, --email EMAIL \tDomain for the SSL certificate to be generated using letsencrypt.\n"
   printf "  -s PATH, --code PATH \t\tPath to fbctf code. Default is /vagrant\n"
   printf "  -d PATH, --destination PATH \tDestination path to place the fbctf folder. Default is /var/www/fbctf\n"
-  printf "  --update \t\tPull from master GitHub branch and sync files to fbctf folder"
   printf "\nExamples:\n"
   printf "  Provision fbctf in development mode:\n"
   printf "\t%s -m dev -s /home/foobar/fbctf -d /var/fbctf\n" "${0}"
   printf "  Provision fbctf in production mode using my own certificate:\n"
   printf "\t%s -m prod -c own -k /etc/certs/my.key -C /etc/certs/cert.crt -s /home/foobar/fbctf -d /var/fbctf\n" "${0}"
+  printf "  Update current fbctf in development mode, having code in /home/foobar/fbctf and running from /var/fbctf:\n"
+  printf "\t%s -m dev -U -s /home/foobar/fbctf -d /var/fbctf\n" "${0}"
 }
 
-ARGS=$(getopt -n "$0" -o hm:c:k:C:D:e:s:d: -l "help,mode:,cert:,keyfile:,certfile:,domain:,email:,code:,destination:,update,docker" -- "$@")
+ARGS=$(getopt -n "$0" -o hm:c:Uk:C:D:e:s:d: -l "help,mode:,cert:,update,keyfile:,certfile:,domain:,email:,code:,destination:,docker" -- "$@")
 
 eval set -- "$ARGS"
 
@@ -114,6 +120,10 @@ while true; do
         exit 1
       fi
       ;;
+    -U|--update)
+      UPDATE=true
+      shift
+      ;;
     -k|--keyfile)
       KEYFILE=$2
       shift 2
@@ -138,10 +148,6 @@ while true; do
       CTF_PATH=$2
       shift 2
       ;;
-    --update)
-      UPDATE=true
-      shift
-      ;;
     --docker)
       DOCKER=true
       shift
@@ -159,38 +165,42 @@ done
 
 source "$CODE_PATH/extra/lib.sh"
 
+# Install git first
+package git
+
+# Are we just updating a running fbctf?
 if [ "$UPDATE" == true ] ; then
     update_repo "$MODE" "$CODE_PATH" "$CTF_PATH"
     exit 0
 fi
 
-
 AVAILABLE_RAM=`free -mt | grep Total | awk '{print $2}'`
 
 if [ $AVAILABLE_RAM -lt 1024 ]; then
-        echo "[+] FBCTF is likely to fail to install without 1GB or more of RAM."
-        echo "[+] Sleeping for 5 seconds."
-
-        sleep 5
+    log "FBCTF is likely to fail to install without 1GB or more of RAM."
+    log "Sleeping for 5 seconds."
+    sleep 5
 fi
 
-echo "[+] Provisioning in $MODE mode"
-echo "[+] Using $TYPE certificate"
-echo "[+] Source code folder $CODE_PATH"
-echo "[+] Destination folder $CTF_PATH"
+log "Provisioning in $MODE mode"
+log "Using $TYPE certificate"
+log "Source code folder $CODE_PATH"
+log "Destination folder $CTF_PATH"
 
 # We only create a new directory and rsync files over if it's different from the
 # original code path
 if [[ "$CODE_PATH" != "$CTF_PATH" ]]; then
-    echo "[+] Creating code folder $CTF_PATH"
+    log "Creating code folder $CTF_PATH"
     [[ -d "$CTF_PATH" ]] || sudo mkdir -p "$CTF_PATH"
 
-    echo "[+] Copying all CTF code to destination folder"
+    log "Copying all CTF code to destination folder"
     sudo rsync -a --exclude node_modules --exclude vendor "$CODE_PATH/" "$CTF_PATH/"
 
     # This is because sync'ing files is done with unison
     if [[ "$MODE" == "dev" ]]; then
-        echo "[+] Setting permissions"
+        log "Configuring git to ignore permission changes"
+        git --git-dir="$CTF_PATH/" config core.filemode false
+        log "Setting permissions"
         sudo chmod -R 777 "$CTF_PATH/"
     fi
 fi
@@ -240,7 +250,7 @@ composer.phar install
 # Install NPM and grunt
 package npm
 package nodejs-legacy
-npm install
+sudo npm install
 sudo npm install -g grunt
 sudo npm install -g flow-bin
 
@@ -266,6 +276,11 @@ if [[ "$MODE" == "prod" ]]; then
     hhvm_performance "$CTF_PATH"
 fi
 
-ok_log 'fbctf deployment is complete! Ready in https://10.10.10.5'
+# Display the final message, depending on the context
+if [[ -d "/vagrant" ]]; then
+  log 'fbctf deployment is complete! Ready in https://10.10.10.5'
+else
+  ok_log 'fbctf deployment is complete!'
+fi
 
 exit 0
