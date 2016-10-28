@@ -47,10 +47,7 @@ class GameAjaxController extends AjaxController {
           $answer = must_have_string($params, 'answer');
           $check_base = await Level::genCheckBase($level_id);
           $check_status = await Level::genCheckStatus($level_id);
-          $check_answer = await Level::genCheckAnswer(
-            $level_id,
-            $answer,
-          );
+          $check_answer = await Level::genCheckAnswer($level_id, $answer);
           // Check if level is not a base or if level isn't active
           if ($check_base || !$check_status) {
             return Utils::error_response('Failed', 'game');

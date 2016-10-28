@@ -18,7 +18,7 @@ class Db {
     $this->config = parse_ini_file($this->settings_file);
     $options = array(
       'idle_timeout_micros' => 200000,
-      'expiration_policy' => 'IdleTime'
+      'expiration_policy' => 'IdleTime',
     );
     $this->pool = new AsyncMysqlConnectionPool($options);
   }

@@ -36,11 +36,11 @@ class AdminAjaxController extends AjaxController {
           'options' => array('regexp' => '/^[\w\-\.]+$/'),
         ),
         'attachment_file' => FILTER_UNSAFE_RAW,
-        'game_file'   => FILTER_UNSAFE_RAW,
-        'teams_file'  => FILTER_UNSAFE_RAW,
+        'game_file' => FILTER_UNSAFE_RAW,
+        'teams_file' => FILTER_UNSAFE_RAW,
         'levels_file' => FILTER_UNSAFE_RAW,
         'categories_file' => FILTER_UNSAFE_RAW,
-        'logos_file'  => FILTER_UNSAFE_RAW,
+        'logos_file' => FILTER_UNSAFE_RAW,
         'link_id' => FILTER_VALIDATE_INT,
         'link' => FILTER_UNSAFE_RAW,
         'category_id' => FILTER_VALIDATE_INT,
@@ -132,7 +132,7 @@ class AdminAjaxController extends AjaxController {
       'import_teams',
       'import_logos',
       'import_levels',
-      'import_categories'
+      'import_categories',
     );
   }
 

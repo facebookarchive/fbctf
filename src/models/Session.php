@@ -117,7 +117,9 @@ class Session extends Model {
     return intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0;
   }
 
-  public static async function genSessionDataIfExist(string $cookie): Awaitable<string> {
+  public static async function genSessionDataIfExist(
+    string $cookie,
+  ): Awaitable<string> {
     $db = await self::genDb();
     $result = await $db->queryf(
       'SELECT * FROM sessions WHERE cookie = %s LIMIT 1',

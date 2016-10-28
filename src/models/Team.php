@@ -77,21 +77,21 @@ class Team extends Model implements Importable, Exportable {
 
   // Import teams.
   public static async function importAll(
-    array<string, array<string, mixed>> $elements
+    array<string, array<string, mixed>> $elements,
   ): Awaitable<bool> {
     foreach ($elements as $team) {
       $name = must_have_string($team, 'name');
       $exist = await self::genTeamExist($name);
       if (!$exist) {
         $team_id = await self::genCreateAll(
-          (bool)must_have_idx($team, 'active'),
+          (bool) must_have_idx($team, 'active'),
           $name,
           must_have_string($team, 'password_hash'),
           must_have_int($team, 'points'),
           must_have_string($team, 'logo'),
-          (bool)must_have_idx($team, 'admin'),
-          (bool)must_have_idx($team, 'protected'),
-          (bool)must_have_idx($team, 'visible'),
+          (bool) must_have_idx($team, 'admin'),
+          (bool) must_have_idx($team, 'protected'),
+          (bool) must_have_idx($team, 'visible'),
         );
       }
     }
@@ -99,7 +99,8 @@ class Team extends Model implements Importable, Exportable {
   }
 
   // Export teams.
-  public static async function exportAll(): Awaitable<array<string, array<string, mixed>>> {
+  public static async function exportAll(
+  ): Awaitable<array<string, array<string, mixed>>> {
     $all_teams_data = array();
     $all_teams = await self::genAllTeams();
 
@@ -114,13 +115,11 @@ class Team extends Model implements Importable, Exportable {
         'password_hash' => $team->getPasswordHash(),
         'points' => $team->getPoints(),
         'logo' => $team->getLogo(),
-        'data' => $team_data
+        'data' => $team_data,
       );
       array_push($all_teams_data, $one_team);
     }
-    return array(
-      'teams' => $all_teams_data
-    );
+    return array('teams' => $all_teams_data);
   }
 
   // Retrieve how many teams are using one logo.
@@ -257,12 +256,13 @@ class Team extends Model implements Importable, Exportable {
     );
 
     // Return newly created team_id
-    $result = await $db->queryf(
-      'SELECT id FROM teams WHERE name = %s AND password_hash = %s AND logo = %s LIMIT 1',
-      $name,
-      $password_hash,
-      $logo,
-    );
+    $result =
+      await $db->queryf(
+        'SELECT id FROM teams WHERE name = %s AND password_hash = %s AND logo = %s LIMIT 1',
+        $name,
+        $password_hash,
+        $logo,
+      );
 
     invariant($result->numRows() === 1, 'Expected exactly one result');
     return intval($result->mapRows()[0]['id']);

@@ -118,7 +118,7 @@ class Level extends Model implements Importable, Exportable {
 
   // Import levels.
   public static async function importAll(
-    array<string, array<string, mixed>> $elements
+    array<string, array<string, mixed>> $elements,
   ): Awaitable<bool> {
     foreach ($elements as $level) {
       $title = must_have_string($level, 'title');
@@ -151,7 +151,8 @@ class Level extends Model implements Importable, Exportable {
   }
 
   // Export levels.
-  public static async function exportAll(): Awaitable<array<string, array<string, mixed>>> {
+  public static async function exportAll(
+  ): Awaitable<array<string, array<string, mixed>>> {
     $all_levels_data = array();
     $all_levels = await self::genAllLevels();
 
@@ -171,13 +172,11 @@ class Level extends Model implements Importable, Exportable {
         'bonus_fix' => $level->getBonusFix(),
         'flag' => $level->getFlag(),
         'hint' => $level->getHint(),
-        'penalty' => $level->getPenalty()
+        'penalty' => $level->getPenalty(),
       );
       array_push($all_levels_data, $one_level);
     }
-    return array(
-      'levels' => $all_levels_data
-    );
+    return array('levels' => $all_levels_data);
   }
 
   // Check to see if the level is active.
@@ -949,12 +948,13 @@ class Level extends Model implements Importable, Exportable {
   ): Awaitable<bool> {
     $db = await self::genDb();
 
-    $result = await $db->queryf(
-      'SELECT COUNT(*) FROM levels WHERE type = %s AND title = %s AND entity_id IN (SELECT id FROM countries WHERE iso_code = %s)',
-      $type,
-      $title,
-      $entity_iso_code,
-    );
+    $result =
+      await $db->queryf(
+        'SELECT COUNT(*) FROM levels WHERE type = %s AND title = %s AND entity_id IN (SELECT id FROM countries WHERE iso_code = %s)',
+        $type,
+        $title,
+        $entity_iso_code,
+      );
 
     if ($result->numRows() > 0) {
       invariant($result->numRows() === 1, 'Expected exactly one result');

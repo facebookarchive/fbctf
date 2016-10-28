@@ -73,15 +73,15 @@ class Control extends Model {
     $config = await Configuration::gen('game_duration_unit');
     $duration_unit = $config->getValue();
     switch ($duration_unit) {
-    case 'd':
-      $duration = $duration_value * 60 * 60 * 24;
-      break;
-    case 'h':
-      $duration = $duration_value * 60 * 60;
-      break;
-    case 'm':
-      $duration = $duration_value * 60;
-      break;
+      case 'd':
+        $duration = $duration_value * 60 * 60 * 24;
+        break;
+      case 'h':
+        $duration = $duration_value * 60 * 60;
+        break;
+      case 'm':
+        $duration = $duration_value * 60;
+        break;
     }
     $end_ts = $start_ts + $duration;
     await Configuration::genUpdate('end_ts', strval($end_ts));

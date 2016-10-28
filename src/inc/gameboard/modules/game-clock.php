@@ -102,7 +102,13 @@ class ClockModuleController {
           </header>
           <div class="module-content module-scrollable">
             <div class="game-clock fb-numbers">
-              <span class={$clock_days_class}>{$days}</span>:<span class="clock-hours">{$hours}</span>:<span class="clock-minutes">{$minutes}</span>:<span class="clock-seconds">{$seconds}</span><span class="clock-milliseconds" style="display: none;">{$milliseconds}</span>
+              <span class={$clock_days_class}>{$days}</span>:
+              <span class="clock-hours">{$hours}</span>:
+              <span class="clock-minutes">{$minutes}</span>:
+              <span class="clock-seconds">{$seconds}</span>
+              <span class="clock-milliseconds" style="display: none;">
+                {$milliseconds}
+              </span>
             </div>
             <div class="game-progress fb-progress-bar">
               <span class="label label--left">[Start]</span>
@@ -119,7 +125,11 @@ class ClockModuleController {
           </header>
           <div class="module-content module-scrollable">
             <div class="game-clock fb-numbers">
-              <span class="clock-days" style="display: none;">{$days}</span><span class="clock-hours">{$hours}</span>:<span class="clock-minutes">{$minutes}</span>:<span class="clock-seconds">{$seconds}</span>:<span class="clock-milliseconds">{$milliseconds}</span>
+              <span class="clock-days" style="display: none;">{$days}</span>
+              <span class="clock-hours">{$hours}</span>:
+              <span class="clock-minutes">{$minutes}</span>:
+              <span class="clock-seconds">{$seconds}</span>:
+              <span class="clock-milliseconds">{$milliseconds}</span>
             </div>
             <div class="game-progress fb-progress-bar">
               <span class="label label--left">[Start]</span>

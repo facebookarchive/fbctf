@@ -35,7 +35,7 @@ class Category extends Model implements Importable, Exportable {
 
   // Import levels.
   public static async function importAll(
-    array<string, array<string, mixed>> $elements
+    array<string, array<string, mixed>> $elements,
   ): Awaitable<bool> {
     foreach ($elements as $category) {
       $c = must_have_string($category, 'category');
@@ -43,7 +43,7 @@ class Category extends Model implements Importable, Exportable {
       if (!$exist) {
         await self::genCreate(
           $c,
-          (bool)must_have_idx($category, 'protected')
+          (bool) must_have_idx($category, 'protected'),
         );
       }
     }
@@ -51,20 +51,19 @@ class Category extends Model implements Importable, Exportable {
   }
 
   // Export levels.
-  public static async function exportAll(): Awaitable<array<string, array<string, mixed>>> {
+  public static async function exportAll(
+  ): Awaitable<array<string, array<string, mixed>>> {
     $all_categories_data = array();
     $all_categories = await self::genAllCategories();
 
     foreach ($all_categories as $category) {
       $one_category = array(
         'category' => $category->getCategory(),
-        'protected' => $category->getProtected()
+        'protected' => $category->getProtected(),
       );
       array_push($all_categories_data, $one_category);
     }
-    return array(
-      'categories' => $all_categories_data
-    );
+    return array('categories' => $all_categories_data);
   }
 
   // All categories.

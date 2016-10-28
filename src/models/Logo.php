@@ -114,16 +114,16 @@ class Logo extends Model implements Importable, Exportable {
 
   // Import logos.
   public static async function importAll(
-    array<string, array<string, mixed>> $elements
+    array<string, array<string, mixed>> $elements,
   ): Awaitable<bool> {
     foreach ($elements as $logo) {
       $name = must_have_string($logo, 'name');
       $exist = await self::genCheckExists($name);
       if (!$exist) {
         await self::genCreate(
-          (bool)must_have_idx($logo, 'used'),
-          (bool)must_have_idx($logo, 'enabled'),
-          (bool)must_have_idx($logo, 'protected'),
+          (bool) must_have_idx($logo, 'used'),
+          (bool) must_have_idx($logo, 'enabled'),
+          (bool) must_have_idx($logo, 'protected'),
           $name,
           must_have_string($logo, 'logo'),
         );
@@ -133,7 +133,8 @@ class Logo extends Model implements Importable, Exportable {
   }
 
   // Export logos.
-  public static async function exportAll(): Awaitable<array<string, array<string, mixed>>> {
+  public static async function exportAll(
+  ): Awaitable<array<string, array<string, mixed>>> {
     $all_logos_data = array();
     $all_logos = await self::genAllLogos();
 
@@ -143,13 +144,11 @@ class Logo extends Model implements Importable, Exportable {
         'logo' => $logo->getLogo(),
         'used' => $logo->getUsed(),
         'enabled' => $logo->getEnabled(),
-        'protected' => $logo->getProtected()
+        'protected' => $logo->getProtected(),
       );
       array_push($all_logos_data, $one_logo);
     }
-    return array(
-      'logos' => $all_logos_data
-    );
+    return array('logos' => $all_logos_data);
   }
 
   // Create logo.
