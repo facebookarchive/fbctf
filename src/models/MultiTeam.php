@@ -2,10 +2,9 @@
 
 class MultiTeam extends Team {
 
-  const int MC_EXPIRE = 60;
-  const string MC_KEY = 'multiteam:';
+  protected static string $MC_KEY = 'multiteam:';
 
-  private static Map<string, string>
+  protected static Map<string, string>
     $MC_KEYS = Map {
       "ALL_TEAMS" => "all_teams",
       "LEADERBOARD" => "leaderboard_teams",
@@ -16,33 +15,6 @@ class MultiTeam extends Team {
       "TEAMS_BY_LEVEL" => "level_teams",
       "TEAMS_FIRST_CAP" => "capture_teams",
     };
-
-  private static function setMCRecords(string $key, mixed $records): void {
-    $mc = self::getMc();
-    $mc->set(
-      self::MC_KEY.self::$MC_KEYS->get($key),
-      $records,
-      self::MC_EXPIRE,
-    );
-  }
-
-  private static function getMCRecords(string $key): mixed {
-    $mc = self::getMc();
-    $mc_result = $mc->get(self::MC_KEY.self::$MC_KEYS->get($key));
-    /* HH_IGNORE_ERROR[4110] */
-    return $mc_result;
-  }
-
-  public static function invalidateMCRecords(?string $key = null): void {
-    $mc = self::getMc();
-    if (is_null($key)) {
-      foreach (self::$MC_KEYS as $name => $mc_key) {
-        $mc->delete(self::MC_KEY.self::$MC_KEYS->get($mc_key));
-      }
-    } else {
-      $mc->delete(self::MC_KEY.self::$MC_KEYS->get($key));
-    }
-  }
 
   private static async function genTeamArrayFromDB(
     string $query,

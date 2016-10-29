@@ -225,6 +225,7 @@ class Team extends Model implements Importable, Exportable {
         $logo,
       );
 
+    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
     invariant($result->numRows() === 1, 'Expected exactly one result');
     return intval($result->mapRows()[0]['id']);
   }
@@ -264,6 +265,7 @@ class Team extends Model implements Importable, Exportable {
         $logo,
       );
 
+    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
     invariant($result->numRows() === 1, 'Expected exactly one result');
     return intval($result->mapRows()[0]['id']);
   }
@@ -281,6 +283,7 @@ class Team extends Model implements Importable, Exportable {
       $email,
       $team_id,
     );
+    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
   }
 
   // Get a team data.
@@ -310,6 +313,7 @@ class Team extends Model implements Importable, Exportable {
       $points,
       $team_id,
     );
+    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
   }
 
   // Update team password.
@@ -543,12 +547,14 @@ class Team extends Model implements Importable, Exportable {
       'UPDATE teams SET last_score = NOW() WHERE id = %d LIMIT 1',
       $team_id,
     );
+    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
   }
 
   // Set all points to zero for all teams.
   public static async function genResetAllPoints(): Awaitable<void> {
     $db = await self::genDb();
     await $db->queryf('UPDATE teams SET points = 0 WHERE id > 0');
+    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
   }
 
   // Teams total number.
