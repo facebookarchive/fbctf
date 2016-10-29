@@ -103,15 +103,19 @@ class ScoreLog extends Model {
       self::setMCRecords('LEVEL_CAPTURES', new Map($level_captures));
     }
     $level_captures = self::getMCRecords('LEVEL_CAPTURES');
+    /* HH_IGNORE_ERROR[4062] */
     if ($level_captures->contains($level_id)) {
       if ($any_team) {
-        $team_id_key =
+        $team_id_key = /* HH_IGNORE_ERROR[4062] */
           $level_captures->get($level_id)->linearSearch($team_id);
         if ($team_id_key != -1) {
+          /* HH_IGNORE_ERROR[4062] */
           $level_captures->get($level_id)->removeKey($team_id_key);
         }
+        /* HH_IGNORE_ERROR[4062] */
         return intval(count($level_captures->get($level_id))) > 0;
       } else {
+        /* HH_IGNORE_ERROR[4062] */
         return $level_captures->get($level_id)->linearSearch($team_id) != -1;
       }
     } else {
