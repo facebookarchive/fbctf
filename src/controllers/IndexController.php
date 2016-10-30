@@ -551,7 +551,7 @@ class IndexController extends Controller {
     return
       <main role="main" class="fb-main page--login full-height fb-scroll">
         <header class="fb-section-header fb-container">
-          <h1 class="fb-glitch" data-text="{tr('ERROR')}">{tr('ERROR')}</h1>
+          <h1 class="fb-glitch" data-text={tr('ERROR')}>{tr('ERROR')}</h1>
         </header>
         <div class="fb-actionable">
           <h1>¯\_(ツ)_/¯</h1>
