@@ -51,13 +51,6 @@ function repo_osquery() {
   sudo add-apt-repository "deb [arch=amd64] https://osquery-packages.s3.amazonaws.com/trusty trusty main"
 }
 
-function repo_mycli() {
-  log "Adding MyCLI repository keys"
-  curl -s https://packagecloud.io/gpg.key | sudo apt-key add -
-  package apt-transport-https
-  echo "deb https://packagecloud.io/amjith/mycli/ubuntu/ trusty main" | sudo tee -a /etc/apt/sources.list
-}
-
 function install_mysql() {
   local __pwd=$1
 
