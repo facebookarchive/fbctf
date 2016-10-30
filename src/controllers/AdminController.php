@@ -808,6 +808,12 @@ class AdminController extends Controller {
                       data-action="import-game">
                       {tr('Import Full Game')}
                     </button>
+                    <input
+                      class="completely-hidden"
+                      id="import-game_file"
+                      type="file"
+                      name="game_file"
+                    />
                   </div>
                 </div>
               </div>

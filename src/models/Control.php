@@ -119,24 +119,24 @@ class Control extends Model {
   }
 
   public static async function importGame(): Awaitable<bool> {
-    $data_game = self::readJSON('game_file');
-    if ($data_game) {
-      $logos = must_have_idx($data_game, 'logos');
+    $data_game = JSONImporterController::readJSON('game_file');
+    if ($data_game instanceof KeyedContainer) {
+      $logos = array_pop(must_have_idx($data_game, 'logos'));
       $logos_result = await Logo::importAll($logos);
       if (!$logos_result) {
         return false;
       }
-      $teams = must_have_idx($data_game, 'teams');
+      $teams = array_pop(must_have_idx($data_game, 'teams'));
       $teams_result = await Team::importAll($teams);
       if (!$teams_result) {
         return false;
       }
-      $categories = must_have_idx($data_game, 'categories');
+      $categories = array_pop(must_have_idx($data_game, 'categories'));
       $categories_result = await Category::importAll($categories);
       if (!$categories_result) {
         return false;
       }
-      $levels = must_have_idx($data_game, 'levels');
+      $levels = array_pop(must_have_idx($data_game, 'levels'));
       $levels_result = await Level::importAll($levels);
       if (!$levels_result) {
         return false;
@@ -148,7 +148,7 @@ class Control extends Model {
 
   public static async function importTeams(): Awaitable<bool> {
     $data_teams = JSONImporterController::readJSON('teams_file');
-    if ($data_teams) {
+    if ($data_teams instanceof KeyedContainer) {
       $teams = must_have_idx($data_teams, 'teams');
       return await Team::importAll($teams);
     }
@@ -157,7 +157,7 @@ class Control extends Model {
 
   public static async function importLogos(): Awaitable<bool> {
     $data_logos = JSONImporterController::readJSON('logos_file');
-    if ($data_logos) {
+    if ($data_logos instanceof KeyedContainer) {
       $logos = must_have_idx($data_logos, 'logos');
       return await Logo::importAll($logos);
     }
@@ -166,7 +166,7 @@ class Control extends Model {
 
   public static async function importLevels(): Awaitable<bool> {
     $data_levels = JSONImporterController::readJSON('levels_file');
-    if ($data_levels) {
+    if ($data_levels instanceof KeyedContainer) {
       $levels = must_have_idx($data_levels, 'levels');
       return await Level::importAll($levels);
     }
@@ -175,7 +175,7 @@ class Control extends Model {
 
   public static async function importCategories(): Awaitable<bool> {
     $data_categories = JSONImporterController::readJSON('categories_file');
-    if ($data_categories) {
+    if ($data_categories instanceof KeyedContainer) {
       $categories = must_have_idx($data_categories, 'categories');
       return await Category::importAll($categories);
     }

@@ -38,7 +38,7 @@ class Logo extends Model implements Importable, Exportable {
   public static async function genCheckExists(string $name): Awaitable<bool> {
     $all_logos = await self::genAllLogos();
     foreach ($all_logos as $l) {
-      if ($name === $l->getName()) {
+      if ($name === $l->getName() && $l->getEnabled()) {
         return true;
       }
     }
