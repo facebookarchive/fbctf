@@ -146,7 +146,7 @@ class Control extends Model {
         return false;
       }
       $levels = array_pop(must_have_idx($data_game, 'levels'));
-      if (!levels) {
+      if (!$levels) {
         return false;
       }
       $levels_result = await Level::importAll($levels);
