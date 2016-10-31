@@ -79,7 +79,7 @@ class ScoreLog extends Model {
   ): Awaitable<bool> {
     $db = await self::genDb();
     $mc_result = self::getMCRecords('LEVEL_CAPTURES');
-    if ((!$mc_result) || (count($mc_result) === 0) || ($refresh)) {
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $level_captures = Map {};
       $result = await $db->queryf('SELECT level_id, team_id FROM scores_log');
       foreach ($result->mapRows() as $row) {

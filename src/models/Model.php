@@ -3,8 +3,8 @@
 abstract class Model {
   protected static Db $db = MUST_MODIFY;
   protected static Memcached $mc = MUST_MODIFY;
-  protected static string $MC_KEY = 'MUST_MODIFY';
-  protected static int $MC_EXPIRE = 0; //Defaults to indefinite cache life
+  protected static string $MC_KEY = MUST_MODIFY;
+  protected static int $MC_EXPIRE = 0; // Defaults to indefinite cache life
 
   protected static Map<string, string> $MC_KEYS = Map {};
 
@@ -47,7 +47,7 @@ abstract class Model {
 
   public static function invalidateMCRecords(?string $key = null): void {
     $mc = self::getMc();
-    if (is_null($key)) {
+    if ($key === null) {
       foreach (static::$MC_KEYS as $key_name => $mc_key) {
         $mc->delete(static::$MC_KEY.static::$MC_KEYS->get($key_name));
       }

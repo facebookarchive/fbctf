@@ -60,7 +60,7 @@ class GameAjaxController extends AjaxController {
             );
             // Update teams last score
             await Team::genLastScore(SessionUtils::sessionTeam());
-            //Invalidate score cache
+            // Invalidate score cache
             MultiTeam::invalidateMCRecords('ALL_TEAMS');
             MultiTeam::invalidateMCRecords('POINTS_BY_TYPE');
             MultiTeam::invalidateMCRecords('LEADERBOARD');

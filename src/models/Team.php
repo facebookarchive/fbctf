@@ -225,7 +225,7 @@ class Team extends Model implements Importable, Exportable {
         $logo,
       );
 
-    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
     invariant($result->numRows() === 1, 'Expected exactly one result');
     return intval($result->mapRows()[0]['id']);
   }
@@ -265,7 +265,7 @@ class Team extends Model implements Importable, Exportable {
         $logo,
       );
 
-    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
     invariant($result->numRows() === 1, 'Expected exactly one result');
     return intval($result->mapRows()[0]['id']);
   }
@@ -283,7 +283,7 @@ class Team extends Model implements Importable, Exportable {
       $email,
       $team_id,
     );
-    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
   }
 
   // Get a team data.
@@ -313,7 +313,7 @@ class Team extends Model implements Importable, Exportable {
       $points,
       $team_id,
     );
-    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
   }
 
   // Update team password.
@@ -327,7 +327,7 @@ class Team extends Model implements Importable, Exportable {
       $password_hash,
       $team_id,
     );
-    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
   }
 
   // Delete team.
@@ -337,7 +337,7 @@ class Team extends Model implements Importable, Exportable {
       'DELETE FROM teams WHERE id = %d AND protected = 0 LIMIT 1',
       $team_id,
     );
-    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
   }
 
   // Enable or disable teams by passing 1 or 0.
@@ -351,7 +351,7 @@ class Team extends Model implements Importable, Exportable {
       $status ? 1 : 0,
       $team_id,
     );
-    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
   }
 
   // Enable or disable all teams by passing 1 or 0.
@@ -361,7 +361,7 @@ class Team extends Model implements Importable, Exportable {
       'UPDATE teams SET active = %d WHERE id > 0 AND protected = 0',
       $status ? 1 : 0,
     );
-    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
   }
 
   // Sets toggles team admin status.
@@ -375,7 +375,7 @@ class Team extends Model implements Importable, Exportable {
       $admin ? 1 : 0,
       $team_id,
     );
-    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
   }
 
   // Enable or disable team visibility by passing 1 or 0.
@@ -389,7 +389,7 @@ class Team extends Model implements Importable, Exportable {
       $visible ? 1 : 0,
       $team_id,
     );
-    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
   }
 
   // Check if a team name is already created.
@@ -547,14 +547,14 @@ class Team extends Model implements Importable, Exportable {
       'UPDATE teams SET last_score = NOW() WHERE id = %d LIMIT 1',
       $team_id,
     );
-    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
   }
 
   // Set all points to zero for all teams.
   public static async function genResetAllPoints(): Awaitable<void> {
     $db = await self::genDb();
     await $db->queryf('UPDATE teams SET points = 0 WHERE id > 0');
-    MultiTeam::invalidateMCRecords(); //Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
   }
 
   // Teams total number.

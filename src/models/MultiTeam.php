@@ -30,7 +30,7 @@ class MultiTeam extends Team {
     bool $refresh = false,
   ): Awaitable<Map<int, Team>> {
     $mc_result = self::getMCRecords('ALL_TEAMS');
-    if ((!$mc_result) || (count($mc_result) === 0) || ($refresh)) {
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $all_teams = Map {};
       $teams = await self::genTeamArrayFromDB('SELECT * FROM teams');
       foreach ($teams->items() as $team) {
@@ -58,7 +58,7 @@ class MultiTeam extends Team {
     bool $refresh = false,
   ): Awaitable<array<Team>> {
     $mc_result = self::getMCRecords('LEADERBOARD');
-    if ((!$mc_result) || (count($mc_result) === 0) || ($refresh)) {
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $team_leaderboard = array();
       $teams =
         await self::genTeamArrayFromDB(
@@ -80,7 +80,7 @@ class MultiTeam extends Team {
     bool $refresh = false,
   ): Awaitable<int> {
     $mc_result = self::getMCRecords('POINTS_BY_TYPE');
-    if ((!$mc_result) || (count($mc_result) === 0) || ($refresh)) {
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $points_by_type = Map {};
       $teams =
         await self::genTeamArrayFromDB(
@@ -128,7 +128,7 @@ class MultiTeam extends Team {
     bool $refresh = false,
   ): Awaitable<array<Team>> {
     $mc_result = self::getMCRecords('ALL_ACTIVE_TEAMS');
-    if ((!$mc_result) || (count($mc_result) === 0) || ($refresh)) {
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $all_active_teams = array();
       $teams = await self::genTeamArrayFromDB(
         'SELECT * FROM teams WHERE active = 1 ORDER BY id',
@@ -147,7 +147,7 @@ class MultiTeam extends Team {
     bool $refresh = false,
   ): Awaitable<array<Team>> {
     $mc_result = self::getMCRecords('ALL_VISIBLE_TEAMS');
-    if ((!$mc_result) || (count($mc_result) === 0) || ($refresh)) {
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $all_visible_teams = array();
       $teams = await self::genTeamArrayFromDB(
         'SELECT * FROM teams WHERE visible = 1 AND active = 1 ORDER BY id',
@@ -167,7 +167,7 @@ class MultiTeam extends Team {
     bool $refresh = false,
   ): Awaitable<array<Team>> {
     $mc_result = self::getMCRecords('TEAMS_BY_LOGO');
-    if ((!$mc_result) || (count($mc_result) === 0) || ($refresh)) {
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $db = await self::genDb();
       $all_teams = await self::genAllTeamsCache();
       $teams_by_logo = array();
@@ -194,7 +194,7 @@ class MultiTeam extends Team {
     bool $refresh = false,
   ): Awaitable<array<Team>> {
     $mc_result = self::getMCRecords('TEAMS_BY_LEVEL');
-    if ((!$mc_result) || (count($mc_result) === 0) || ($refresh)) {
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $teams_by_completed_level = array();
       $teams =
         await self::genTeamArrayFromDB(
@@ -224,7 +224,7 @@ class MultiTeam extends Team {
     bool $refresh = false,
   ): Awaitable<Team> {
     $mc_result = self::getMCRecords('TEAMS_FIRST_CAP');
-    if ((!$mc_result) || (count($mc_result) === 0) || ($refresh)) {
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $first_team_captured_by_level = array();
       $teams =
         await self::genTeamArrayFromDB(
