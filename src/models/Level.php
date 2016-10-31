@@ -671,7 +671,8 @@ class Level extends Model implements Importable, Exportable {
     if ($type === "flag") {
       return trim($level->getFlag()) === trim($answer); // case sensitive
     } else {
-      return strtoupper(trim($level->getFlag())) === strtoupper(trim($answer)); // case insensitive
+      return
+        strtoupper(trim($level->getFlag())) === strtoupper(trim($answer)); // case insensitive
     }
   }
 
