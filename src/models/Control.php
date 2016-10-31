@@ -120,7 +120,7 @@ class Control extends Model {
 
   public static async function importGame(): Awaitable<bool> {
     $data_game = JSONImporterController::readJSON('game_file');
-    if ($data_game) {
+    if (is_array($data_game)) {
       $logos = array_pop(must_have_idx($data_game, 'logos'));
       if (!$logos) {
         return false;
@@ -160,7 +160,7 @@ class Control extends Model {
 
   public static async function importTeams(): Awaitable<bool> {
     $data_teams = JSONImporterController::readJSON('teams_file');
-    if ($data_teams) {
+    if (is_array($data_teams)) {
       $teams = must_have_idx($data_teams, 'teams');
       return await Team::importAll($teams);
     }
@@ -169,7 +169,7 @@ class Control extends Model {
 
   public static async function importLogos(): Awaitable<bool> {
     $data_logos = JSONImporterController::readJSON('logos_file');
-    if ($data_logos) {
+    if (is_array($data_logos)) {
       $logos = must_have_idx($data_logos, 'logos');
       return await Logo::importAll($logos);
     }
@@ -178,7 +178,7 @@ class Control extends Model {
 
   public static async function importLevels(): Awaitable<bool> {
     $data_levels = JSONImporterController::readJSON('levels_file');
-    if ($data_levels) {
+    if (is_array($data_levels)) {
       $levels = must_have_idx($data_levels, 'levels');
       return await Level::importAll($levels);
     }
@@ -187,7 +187,7 @@ class Control extends Model {
 
   public static async function importCategories(): Awaitable<bool> {
     $data_categories = JSONImporterController::readJSON('categories_file');
-    if ($data_categories) {
+    if (is_array($data_categories)) {
       $categories = must_have_idx($data_categories, 'categories');
       return await Category::importAll($categories);
     }
