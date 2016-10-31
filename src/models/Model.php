@@ -41,7 +41,6 @@ abstract class Model {
   protected static function getMCRecords(string $key): mixed {
     $mc = self::getMc();
     $mc_result = $mc->get(static::$MC_KEY.static::$MC_KEYS->get($key));
-    /* HH_IGNORE_ERROR[4110] */
     return $mc_result;
   }
 

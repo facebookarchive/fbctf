@@ -106,7 +106,7 @@ class ScoreLog extends Model {
     /* HH_IGNORE_ERROR[4062] */
     if ($level_captures->contains($level_id)) {
       if ($any_team) {
-        $team_id_key = /* HH_IGNORE_ERROR[4062] */
+        $team_id_key = /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
           $level_captures->get($level_id)->linearSearch($team_id);
         if ($team_id_key != -1) {
           /* HH_IGNORE_ERROR[4062] */
