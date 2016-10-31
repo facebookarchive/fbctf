@@ -667,7 +667,12 @@ class Level extends Model implements Importable, Exportable {
     string $answer,
   ): Awaitable<bool> {
     $level = await self::gen($level_id);
-    return strtoupper(trim($level->getFlag())) === strtoupper(trim($answer));
+    $type = $level->getType();
+    if ($type === "flag") {
+      return trim($level->getFlag()) === trim($answer); // case sensitive
+    } else {
+      return strtoupper(trim($level->getFlag())) === strtoupper(trim($answer)); // case insensitive
+    }
   }
 
   // Adjust bonus.
