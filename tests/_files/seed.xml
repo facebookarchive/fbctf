@@ -95,6 +95,12 @@
       <value>value</value>
       <value>description</value>
     </row>
+    <row>
+      <value>2</value>
+      <value>language</value>
+      <value>en</value>
+      <value>(String) Language of the system</value></row>
+    </row>
   </table>
   <table name="categories">
     <column>id</column>
