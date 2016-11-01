@@ -4,7 +4,7 @@ class ConfigurationTest extends FBCTFTest {
 
   public function testAllConfiguration(): void {
     $all = HH\Asio\join(Configuration::genAllConfiguration());
-    $this->assertEquals(1, count($all));
+    $this->assertEquals(2, count($all));
 
     $c = $all[0];
     $this->assertEquals(1, $c->getId());
