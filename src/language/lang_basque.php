@@ -437,6 +437,8 @@ $translations = array(
     'Sorkuntza Time',
   'Last Access' =>
     'Azken Access',
+  'Last Page Access' =>
+    'Azken Page Access',
   'Data' =>
     'Datuak',
   'Sessions' =>
