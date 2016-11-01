@@ -99,7 +99,7 @@
       <value>2</value>
       <value>language</value>
       <value>en</value>
-      <value>(String) Language of the system</value></row>
+      <value>(String) Language of the system</value>
     </row>
   </table>
   <table name="categories">
