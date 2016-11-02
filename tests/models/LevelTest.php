@@ -32,11 +32,11 @@ class LevelTest extends FBCTFTest {
       2, // penalty
     ));
 
-    $this->assertEquals(2, $id);
+    $this->assertEquals(4, $id);
     $all = HH\Asio\join(Level::genAllLevels());
     $this->assertEquals(4, count($all));
-    $l = $all[1];
-    $this->assertEquals(2, $l->getId());
+    $l = $all[3];
+    $this->assertEquals(4, $l->getId());
     $this->assertFalse($l->getActive());
     $this->assertEquals('flag', $l->getType());
     $this->assertEquals('title 2', $l->getTitle());
@@ -66,11 +66,11 @@ class LevelTest extends FBCTFTest {
       2, // penalty
     ));
 
-    $this->assertEquals(2, $id);
+    $this->assertEquals(4, $id);
     $all = HH\Asio\join(Level::genAllLevels());
     $this->assertEquals(4, count($all));
-    $l = $all[1];
-    $this->assertEquals(2, $l->getId());
+    $l = $all[3];
+    $this->assertEquals(4, $l->getId());
     $this->assertFalse($l->getActive());
     $this->assertEquals('flag', $l->getType());
     $this->assertEquals('title 2', $l->getTitle());
@@ -173,7 +173,7 @@ class LevelTest extends FBCTFTest {
     $all = HH\Asio\join(Level::genAllBaseLevels());
     $this->assertEquals(1, count($all));
     $all = HH\Asio\join(Level::genAllFlagLevels());
-    $this->assertEquals(0, count($all));
+    $this->assertEquals(1, count($all));
   }
 
   public function testCheckAnswer(): void {
