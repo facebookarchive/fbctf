@@ -178,8 +178,14 @@ class LevelTest extends FBCTFTest {
 
   public function testCheckAnswer(): void {
     $this->assertFalse(HH\Asio\join(Level::genCheckAnswer(1, 'no')));
-    $this->assertFalse(HH\Asio\join(Level::genCheckAnswer(1, 'FLAG')));
     $this->assertTrue(HH\Asio\join(Level::genCheckAnswer(1, 'flag')));
+    $this->assertTrue(HH\Asio\join(Level::genCheckAnswer(1, 'FLAG')));
+    $this->assertFalse(HH\Asio\join(Level::genCheckAnswer(2, 'no')));
+    $this->assertTrue(HH\Asio\join(Level::genCheckAnswer(2, 'quiz')));
+    $this->assertTrue(HH\Asio\join(Level::genCheckAnswer(2, 'QUIZ')));
+    $this->assertFalse(HH\Asio\join(Level::genCheckAnswer(3, 'no')));
+    $this->assertFalse(HH\Asio\join(Level::genCheckAnswer(3, 'FLAG')));
+    $this->assertTrue(HH\Asio\join(Level::genCheckAnswer(3, 'flag')));
   }
 
   public function testAdjustBonus(): void {
