@@ -34,7 +34,7 @@ class LevelTest extends FBCTFTest {
 
     $this->assertEquals(2, $id);
     $all = HH\Asio\join(Level::genAllLevels());
-    $this->assertEquals(2, count($all));
+    $this->assertEquals(4, count($all));
     $l = $all[1];
     $this->assertEquals(2, $l->getId());
     $this->assertFalse($l->getActive());
@@ -68,7 +68,7 @@ class LevelTest extends FBCTFTest {
 
     $this->assertEquals(2, $id);
     $all = HH\Asio\join(Level::genAllLevels());
-    $this->assertEquals(2, count($all));
+    $this->assertEquals(4, count($all));
     $l = $all[1];
     $this->assertEquals(2, $l->getId());
     $this->assertFalse($l->getActive());
@@ -102,7 +102,7 @@ class LevelTest extends FBCTFTest {
     ));
 
     $all = HH\Asio\join(Level::genAllLevels());
-    $this->assertEquals(1, count($all));
+    $this->assertEquals(3, count($all));
     $l = $all[0];
     $this->assertEquals(1, $l->getId());
     $this->assertTrue($l->getActive());
@@ -123,13 +123,13 @@ class LevelTest extends FBCTFTest {
   public function testDelete(): void {
     HH\Asio\join(Level::genDelete(1));
     $all = HH\Asio\join(Level::genAllLevels());
-    $this->assertEquals(0, count($all));
+    $this->assertEquals(2, count($all));
   }
 
   public function testSetStatus(): void {
     HH\Asio\join(Level::genSetStatus(1, false));
     $all = HH\Asio\join(Level::genAllLevels());
-    $this->assertEquals(1, count($all));
+    $this->assertEquals(3, count($all));
     $l = $all[0];
     $this->assertFalse($l->getActive());
   }
@@ -137,7 +137,7 @@ class LevelTest extends FBCTFTest {
   public function testSetStatusType(): void {
     HH\Asio\join(Level::genSetStatusType(false, 'base'));
     $all = HH\Asio\join(Level::genAllLevels());
-    $this->assertEquals(1, count($all));
+    $this->assertEquals(3, count($all));
     $l = $all[0];
     $this->assertEquals('base', $l->getType());
     $this->assertFalse($l->getActive());
@@ -146,7 +146,7 @@ class LevelTest extends FBCTFTest {
   public function testSetStatusAll(): void {
     HH\Asio\join(Level::genSetStatusAll(false, 'base'));
     $all = HH\Asio\join(Level::genAllLevels());
-    $this->assertEquals(1, count($all));
+    $this->assertEquals(3, count($all));
     $l = $all[0];
     $this->assertEquals('base', $l->getType());
     $this->assertFalse($l->getActive());
@@ -154,7 +154,7 @@ class LevelTest extends FBCTFTest {
 
   public function testAllActiveLevels(): void {
     $all = HH\Asio\join(Level::genAllActiveLevels());
-    $this->assertEquals(1, count($all));
+    $this->assertEquals(3, count($all));
   }
 
   public function testAllActiveBases(): void {
@@ -164,12 +164,12 @@ class LevelTest extends FBCTFTest {
 
   public function testAllTypeLevels(): void {
     $all = HH\Asio\join(Level::genAllTypeLevels('flag'));
-    $this->assertEquals(0, count($all));
+    $this->assertEquals(1, count($all));
   }
 
   public function testAll(): void {
     $all = HH\Asio\join(Level::genAllQuizLevels());
-    $this->assertEquals(0, count($all));
+    $this->assertEquals(1, count($all));
     $all = HH\Asio\join(Level::genAllBaseLevels());
     $this->assertEquals(1, count($all));
     $all = HH\Asio\join(Level::genAllFlagLevels());
