@@ -44,7 +44,7 @@ $translations = array(
   'Cooperation' =>
     'Cooperación',
   'No cooperation between teams with independent accounts. Sharing of keys or providing revealing hints to other teams is cheating, don’t do it.' =>
-    'Los quipos con cuentas independientes no pueden cooperar entre sí. Compartir claves o pistas con otros equipos es hacer trampa, no lo hagas.',
+    'Los equipos con cuentas independientes no pueden cooperar entre sí. Compartir claves o pistas con otros equipos es hacer trampa, no lo hagas.',
   'Attacking Scoreboard' =>
     'Puntuaciones de Ataque',
   'No attacking the competition infrastructure. If bugs or vulns are found, please alert the competition organizers immediately.' =>
