@@ -277,6 +277,17 @@ $module-margin: 20px;
 
     // data-module = leaderboard
 
+    // announcements module
+    &[data-module="announcements"] {
+      .activity-stream li {
+        position: relative;
+        padding: 3px 0 3px 5px;
+        border-bottom: 1px solid $teal-blue;
+      }
+    }
+    
+    // data-module = announcements
+
     // activity module
     &[data-module="activity"] {
       .activity-stream li {
