@@ -15,6 +15,7 @@ class AnnouncementsModuleController {
       foreach ($announcements as $announcement) {
         $announcements_ul->appendChild(
           <li>
+            [ {time_ago($announcement->getTs())} ]
             <span class="announcement-highlight">
               {$announcement->getAnnouncement()}
             </span>
