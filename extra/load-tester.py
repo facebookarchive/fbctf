@@ -1,12 +1,25 @@
 #!/usr/bin/env python2
 
+# Script to simulate load testing for the fbctf platform.
+# By default, it uses the IP for the dev fbctf vagrant.
+#
+# Usage: ./load-tester.py platform_IP-hostname
+#
+# Example: ./load-tester.py 1.2.3.4
+
 import requests
 import grequests
 import json
 import time
+import sys
 
 interval = 1
-url = 'https://10.10.10.5'
+
+hostname = '10.10.10.5'
+if len(sys.argv) == 2:
+    hostname = sys.argv[1]
+
+url = 'https://' + hostname
 
 verify = False
 
