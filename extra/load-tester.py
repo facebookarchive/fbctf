@@ -3,7 +3,7 @@
 # Script to simulate load testing for the fbctf platform.
 # By default, it uses the IP for the dev fbctf vagrant.
 #
-# Usage: ./load-tester.py platform_IP-hostname
+# Usage: ./load-tester.py [platform_IP-hostname]
 #
 # Example: ./load-tester.py 1.2.3.4
 
