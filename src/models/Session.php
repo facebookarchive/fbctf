@@ -411,6 +411,7 @@ class Session extends Model {
 
   private static function setMCSession(string $key, mixed $records): void {
     $mc = self::getMc();
+    $key = str_replace(' ', '', $key);
     $mc->set(
       self::$MC_KEY.self::$MC_KEYS->get("SESSIONS").$key,
       $records,
@@ -420,6 +421,7 @@ class Session extends Model {
 
   private static function getMCSession(string $key): mixed {
     $mc = self::getMc();
+    $key = str_replace(' ', '', $key);
     $mc_result =
       $mc->get(static::$MC_KEY.static::$MC_KEYS->get("SESSIONS").$key);
     return $mc_result;
@@ -427,6 +429,7 @@ class Session extends Model {
 
   public static function invalidateMCSessions(?string $key = null): void {
     $mc = self::getMc();
+    $key = str_replace(' ', '', $key);
     /* HH_IGNORE_ERROR[4053]: HHVM doesn't beleive there is a getAllKeys() method, there is... */
     $mc_keys = $mc->getAllKeys();
     if ($key === null) {
