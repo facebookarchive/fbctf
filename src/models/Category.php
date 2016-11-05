@@ -1,6 +1,15 @@
 <?hh // strict
 
 class Category extends Model implements Importable, Exportable {
+
+  protected static string $MC_KEY = 'categories:';
+
+  protected static Map<string, string>
+    $MC_KEYS = Map {
+      "ALL_CATEGORIES" => "categories",
+      "CATEGORIES" => "categories_id",
+    };
+
   private function __construct(
     private int $id,
     private string $category,
@@ -67,16 +76,22 @@ class Category extends Model implements Importable, Exportable {
   }
 
   // All categories.
-  public static async function genAllCategories(): Awaitable<array<Category>> {
-    $db = await self::genDb();
-
-    $result = await $db->queryf('SELECT * FROM categories');
-
-    $categories = array();
-    foreach ($result->mapRows() as $row) {
-      $categories[] = self::categoryFromRow($row);
+  public static async function genAllCategories(
+    bool $refresh = false,
+  ): Awaitable<array<Category>> {
+    $mc_result = self::getMCRecords('ALL_CATEGORIES');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $categories = array();
+      $result = await $db->queryf('SELECT * FROM categories');
+      foreach ($result->mapRows() as $row) {
+        $categories[] = self::categoryFromRow($row);
+      }
+      self::setMCRecords('ALL_CATEGORIES', $categories);
     }
+    $categories = self::getMCRecords('ALL_CATEGORIES');
 
+    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
     return $categories;
   }
 
@@ -105,6 +120,7 @@ class Category extends Model implements Importable, Exportable {
       'DELETE FROM categories WHERE id = %d AND id NOT IN (SELECT category_id FROM levels) AND protected = 0 LIMIT 1',
       $category_id,
     );
+    self::invalidateMCRecords(); // Invalidate Memcached Category data.
   }
 
   // Create category.
@@ -128,6 +144,7 @@ class Category extends Model implements Importable, Exportable {
     );
 
     invariant($result->numRows() === 1, 'Expected exactly one result');
+    self::invalidateMCRecords(); // Invalidate Memcached Category data.
     return intval($result->mapRows()[0]['id']);
   }
 
@@ -142,23 +159,39 @@ class Category extends Model implements Importable, Exportable {
       $category,
       $category_id,
     );
+    self::invalidateMCRecords(); // Invalidate Memcached Category data.
   }
 
   // Get category by id.
+  /* HH_IGNORE_ERROR[4110]: HHVM is concerned that the category might not be present, this is verified by the caller */
   public static async function genSingleCategory(
     int $category_id,
+    bool $refresh = false,
   ): Awaitable<Category> {
-    $db = await self::genDb();
+    $mc_result = self::getMCRecords('CATEGORIES');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $categories = Map {};
+      $result = await $db->queryf('SELECT * FROM categories');
+      foreach ($result->mapRows() as $row) {
+        $categories->add(
+          Pair {intval($row->get("id")), self::categoryFromRow($row)},
+        );
+      }
+      self::setMCRecords('CATEGORIES', $categories);
+    }
+    $categories = self::getMCRecords('CATEGORIES');
 
-    $result = await $db->queryf(
-      'SELECT * FROM categories WHERE id = %d LIMIT 1',
-      $category_id,
-    );
-
-    invariant($result->numRows() === 1, 'Expected exactly one result');
-    $category = self::categoryFromRow($result->mapRows()[0]);
-
-    return $category;
+    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    if ($categories->contains($category_id)) {
+      /* HH_IGNORE_ERROR[4062] */
+      return $categories->get($category_id);
+    } else {
+      invariant(
+        /* HH_IGNORE_ERROR[4062] */ $categories->contains($category_id),
+        'Category doesn\'t exist in cache',
+      );
+    }
   }
 
   // Get category by name.
