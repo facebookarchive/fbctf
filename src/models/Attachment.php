@@ -10,7 +10,7 @@ class Attachment extends Model {
     $MC_KEYS = Map {
       "LEVELS_COUNT" => "attachment_levels_count",
       "LEVEL_ATTACHMENTS" => "attachment_levels",
-      "ALL_ATTACHMENTS" => "attachments_by_id",
+      "ATTACHMENTS" => "attachments_by_id",
     };
 
   private function __construct(
