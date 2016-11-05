@@ -1,6 +1,12 @@
 <?hh // strict
 
 class Link extends Model {
+
+  protected static string $MC_KEY = 'links:';
+
+  protected static Map<string, string>
+    $MC_KEYS = Map {"LEVELS_COUNT" => "link_levels_count"};
+
   private function __construct(
     private int $id,
     private int $levelId,
@@ -30,6 +36,7 @@ class Link extends Model {
       $link,
       $level_id,
     );
+    self::invalidateMCRecords(); // Invalidate Memcached Links data.
   }
 
   // Modify existing link.
@@ -45,12 +52,14 @@ class Link extends Model {
       $level_id,
       $link_id,
     );
+    self::invalidateMCRecords(); // Invalidate Memcached Links data.
   }
 
   // Delete existing link.
   public static async function genDelete(int $link_id): Awaitable<void> {
     $db = await self::genDb();
     await $db->queryf('DELETE FROM links WHERE id = %d LIMIT 1', $link_id);
+    self::invalidateMCRecords(); // Invalidate Memcached Links data.
   }
 
   // Get all links for a given level.
@@ -83,15 +92,34 @@ class Link extends Model {
   }
 
   // Check if a level has links.
-  public static async function genHasLinks(int $level_id): Awaitable<bool> {
-    $db = await self::genDb();
-    $result = await $db->queryf(
-      'SELECT COUNT(*) FROM links WHERE level_id = %d',
-      $level_id,
-    );
+  public static async function genHasLinks(
+    int $level_id,
+    bool $refresh = false,
+  ): Awaitable<bool> {
+    $mc_result = self::getMCRecords('LEVELS_COUNT');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $attachment_count = Map {};
+      $result =
+        await $db->queryf(
+          'SELECT levels.id as level_id, COUNT(links.id) as count FROM levels LEFT JOIN links ON levels.id = links.level_id GROUP BY levels.id',
+        );
+      foreach ($result->mapRows() as $row) {
+        $attachment_count->add(
+          Pair {intval($row->get("level_id")), intval($row->get("count"))},
+        );
+      }
+      self::setMCRecords('LEVELS_COUNT', $attachment_count);
+    }
+    $attachment_count = self::getMCRecords('LEVELS_COUNT');
 
-    invariant($result->numRows() === 1, 'Expected exactly one result');
-    return intval($result->mapRows()[0]['COUNT(*)']) > 0;
+    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    if ($attachment_count->contains($level_id)) {
+      /* HH_IGNORE_ERROR[4062]: */
+      return intval($attachment_count->get($level_id)) > 0;
+    } else {
+      return false;
+    }
   }
 
   private static function linkFromRow(Map<string, string> $row): Link {
