@@ -60,13 +60,6 @@ class GameAjaxController extends AjaxController {
             );
             // Update teams last score
             await Team::genLastScore(SessionUtils::sessionTeam());
-            // Invalidate score cache
-            MultiTeam::invalidateMCRecords('ALL_TEAMS');
-            MultiTeam::invalidateMCRecords('POINTS_BY_TYPE');
-            MultiTeam::invalidateMCRecords('LEADERBOARD');
-            MultiTeam::invalidateMCRecords('TEAMS_BY_LEVEL');
-            MultiTeam::invalidateMCRecords('TEAMS_FIRST_CAP');
-            ScoreLog::invalidateMCRecords('LEVEL_CAPTURES');
             return Utils::ok_response('Success', 'game');
           } else {
             await FailureLog::genLogFailedScore(
@@ -85,6 +78,9 @@ class GameAjaxController extends AjaxController {
           SessionUtils::sessionTeam(),
         );
         if ($requested_hint !== null) {
+          MultiTeam::invalidateMCRecords('ALL_TEAMS'); // Invalidate Memcached MultiTeam data.
+          MultiTeam::invalidateMCRecords('POINTS_BY_TYPE'); // Invalidate Memcached MultiTeam data.
+          MultiTeam::invalidateMCRecords('LEADERBOARD'); // Invalidate Memcached MultiTeam data.
           return Utils::hint_response($requested_hint, 'OK');
         } else {
           return Utils::hint_response('', 'ERROR');
