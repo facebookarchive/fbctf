@@ -25,6 +25,7 @@ class Router {
     string $page,
     string $modal,
   ): Awaitable<:xhp> {
+    SessionUtils::sessionStart();
     switch ($page) {
       case 'action':
         return await (new ActionModalController())->genRender($modal);
@@ -96,6 +97,10 @@ class Router {
 
   public static function isRequestAjax(): bool {
     return Utils::getGET()->get('ajax') === 'true';
+  }
+
+  public static function isRequestModal(): bool {
+    return Utils::getGET()->get('modal') !== null;
   }
 
   // Check to see if the request is going through the router
