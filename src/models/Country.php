@@ -2,12 +2,17 @@
 
 class Country extends Model {
 
-  const string MC_KEY_ALL_COUNTRIES = 'all_countries';
-  const string MC_KEY_ALL_COUNTRIES_FOR_MAP = 'all_countries_for_map';
-  const string
-    MC_KEY_ALL_ENABLED_COUNTRIES = 'all_enabled_countries_for_map';
-  const string
-    MC_KEY_ALL_ENABLED_COUNTRIES_FOR_MAP = 'all_enabled_countries';
+  protected static string $MC_KEY = 'country:';
+
+  protected static Map<string, string>
+    $MC_KEYS = Map {
+      "ALL_COUNTRIES" => "all_countries",
+      "ALL_COUNTRIES_BY_ID" => "all_countries_by_id",
+      "ALL_COUNTRIES_FOR_MAP" => "all_countries_for_map",
+      "ALL_ENABLED_COUNTRIES" => "all_enabled_countries",
+      "ALL_ENABLED_COUNTRIES_FOR_MAP" => "all_enabled_countries_for_map",
+      "ALL_AVAILABLE_COUNTRIES" => "ALL_AVAILABLE_COUNTRIES",
+    };
 
   private function __construct(
     private int $id,
@@ -57,7 +62,7 @@ class Country extends Model {
       'UPDATE countries SET used = 0 WHERE id NOT IN (SELECT entity_id FROM levels)',
     );
 
-    await self::genDeleteAllMemcacheKeys();
+    self::invalidateMCRecords(); // Invalidate Memcached Country data.
   }
 
   // Enable or disable a country
@@ -72,7 +77,7 @@ class Country extends Model {
       $country_id,
     );
 
-    await self::genDeleteAllMemcacheKeys();
+    self::invalidateMCRecords(); // Invalidate Memcached Country data.
   }
 
   // Set the used flag for a country
@@ -87,31 +92,28 @@ class Country extends Model {
       $country_id,
     );
 
-    await self::genDeleteAllMemcacheKeys();
+    self::invalidateMCRecords(); // Invalidate Memcached Country data.
   }
 
   private static async function genAll(
     string $sql,
-    string $mcKey,
   ): Awaitable<array<Country>> {
-    $mc = self::getMc();
-    $mc_result = $mc->get($mcKey);
+    $db = await self::genDb();
+    $all_countries = Map {};
+    /* HH_IGNORE_ERROR[4110] */
+    /* HH_IGNORE_ERROR[4027]: This is safe not being a literal string */
+    $db_result = await $db->queryf($sql);
+    $rows = $db_result->mapRows();
 
-    if ($mc_result) {
-      $rows = $mc_result;
-    } else {
-      $db = await self::genDb();
-      /* HH_IGNORE_ERROR[4110] */
-      /* HH_IGNORE_ERROR[4027] This is safe not being a literal string */
-      $db_result = await $db->queryf($sql);
-      $rows = array_map($map ==> $map->toArray(), $db_result->mapRows());
-      $mc->set($mcKey, $rows);
+    foreach ($rows as $row) {
+      $all_countries->add(
+        Pair {intval($row->get("id")), self::countryFromRow($row)},
+      );
     }
 
     $countries = array();
-    foreach ($rows as $row) {
-      $countries[] = await self::countryFromRow($row);
-    }
+    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    $countries = $all_countries->toValuesArray();
 
     usort(
       $countries,
@@ -123,91 +125,107 @@ class Country extends Model {
     return $countries;
   }
 
-  public static async function genAllCountries(): Awaitable<array<Country>> {
-    return await self::genAll(
-      'SELECT * FROM countries ORDER BY iso_code',
-      self::MC_KEY_ALL_COUNTRIES,
-    );
+  public static async function genAllCountries(
+    bool $refresh = false,
+  ): Awaitable<array<Country>> {
+    $mc_result = self::getMCRecords('ALL_COUNTRIES');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $all_countries =
+        await self::genAll('SELECT * FROM countries ORDER BY iso_code');
+      self::setMCRecords('ALL_COUNTRIES', $all_countries);
+    }
+    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    return self::getMCRecords('ALL_COUNTRIES');
   }
 
   public static async function genAllCountriesForMap(
+    bool $refresh = false,
   ): Awaitable<array<Country>> {
-    return await self::genAll(
-      'SELECT * FROM countries ORDER BY CHAR_LENGTH(d)',
-      self::MC_KEY_ALL_COUNTRIES_FOR_MAP,
-    );
+    $mc_result = self::getMCRecords('ALL_COUNTRIES_FOR_MAP');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $all_countries =
+        await self::genAll('SELECT * FROM countries ORDER BY CHAR_LENGTH(d)');
+      self::setMCRecords('ALL_COUNTRIES_FOR_MAP', $all_countries);
+    }
+    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    return self::getMCRecords('ALL_COUNTRIES_FOR_MAP');
   }
 
   public static async function genAllEnabledCountries(
+    bool $refresh = false,
   ): Awaitable<array<Country>> {
-    return await self::genAll(
-      'SELECT * FROM countries WHERE enabled = 1',
-      self::MC_KEY_ALL_ENABLED_COUNTRIES,
-    );
+    $mc_result = self::getMCRecords('ALL_ENABLED_COUNTRIES');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $all_countries =
+        await self::genAll('SELECT * FROM countries WHERE enabled = 1');
+      self::setMCRecords('ALL_ENABLED_COUNTRIES', $all_countries);
+    }
+    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    return self::getMCRecords('ALL_ENABLED_COUNTRIES');
   }
 
   // All enabled countries. The weird sorting is because SVG lack of z-index
   // and things looking like shit in the map. See issue #20.
   public static async function genAllEnabledCountriesForMap(
+    bool $refresh = false,
   ): Awaitable<array<Country>> {
-    return await self::genAll(
-      'SELECT * FROM countries WHERE enabled = 1 ORDER BY CHAR_LENGTH(d)',
-      self::MC_KEY_ALL_ENABLED_COUNTRIES_FOR_MAP,
-    );
+    $mc_result = self::getMCRecords('ALL_ENABLED_COUNTRIES_FOR_MAP');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $all_countries = await self::genAll(
+        'SELECT * FROM countries WHERE enabled = 1 ORDER BY CHAR_LENGTH(d)',
+      );
+      self::setMCRecords('ALL_ENABLED_COUNTRIES_FOR_MAP', $all_countries);
+    }
+    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    return self::getMCRecords('ALL_ENABLED_COUNTRIES_FOR_MAP');
   }
 
   // All enabled and unused countries
   public static async function genAllAvailableCountries(
+    bool $refresh = false,
   ): Awaitable<array<Country>> {
-    $db = await self::genDb();
-
-    $result = await $db->queryf(
-      'SELECT * FROM countries WHERE enabled = 1 AND used = 0',
-    );
-
-    $countries = array();
-    foreach ($result->mapRows() as $row) {
-      $countries[] = await self::countryFromRow($row->toArray());
+    $mc_result = self::getMCRecords('ALL_AVAILABLE_COUNTRIES');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $all_countries = await self::genAll(
+        'SELECT * FROM countries WHERE enabled = 1 AND used = 0',
+      );
+      self::setMCRecords('ALL_AVAILABLE_COUNTRIES', $all_countries);
     }
-
-    usort(
-      $countries,
-      function($a, $b) {
-        return strcmp($a->name, $b->name);
-      },
-    );
-
-    return $countries;
+    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    return self::getMCRecords('ALL_AVAILABLE_COUNTRIES');
   }
 
   // Check if country is in an active level
   public static async function genIsActiveLevel(
     int $country_id,
   ): Awaitable<bool> {
-    $db = await self::genDb();
-
-    $result = await $db->queryf(
-      'SELECT COUNT(*) FROM levels WHERE entity_id = %d AND active = 1',
-      $country_id,
-    );
-
-    invariant($result->numRows() === 1, 'Expected exactly one result');
-    return intval(firstx($result->mapRows())['COUNT(*)']) > 0;
+    return Level::genWhoUses($country_id) != null;
   }
 
   // Get a country by id.
-  public static async function gen(int $country_id): Awaitable<Country> {
-    $db = await self::genDb();
-
-    $result = await $db->queryf(
-      'SELECT * FROM countries WHERE id = %d LIMIT 1',
-      $country_id,
-    );
-
-    invariant($result->numRows() === 1, 'Expected exactly one result');
-    $new_country =
-      await self::countryFromRow(firstx($result->mapRows())->toArray());
-    return $new_country;
+  /* HH_IGNORE_ERROR[4110]: HHVM is concerned that the dountry might not be present, this is verified by the caller */
+  public static async function gen(
+    int $country_id,
+    bool $refresh = false,
+  ): Awaitable<Country> {
+    $mc_result = self::getMCRecords('ALL_COUNTRIES_BY_ID');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $all_countries = Map {};
+      $result = await $db->queryf('SELECT * FROM countries ORDER BY id');
+      foreach ($result->mapRows() as $row) {
+        $all_countries->add(
+          Pair {intval($row->get("id")), self::countryFromRow($row)},
+        );
+      }
+      self::setMCRecords('ALL_COUNTRIES_BY_ID', $all_countries);
+    }
+    $countries = self::getMCRecords('ALL_COUNTRIES_BY_ID');
+    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    if ($countries->contains($country_id)) {
+      /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+      return $countries->get($country_id);
+    }
   }
 
   // Get a country by iso_code.
@@ -221,7 +239,8 @@ class Country extends Model {
     );
 
     invariant($result->numRows() === 1, 'Expected exactly one result');
-    return await self::countryFromRow(firstx($result->mapRows())->toArray());
+    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    return self::countryFromRow($result->mapRows());
   }
 
   // Get a random enabled, unused country ID
@@ -237,10 +256,8 @@ class Country extends Model {
     return intval(firstx($result->mapRows())['id']);
   }
 
-  private static async function countryFromRow(
-    array<string, string> $row,
-  ): Awaitable<Country> {
-    $config = await Configuration::gen('language');
+  private static function countryFromRow(Map<string, string> $row): Country {
+    $config = \HH\Asio\join(Configuration::gen('language'));
     $language = $config->getValue();
     $translated_name = locale_get_display_region(
       '-'.must_have_idx($row, 'iso_code'),
@@ -276,11 +293,4 @@ class Country extends Model {
     }
   }
 
-  private static async function genDeleteAllMemcacheKeys(): Awaitable<void> {
-    $mc = self::getMc();
-    $mc->delete(self::MC_KEY_ALL_COUNTRIES);
-    $mc->delete(self::MC_KEY_ALL_COUNTRIES_FOR_MAP);
-    $mc->delete(self::MC_KEY_ALL_ENABLED_COUNTRIES);
-    $mc->delete(self::MC_KEY_ALL_ENABLED_COUNTRIES_FOR_MAP);
-  }
 }

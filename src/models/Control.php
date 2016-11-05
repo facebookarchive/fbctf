@@ -1,6 +1,12 @@
 <?hh // strict
 
 class Control extends Model {
+
+  protected static string $MC_KEY = 'control:';
+
+  protected static Map<string, string>
+    $MC_KEYS = Map {"ALL_ACTIVITY" => "activity"};
+
   public static async function genStartScriptLog(
     int $pid,
     string $name,
@@ -246,13 +252,19 @@ class Control extends Model {
   }
 
   public static async function genAllActivity(
+    bool $refresh = false,
   ): Awaitable<Vector<Map<string, string>>> {
-    $db = await self::genDb();
-    $result =
-      await $db->queryf(
-        'SELECT scores_log.ts AS time, teams.name AS team, countries.iso_code AS country, scores_log.team_id AS team_id FROM scores_log, levels, teams, countries WHERE scores_log.level_id = levels.id AND levels.entity_id = countries.id AND scores_log.team_id = teams.id AND teams.visible = 1 ORDER BY time DESC LIMIT 50',
-      );
-    return $result->mapRows();
+    $mc_result = self::getMCRecords('ALL_ACTIVITY');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $result =
+        await $db->queryf(
+          'SELECT scores_log.ts AS time, teams.name AS team, countries.iso_code AS country, scores_log.team_id AS team_id FROM scores_log, levels, teams, countries WHERE scores_log.level_id = levels.id AND levels.entity_id = countries.id AND scores_log.team_id = teams.id AND teams.visible = 1 ORDER BY time DESC LIMIT 50',
+        );
+      self::setMCRecords('ALL_ACTIVITY', $result->mapRows());
+    }
+    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    return self::getMCRecords('ALL_ACTIVITY');
   }
 
   public static async function genResetBases(): Awaitable<void> {
