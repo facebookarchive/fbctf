@@ -4,6 +4,15 @@ class Attachment extends Model {
   // TODO: Configure this
   const string attachmentsDir = '/data/attachments/';
 
+  protected static string $MC_KEY = 'attachments:';
+
+  protected static Map<string, string>
+    $MC_KEYS = Map {
+      "LEVELS_COUNT" => "attachment_levels_count",
+      "LEVEL_ATTACHMENTS" => "attachment_levels",
+      "ALL_ATTACHMENTS" => "attachments_by_id",
+    };
+
   private function __construct(
     private int $id,
     private int $levelId,
@@ -69,6 +78,8 @@ class Attachment extends Model {
       $level_id,
     );
 
+    self::invalidateMCRecords(); // Invalidate Memcached Attachment data.
+
     return true;
   }
 
@@ -85,6 +96,7 @@ class Attachment extends Model {
       $level_id,
       $id,
     );
+    self::invalidateMCRecords(); // Invalidate Memcached Attachment data.
   }
 
   // Delete existing attachment.
@@ -117,50 +129,95 @@ class Attachment extends Model {
       'DELETE FROM attachments WHERE id = %d LIMIT 1',
       $attachment_id,
     );
+    self::invalidateMCRecords(); // Invalidate Memcached Attachment data.
   }
 
   // Get all attachments for a given level.
   public static async function genAllAttachments(
     int $level_id,
+    bool $refresh = false,
   ): Awaitable<array<Attachment>> {
-    $db = await self::genDb();
-    $result = await $db->queryf(
-      'SELECT * FROM attachments WHERE level_id = %d',
-      $level_id,
-    );
-
-    $attachments = array();
-    foreach ($result->mapRows() as $row) {
-      $attachments[] = self::attachmentFromRow($row);
+    $mc_result = self::getMCRecords('LEVEL_ATTACHMENTS');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $attachments = Map {};
+      $result = await $db->queryf('SELECT * FROM attachments');
+      foreach ($result->mapRows() as $row) {
+        $attachments[$row->get("level_id")][] = self::attachmentFromRow($row);
+      }
+      self::setMCRecords('LEVEL_ATTACHMENTS', new Map($attachments));
     }
-
-    return $attachments;
+    $attachments = self::getMCRecords('LEVEL_ATTACHMENTS');
+    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    if ($attachments->contains($level_id)) {
+      /* HH_IGNORE_ERROR[4062] */
+      return $attachments->get($level_id);
+    } else {
+      return array();
+    }
   }
 
   // Get a single attachment.
-  public static async function gen(int $attachment_id): Awaitable<Attachment> {
-    $db = await self::genDb();
-    $result = await $db->queryf(
-      'SELECT * FROM attachments WHERE id = %d LIMIT 1',
-      $attachment_id,
-    );
+  /* HH_IGNORE_ERROR[4110]: HHVM is concerned that the attachment might not be present, this is verified by the caller */
+  public static async function gen(
+    int $attachment_id,
+    bool $refresh = false,
+  ): Awaitable<Attachment> {
+    $mc_result = self::getMCRecords('ATTACHMENTS');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $attachments = Map {};
+      $result = await $db->queryf('SELECT * FROM attachments');
+      foreach ($result->mapRows() as $row) {
+        $attachments->add(
+          Pair {intval($row->get("id")), self::attachmentFromRow($row)},
+        );
+      }
+      self::setMCRecords('ATTACHMENTS', $attachments);
+    }
+    $attachments = self::getMCRecords('ATTACHMENTS');
 
-    invariant($result->numRows() === 1, 'Expected exactly one result');
-    return self::attachmentFromRow($result->mapRows()[0]);
+    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    if ($attachments->contains($attachment_id)) {
+      /* HH_IGNORE_ERROR[4062] */
+      return $attachments->get($attachment_id);
+    } else {
+      invariant(
+        /* HH_IGNORE_ERROR[4062] */ $attachments->contains($attachment_id),
+        'Attachment doesn\'t exist in cache',
+      );
+    }
   }
 
   // Check if a level has attachments.
   public static async function genHasAttachments(
     int $level_id,
+    bool $refresh = false,
   ): Awaitable<bool> {
-    $db = await self::genDb();
-    $result = await $db->queryf(
-      'SELECT COUNT(*) FROM attachments WHERE level_id = %d',
-      $level_id,
-    );
+    $mc_result = self::getMCRecords('LEVELS_COUNT');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $attachment_count = Map {};
+      $result =
+        await $db->queryf(
+          'SELECT levels.id as level_id, COUNT(attachments.id) as count FROM levels LEFT JOIN attachments ON levels.id = attachments.level_id GROUP BY levels.id',
+        );
+      foreach ($result->mapRows() as $row) {
+        $attachment_count->add(
+          Pair {intval($row->get("level_id")), intval($row->get("count"))},
+        );
+      }
+      self::setMCRecords('LEVELS_COUNT', $attachment_count);
+    }
+    $attachment_count = self::getMCRecords('LEVELS_COUNT');
 
-    invariant($result->numRows() === 1, 'Expected exactly one result');
-    return intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0;
+    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    if ($attachment_count->contains($level_id)) {
+      /* HH_IGNORE_ERROR[4062] */
+      return intval($attachment_count->get($level_id)) > 0;
+    } else {
+      return false;
+    }
   }
 
   private static function attachmentFromRow(
