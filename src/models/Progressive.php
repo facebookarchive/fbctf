@@ -1,6 +1,15 @@
 <?hh // strict
 
 class Progressive extends Model {
+
+  protected static string $MC_KEY = 'progressive:';
+
+  protected static Map<string, string>
+    $MC_KEYS = Map {
+      "ITERATION_COUNT" => "iterations_count",
+      "PROGRESSIVE_POINTS" => "points_by_teamname",
+    };
+
   private function __construct(
     private int $id,
     private string $ts,
@@ -54,28 +63,53 @@ class Progressive extends Model {
   // Progressive points.
   public static async function genProgressiveScoreboard(
     string $team_name,
+    bool $refresh = false,
   ): Awaitable<array<Progressive>> {
-    $db = await self::genDb();
-    $result =
-      await $db->queryf(
-        'SELECT * FROM progressive_log WHERE team_name = %s GROUP BY iteration ORDER BY points ASC',
-        $team_name,
-      );
-    $progressive = array();
-    foreach ($result->mapRows() as $row) {
-      $progressive[] = self::progressiveFromRow($row);
+    $mc_result = self::getMCRecords('PROGRESSIVE_POINTS');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $progressive = array();
+      $result =
+        await $db->queryf(
+          'SELECT * FROM progressive_log GROUP BY team_name, iteration ORDER BY points ASC',
+        );
+      foreach ($result->mapRows() as $row) {
+        $progressive[$row->get("team_name")][] =
+          self::progressiveFromRow($row);
+      }
+      self::setMCRecords('PROGRESSIVE_POINTS', new Map($progressive));
     }
-    return $progressive;
+
+    $progressive = self::getMCRecords('PROGRESSIVE_POINTS');
+    /* HH_IGNORE_ERROR[4062] */
+    if ($progressive->contains($team_name)) {
+      /* HH_IGNORE_ERROR[4062] */
+      return $progressive->get($team_name);
+    } else {
+      return array();
+    }
+    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    return self::getMCRecords('PROGRESSIVE_POINTS');
   }
 
   // Count how many iterations of the progressive scoreboard we have.
-  public static async function genCount(): Awaitable<int> {
-    $db = await self::genDb();
-    $result = await $db->queryf(
-      'SELECT COUNT(DISTINCT(iteration)) AS C FROM progressive_log',
-    );
-    invariant($result->numRows() === 1, 'Expected exactly one result');
-    return intval($result->mapRows()[0]['C']);
+  public static async function genCount(
+    bool $refresh = false,
+  ): Awaitable<int> {
+    $mc_result = self::getMCRecords('ITERATION_COUNT');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $result = await $db->queryf(
+        'SELECT COUNT(DISTINCT(iteration)) AS C FROM progressive_log',
+      );
+      invariant($result->numRows() === 1, 'Expected exactly one result');
+      self::setMCRecords(
+        'ITERATION_COUNT',
+        intval($result->mapRows()[0]['C']),
+      );
+    }
+    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    return self::getMCRecords('ITERATION_COUNT');
   }
 
   // Acquire the data for one iteration of the progressive scoreboard.
@@ -84,12 +118,14 @@ class Progressive extends Model {
     await $db->queryf(
       'INSERT INTO progressive_log (ts, team_name, points, iteration) (SELECT NOW(), name, points, (SELECT IFNULL(MAX(iteration)+1, 1) FROM progressive_log) FROM teams)',
     );
+    self::invalidateMCRecords(); // Invalidate Memcached Progressive data.
   }
 
   // Reset the progressive scoreboard.
   public static async function genReset(): Awaitable<void> {
     $db = await self::genDb();
     await $db->queryf('DELETE FROM progressive_log WHERE id > 0');
+    self::invalidateMCRecords(); // Invalidate Memcached Progressive data.
   }
 
   // Kick off the progressive scoreboard in the background.
