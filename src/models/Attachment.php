@@ -140,7 +140,7 @@ class Attachment extends Model {
     $mc_result = self::getMCRecords('LEVEL_ATTACHMENTS');
     if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $db = await self::genDb();
-      $attachments = Map {};
+      $attachments = array();
       $result = await $db->queryf('SELECT * FROM attachments');
       foreach ($result->mapRows() as $row) {
         $attachments[$row->get("level_id")][] = self::attachmentFromRow($row);
