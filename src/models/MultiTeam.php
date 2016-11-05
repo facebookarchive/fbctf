@@ -298,6 +298,7 @@ class MultiTeam extends Team {
     }
   }
 
+  /* HH_IGNORE_ERROR[4110]: HHVM is concerned that the capture might not be present, this is verified by the caller */
   public static async function genFirstCapture(
     int $level_id,
     bool $refresh = false,
@@ -307,7 +308,7 @@ class MultiTeam extends Team {
       $first_team_captured_by_level = array();
       $teams =
         await self::genTeamArrayFromDB(
-          'SELECT * FROM teams LEFT JOIN scores_log ON teams.id = scores_log.team_id WHERE scores_log.ts IN (SELECT MIN(scores_log.ts) FROM scores_log GROUP BY scores_log.level_id)',
+          'SELECT * FROM teams LEFT JOIN scores_log ON teams.id = scores_log.team_id WHERE scores_log.ts IN (SELECT MIN(scores_log.ts) FROM scores_log WHERE scores_log.team_id IN (SELECT id FROM teams) GROUP BY scores_log.level_id)',
         );
       foreach ($teams->items() as $team) {
         $first_team_captured_by_level[intval($team->get('level_id'))] =
@@ -335,6 +336,13 @@ class MultiTeam extends Team {
         'team return should of type Map and not null',
       );
       return $team;
+    }
+    $first_team_captured_by_level = self::getMCRecords('TEAMS_FIRST_CAP');
+
+    /* HH_IGNORE_ERROR[4062] */
+    if ($first_team_captured_by_level->contains($level_id)) {
+      /* HH_IGNORE_ERROR[4062] */
+      return $first_team_captured_by_level->get($level_id);
     }
   }
 }
