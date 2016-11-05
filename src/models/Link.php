@@ -5,7 +5,11 @@ class Link extends Model {
   protected static string $MC_KEY = 'links:';
 
   protected static Map<string, string>
-    $MC_KEYS = Map {"LEVELS_COUNT" => "link_levels_count"};
+    $MC_KEYS = Map {
+      "LEVELS_COUNT" => "link_levels_count",
+      "LEVEL_LINKS" => "link_levels",
+      "LINKS" => "link_by_id",
+    };
 
   private function __construct(
     private int $id,
@@ -65,30 +69,56 @@ class Link extends Model {
   // Get all links for a given level.
   public static async function genAllLinks(
     int $level_id,
+    bool $refresh = false,
   ): Awaitable<array<Link>> {
-    $db = await self::genDb();
-    $result =
-      await $db->queryf('SELECT * FROM links WHERE level_id = %d', $level_id);
-
-    $links = array();
-    foreach ($result->mapRows() as $row) {
-      $links[] = self::linkFromRow($row);
+    $mc_result = self::getMCRecords('LEVEL_LINKS');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $links = array();
+      $result = await $db->queryf('SELECT * FROM links');
+      foreach ($result->mapRows() as $row) {
+        $links[$row->get("level_id")][] = self::linkFromRow($row);
+      }
+      self::setMCRecords('LEVEL_LINKS', new Map($links));
     }
-
-    return $links;
+    $links = self::getMCRecords('LEVEL_LINKS');
+    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    if ($links->contains($level_id)) {
+      /* HH_IGNORE_ERROR[4062] */
+      return $links->get($level_id);
+    } else {
+      return array();
+    }
   }
 
   // Get a single link.
-  public static async function gen(int $link_id): Awaitable<Link> {
-    $db = await self::genDb();
-    $result = await $db->queryf(
-      'SELECT * FROM links WHERE id = %d LIMIT 1',
-      $link_id,
-    );
+  /* HH_IGNORE_ERROR[4110]: HHVM is concerned that the link might not be present, this is verified by the caller */
+  public static async function gen(
+    int $link_id,
+    bool $refresh = false,
+  ): Awaitable<Link> {
+    $mc_result = self::getMCRecords('LINKS');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $links = Map {};
+      $result = await $db->queryf('SELECT * FROM links');
+      foreach ($result->mapRows() as $row) {
+        $links->add(Pair {intval($row->get("id")), self::linkFromRow($row)});
+      }
+      self::setMCRecords('LINKS', $links);
+    }
+    $links = self::getMCRecords('LINKS');
 
-    invariant($result->numRows() === 1, 'Expected exactly one result');
-
-    return self::linkFromRow($result->mapRows()[0]);
+    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    if ($links->contains($link_id)) {
+      /* HH_IGNORE_ERROR[4062] */
+      return $links->get($link_id);
+    } else {
+      invariant(
+        /* HH_IGNORE_ERROR[4062] */ $links->contains($link_id),
+        'Link doesn\'t exist in cache',
+      );
+    }
   }
 
   // Check if a level has links.
@@ -99,24 +129,24 @@ class Link extends Model {
     $mc_result = self::getMCRecords('LEVELS_COUNT');
     if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $db = await self::genDb();
-      $attachment_count = Map {};
+      $link_count = Map {};
       $result =
         await $db->queryf(
           'SELECT levels.id as level_id, COUNT(links.id) as count FROM levels LEFT JOIN links ON levels.id = links.level_id GROUP BY levels.id',
         );
       foreach ($result->mapRows() as $row) {
-        $attachment_count->add(
+        $link_count->add(
           Pair {intval($row->get("level_id")), intval($row->get("count"))},
         );
       }
-      self::setMCRecords('LEVELS_COUNT', $attachment_count);
+      self::setMCRecords('LEVELS_COUNT', $link_count);
     }
-    $attachment_count = self::getMCRecords('LEVELS_COUNT');
+    $link_count = self::getMCRecords('LEVELS_COUNT');
 
     /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
-    if ($attachment_count->contains($level_id)) {
+    if ($link_count->contains($level_id)) {
       /* HH_IGNORE_ERROR[4062]: */
-      return intval($attachment_count->get($level_id)) > 0;
+      return intval($link_count->get($level_id)) > 0;
     } else {
       return false;
     }
