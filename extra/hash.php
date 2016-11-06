@@ -1,8 +1,8 @@
 <?php
 
-$options = array(
+$options = [
   'cost' => 12,
-);
+];
 
 $password_hash = password_hash($argv[1], PASSWORD_DEFAULT, $options);
 
