@@ -3337,13 +3337,13 @@ class AdminController extends Controller {
         if ($results->contains('team') && $results->contains('level')) {
           $team = $results->get('team');
           invariant($team !== null, 'Team should not be null');
-          invariant($team instanceof Team, '\$team should be of type Team');
+          invariant($team instanceof Team, 'team should be of type Team');
 
           $level = $results->get('level');
           invariant($level !== null, 'Level should not be null');
           invariant(
             $level instanceof Level,
-            '\$level should be of type Level',
+            'level should be of type Level',
           );
 
           $country = await Country::gen($level->getEntityId());
