@@ -6,12 +6,12 @@ class Country extends Model {
 
   protected static Map<string, string>
     $MC_KEYS = Map {
-      "ALL_COUNTRIES" => "all_countries",
-      "ALL_COUNTRIES_BY_ID" => "all_countries_by_id",
-      "ALL_COUNTRIES_FOR_MAP" => "all_countries_for_map",
-      "ALL_ENABLED_COUNTRIES" => "all_enabled_countries",
-      "ALL_ENABLED_COUNTRIES_FOR_MAP" => "all_enabled_countries_for_map",
-      "ALL_AVAILABLE_COUNTRIES" => "ALL_AVAILABLE_COUNTRIES",
+      'ALL_COUNTRIES' => 'all_countries',
+      'ALL_COUNTRIES_BY_ID' => 'all_countries_by_id',
+      'ALL_COUNTRIES_FOR_MAP' => 'all_countries_for_map',
+      'ALL_ENABLED_COUNTRIES' => 'all_enabled_countries',
+      'ALL_ENABLED_COUNTRIES_FOR_MAP' => 'all_enabled_countries_for_map',
+      'ALL_AVAILABLE_COUNTRIES' => 'ALL_AVAILABLE_COUNTRIES',
     };
 
   private function __construct(
@@ -100,9 +100,7 @@ class Country extends Model {
   ): Awaitable<array<Country>> {
     $db = await self::genDb();
     $all_countries = Map {};
-    /* HH_IGNORE_ERROR[4110] */
-    /* HH_IGNORE_ERROR[4027]: This is safe not being a literal string */
-    $db_result = await $db->queryf($sql);
+    $db_result = await $db->query($sql);
     $rows = $db_result->mapRows();
 
     foreach ($rows as $row) {
@@ -110,9 +108,12 @@ class Country extends Model {
         Pair {intval($row->get("id")), self::countryFromRow($row)},
       );
     }
+    invariant(
+      $all_countries instanceof Map,
+      'all_countries should be a Map of Country',
+    );
 
     $countries = array();
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
     $countries = $all_countries->toValuesArray();
 
     usort(
@@ -134,8 +135,12 @@ class Country extends Model {
         await self::genAll('SELECT * FROM countries ORDER BY iso_code');
       self::setMCRecords('ALL_COUNTRIES', $all_countries);
     }
-    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
-    return self::getMCRecords('ALL_COUNTRIES');
+    $all_countries = self::getMCRecords('ALL_COUNTRIES');
+    invariant(
+      is_array($all_countries),
+      'all_countries should be an array of Country',
+    );
+    return $all_countries;
   }
 
   public static async function genAllCountriesForMap(
@@ -147,8 +152,12 @@ class Country extends Model {
         await self::genAll('SELECT * FROM countries ORDER BY CHAR_LENGTH(d)');
       self::setMCRecords('ALL_COUNTRIES_FOR_MAP', $all_countries);
     }
-    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
-    return self::getMCRecords('ALL_COUNTRIES_FOR_MAP');
+    $all_countries = self::getMCRecords('ALL_COUNTRIES_FOR_MAP');
+    invariant(
+      is_array($all_countries),
+      'all_countries should be an array of Country',
+    );
+    return $all_countries;
   }
 
   public static async function genAllEnabledCountries(
@@ -160,8 +169,12 @@ class Country extends Model {
         await self::genAll('SELECT * FROM countries WHERE enabled = 1');
       self::setMCRecords('ALL_ENABLED_COUNTRIES', $all_countries);
     }
-    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
-    return self::getMCRecords('ALL_ENABLED_COUNTRIES');
+    $all_countries = self::getMCRecords('ALL_ENABLED_COUNTRIES');
+    invariant(
+      is_array($all_countries),
+      'all_countries should be an array of Country',
+    );
+    return $all_countries;
   }
 
   // All enabled countries. The weird sorting is because SVG lack of z-index
@@ -176,8 +189,12 @@ class Country extends Model {
       );
       self::setMCRecords('ALL_ENABLED_COUNTRIES_FOR_MAP', $all_countries);
     }
-    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
-    return self::getMCRecords('ALL_ENABLED_COUNTRIES_FOR_MAP');
+    $all_countries = self::getMCRecords('ALL_ENABLED_COUNTRIES_FOR_MAP');
+    invariant(
+      is_array($all_countries),
+      'all_countries should be an array of Country',
+    );
+    return $all_countries;
   }
 
   // All enabled and unused countries
@@ -191,8 +208,12 @@ class Country extends Model {
       );
       self::setMCRecords('ALL_AVAILABLE_COUNTRIES', $all_countries);
     }
-    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
-    return self::getMCRecords('ALL_AVAILABLE_COUNTRIES');
+    $all_countries = self::getMCRecords('ALL_AVAILABLE_COUNTRIES');
+    invariant(
+      is_array($all_countries),
+      'all_countries should be an array of Country',
+    );
+    return $all_countries;
   }
 
   // Check if country is in an active level
@@ -203,7 +224,7 @@ class Country extends Model {
   }
 
   // Get a country by id.
-  /* HH_IGNORE_ERROR[4110]: HHVM is concerned that the dountry might not be present, this is verified by the caller */
+  /* HH_IGNORE_ERROR[4110]: Claims - It is incompatible with void because this async function implicitly returns Awaitable<void>, yet this returns Awaitable<Country> and the type is checked on line 230 */
   public static async function gen(
     int $country_id,
     bool $refresh = false,
@@ -221,10 +242,17 @@ class Country extends Model {
       self::setMCRecords('ALL_COUNTRIES_BY_ID', $all_countries);
     }
     $countries = self::getMCRecords('ALL_COUNTRIES_BY_ID');
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant(
+      $countries instanceof Map,
+      'countries should be a Map of Country by Id',
+    );
     if ($countries->contains($country_id)) {
-      /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
-      return $countries->get($country_id);
+      $country = $countries->get($country_id);
+      invariant(
+        $country instanceof Country,
+        'country should be of type Country',
+      );
+      return $country;
     }
   }
 
@@ -239,8 +267,7 @@ class Country extends Model {
     );
 
     invariant($result->numRows() === 1, 'Expected exactly one result');
-    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
-    return self::countryFromRow($result->mapRows());
+    return self::countryFromRow($result->mapRows()[0]);
   }
 
   // Get a random enabled, unused country ID

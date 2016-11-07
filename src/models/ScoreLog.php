@@ -92,12 +92,12 @@ class ScoreLog extends Model {
       foreach ($result->mapRows() as $row) {
         if ($level_captures->contains(intval($row->get('level_id')))) {
           $level_capture_teams =
-            $level_captures->get(intval($row->get('level_id')));
+            $level_captures->get(intval($row->get("level_id")));
           invariant(
-            $level_capture_teams instanceof Vector,
-            'level_capture_teams should of type Vector and not null',
+            $level_capture_teams !== null,
+            'level_captures should not be null',
           );
-          $level_capture_teams->add(intval($row->get('team_id')));
+          $level_capture_teams->add(intval($row->get("team_id")));
           $level_captures->set(
             intval($row->get('level_id')),
             $level_capture_teams,
@@ -136,30 +136,41 @@ class ScoreLog extends Model {
         return false;
       }
     }
+    $level_captures = self::getMCRecords('LEVEL_CAPTURES');
+    invariant($level_captures !== null, 'level_captures should not be null');
     invariant(
-      $mc_result instanceof Map,
-      'cache return should of type Map and not null',
+      $level_captures instanceof Map,
+      'level_captures should be of type Map',
     );
-    if ($mc_result->contains($level_id)) {
+    if ($level_captures->contains($level_id)) {
       if ($any_team) {
-        $level_capture_teams = $mc_result->get($level_id);
+        $level_capture_teams = $level_captures->get($level_id);
         invariant(
-          $level_capture_teams instanceof Vector,
-          'level_capture_teams should of type Vector and not null',
+          $level_capture_teams !== null,
+          'level_capture_teams should not be null',
         );
         $team_id_key = $level_capture_teams->linearSearch($team_id);
-        if ($team_id_key !== -1) {
+        if ($team_id_key != -1) {
+          $level_capture_teams = $level_captures->get($level_id);
+          invariant(
+            $level_capture_teams !== null,
+            'level_capture_teams should not be null',
+          );
           $level_capture_teams->removeKey($team_id_key);
         }
-        return intval(count($level_capture_teams)) > 0;
-      } else {
-        $level_capture_teams = $mc_result->get($level_id);
         invariant(
-          $level_capture_teams instanceof Vector,
-          'level_capture_teams should of type Vector and not null',
+          $level_captures !== null,
+          'level_captures should not be null',
+        );
+        return intval(count($level_captures->get($level_id))) > 0;
+      } else {
+        $level_capture_teams = $level_captures->get($level_id);
+        invariant(
+          $level_capture_teams !== null,
+          'level_capture_teams should not be null',
         );
         $team_id_key = $level_capture_teams->linearSearch($team_id);
-        return $team_id_key !== -1;
+        return $team_id_key != -1;
       }
     } else {
       return false;

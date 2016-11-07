@@ -5,7 +5,7 @@ class Control extends Model {
   protected static string $MC_KEY = 'control:';
 
   protected static Map<string, string>
-    $MC_KEYS = Map {"ALL_ACTIVITY" => "activity"};
+    $MC_KEYS = Map {'ALL_ACTIVITY' => 'activity'};
 
   public static async function genStartScriptLog(
     int $pid,
@@ -263,8 +263,12 @@ class Control extends Model {
         );
       self::setMCRecords('ALL_ACTIVITY', $result->mapRows());
     }
-    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
-    return self::getMCRecords('ALL_ACTIVITY');
+    $all_activity = self::getMCRecords('ALL_ACTIVITY');
+    invariant(
+      $all_activity instanceof Vector,
+      'all_activity should be of type Vector',
+    );
+    return $all_activity;
   }
 
   public static async function genResetBases(): Awaitable<void> {

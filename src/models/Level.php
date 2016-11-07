@@ -6,9 +6,9 @@ class Level extends Model implements Importable, Exportable {
 
   protected static Map<string, string>
     $MC_KEYS = Map {
-      "LEVEL_BY_COUNTRY" => "level_by_country",
-      "ALL_LEVELS" => "all_levels",
-      "ALL_ACTIVE_LEVELS" => "active_levels",
+      'LEVEL_BY_COUNTRY' => 'level_by_country',
+      'ALL_LEVELS' => 'all_levels',
+      'ALL_ACTIVE_LEVELS' => 'active_levels',
     };
 
   private function __construct(
@@ -127,9 +127,15 @@ class Level extends Model implements Importable, Exportable {
       self::setMCRecords('LEVEL_BY_COUNTRY', $level_by_country);
     }
     $level_by_country = self::getMCRecords('LEVEL_BY_COUNTRY');
-    /* HH_IGNORE_ERROR[4062] */
+    invariant(
+      $level_by_country !== null,
+      'level_by_country should not be null',
+    );
+    invariant(
+      $level_by_country instanceof Map,
+      'level_by_country should be of type Map',
+    );
     if ($level_by_country->contains($country_id)) {
-      /* HH_IGNORE_ERROR[4062] */
       return $level_by_country->get($country_id);
     } else {
       return null;
@@ -219,9 +225,12 @@ class Level extends Model implements Importable, Exportable {
       self::setMCRecords('ALL_ACTIVE_LEVELS', $active_levels);
     }
     $active_levels = self::getMCRecords('ALL_ACTIVE_LEVELS');
-    /* HH_IGNORE_ERROR[4062] */
+    invariant($active_levels !== null, 'active_levels should not be null');
+    invariant(
+      $active_levels instanceof Map,
+      'active_levels should be of type Map',
+    );
     if ($active_levels->contains($level_id)) {
-      /* HH_IGNORE_ERROR[4062] */
       return true;
     } else {
       return false;
@@ -248,10 +257,15 @@ class Level extends Model implements Importable, Exportable {
       self::setMCRecords('ALL_ACTIVE_LEVELS', $active_levels);
     }
     $active_levels = self::getMCRecords('ALL_ACTIVE_LEVELS');
-    /* HH_IGNORE_ERROR[4062] */
+    invariant($active_levels !== null, 'active_levels should not be null');
+    invariant(
+      $active_levels instanceof Map,
+      'active_levels should be of type Map',
+    );
     if ($active_levels->contains($level_id)) {
-      /* HH_IGNORE_ERROR[4062] */
-      if ($active_levels->get($level_id)->type == 'base') {
+      $level = $active_levels->get($level_id);
+      invariant($level !== null, 'level should not be null');
+      if ($level->type == 'base') {
         return true;
       } else {
         return false;
@@ -642,7 +656,7 @@ class Level extends Model implements Importable, Exportable {
     }
     $all_levels = self::getMCRecords('ALL_LEVELS');
     $levels = array();
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant($all_levels instanceof Map, 'all_levels should be of type Map');
     $levels = $all_levels->toValuesArray();
     return $levels;
   }
@@ -667,7 +681,10 @@ class Level extends Model implements Importable, Exportable {
     }
     $active_levels = self::getMCRecords('ALL_ACTIVE_LEVELS');
     $levels = array();
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant(
+      $active_levels instanceof Map,
+      'active_levels should be of type Map',
+    );
     $levels = $active_levels->toValuesArray();
     return $levels;
   }
@@ -692,7 +709,10 @@ class Level extends Model implements Importable, Exportable {
     }
     $active_levels = self::getMCRecords('ALL_ACTIVE_LEVELS');
     $levels = array();
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant(
+      $active_levels instanceof Map,
+      'active_levels should be of type Map',
+    );
     $levels = $active_levels->toValuesArray();
     $bases = array();
     foreach ($levels as $level) {
@@ -722,7 +742,7 @@ class Level extends Model implements Importable, Exportable {
     }
     $all_levels = self::getMCRecords('ALL_LEVELS');
     $levels = array();
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant($all_levels instanceof Map, 'all_levels should be of type Map');
     $levels = $all_levels->toValuesArray();
     $type_levels = array();
     foreach ($levels as $level) {
@@ -749,7 +769,7 @@ class Level extends Model implements Importable, Exportable {
   }
 
   // Get a single level.
-  /* HH_IGNORE_ERROR[4110]: HHVM is concerned that the level might not be present, this is verified by the caller */
+  /* HH_IGNORE_ERROR[4110]: Claims - It is incompatible with void because this async function implicitly returns Awaitable<void>, yet this returns Awaitable<Level> and the type is checked on line 778 */
   public static async function gen(
     int $level_id,
     bool $refresh = false,
@@ -768,10 +788,12 @@ class Level extends Model implements Importable, Exportable {
     }
     $all_levels = self::getMCRecords('ALL_LEVELS');
 
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant($all_levels !== null, 'all_levels should not be null');
+    invariant($all_levels instanceof Map, 'all_levels should be of type Map');
     if ($all_levels->contains($level_id)) {
-      /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
-      return $all_levels->get($level_id);
+      $level = $all_levels->get($level_id);
+      invariant($level instanceof Level, 'level should be of type Level');
+      return $level;
     }
   }
 
