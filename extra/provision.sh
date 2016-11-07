@@ -221,7 +221,7 @@ package language-pack-en
 
 # Packages to be installed in dev mode
 if [[ "$MODE" == "dev" ]]; then
-    sudo apt-get install -y build-essential curl python-dev python3-dev
+    sudo apt-get install -y build-essential curl python-dev
     package python-pip
     sudo -H pip install mycli
     package emacs
