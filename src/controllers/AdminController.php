@@ -3336,19 +3336,26 @@ class AdminController extends Controller {
 
         if ($results->contains('team') && $results->contains('level')) {
           $team = $results->get('team');
+          invariant($team !== null, 'Team should not be null');
+          invariant($team instanceof Team, '\$team should be of type Team');
+
           $level = $results->get('level');
-          /* HH_IGNORE_ERROR[4064]: Object can never be null due to line 3321 */
+          invariant($level !== null, 'Level should not be null');
+          invariant(
+            $level instanceof Level,
+            '\$level should be of type Level',
+          );
+
           $country = await Country::gen($level->getEntityId());
 
-          /* HH_IGNORE_ERROR[4064] */
           $team_name = $team->getName();
 
           $level_str =
             $country->getName().
             ' - '.
-            /* HH_IGNORE_ERROR[4064] */ $level->getTitle().
+            $level->getTitle().
             ' - '.
-            /* HH_IGNORE_ERROR[4064] */ $level->getType();
+            $level->getType();
           $logs_tbody->appendChild(
             <tr>
               <td>{time_ago($gamelog->getTs())}</td>
