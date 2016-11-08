@@ -151,18 +151,9 @@ class ScoreLog extends Model {
         );
         $team_id_key = $level_capture_teams->linearSearch($team_id);
         if ($team_id_key != -1) {
-          $level_capture_teams = $level_captures->get($level_id);
-          invariant(
-            $level_capture_teams !== null,
-            'level_capture_teams should not be null',
-          );
           $level_capture_teams->removeKey($team_id_key);
         }
-        invariant(
-          $level_captures !== null,
-          'level_captures should not be null',
-        );
-        return intval(count($level_captures->get($level_id))) > 0;
+        return intval(count($level_capture_teams)) > 0;
       } else {
         $level_capture_teams = $level_captures->get($level_id);
         invariant(
