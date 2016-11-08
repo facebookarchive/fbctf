@@ -6,9 +6,9 @@ class Link extends Model {
 
   protected static Map<string, string>
     $MC_KEYS = Map {
-      "LEVELS_COUNT" => "link_levels_count",
-      "LEVEL_LINKS" => "link_levels",
-      "LINKS" => "link_by_id",
+      'LEVELS_COUNT' => 'link_levels_count',
+      'LEVEL_LINKS' => 'link_levels',
+      'LINKS' => 'link_by_id',
     };
 
   private function __construct(
@@ -77,15 +77,20 @@ class Link extends Model {
       $links = array();
       $result = await $db->queryf('SELECT * FROM links');
       foreach ($result->mapRows() as $row) {
-        $links[$row->get("level_id")][] = self::linkFromRow($row);
+        $links[$row->get('level_id')][] = self::linkFromRow($row);
       }
       self::setMCRecords('LEVEL_LINKS', new Map($links));
     }
     $links = self::getMCRecords('LEVEL_LINKS');
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant($links !== null, 'links should not be null');
+    invariant($links instanceof Map, 'links should be of type Map');
     if ($links->contains($level_id)) {
-      /* HH_IGNORE_ERROR[4062] */
-      return $links->get($level_id);
+      $link_array = $links->get($level_id);
+      invariant(
+        is_array($link_array),
+        '$link_array should be an array of Link',
+      );
+      return $link_array;
     } else {
       return array();
     }
@@ -103,21 +108,17 @@ class Link extends Model {
       $links = Map {};
       $result = await $db->queryf('SELECT * FROM links');
       foreach ($result->mapRows() as $row) {
-        $links->add(Pair {intval($row->get("id")), self::linkFromRow($row)});
+        $links->add(Pair {intval($row->get('id')), self::linkFromRow($row)});
       }
       self::setMCRecords('LINKS', $links);
     }
     $links = self::getMCRecords('LINKS');
-
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant($links !== null, 'links should not be null');
+    invariant($links instanceof Map, 'links should be of type Map');
     if ($links->contains($link_id)) {
-      /* HH_IGNORE_ERROR[4062] */
-      return $links->get($link_id);
-    } else {
-      invariant(
-        /* HH_IGNORE_ERROR[4062] */ $links->contains($link_id),
-        'Link doesn\'t exist in cache',
-      );
+      $link = $links->get($link_id);
+      invariant($link instanceof Link, 'link should be of type Link');
+      return $link;
     }
   }
 
@@ -136,17 +137,17 @@ class Link extends Model {
         );
       foreach ($result->mapRows() as $row) {
         $link_count->add(
-          Pair {intval($row->get("level_id")), intval($row->get("count"))},
+          Pair {intval($row->get('level_id')), intval($row->get('count'))},
         );
       }
       self::setMCRecords('LEVELS_COUNT', $link_count);
     }
     $link_count = self::getMCRecords('LEVELS_COUNT');
-
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant($link_count !== null, 'link_count should not be null');
+    invariant($link_count instanceof Map, 'link_count should be of type Map');
     if ($link_count->contains($level_id)) {
-      /* HH_IGNORE_ERROR[4062]: */
-      return intval($link_count->get($level_id)) > 0;
+      $level_link_count = $link_count->get($level_id);
+      return intval($level_link_count) > 0;
     } else {
       return false;
     }
