@@ -5,7 +5,7 @@ class HintLog extends Model {
   protected static string $MC_KEY = 'hintlog:';
 
   protected static Map<string, string>
-    $MC_KEYS = Map {"USED_HINTS" => "hint_level_teams"};
+    $MC_KEYS = Map {'USED_HINTS' => 'hint_level_teams'};
 
   private function __construct(
     private int $id,
@@ -79,36 +79,47 @@ class HintLog extends Model {
       $hints_used = Map {};
       $result = await $db->queryf('SELECT level_id, team_id FROM hints_log');
       foreach ($result->mapRows() as $row) {
-        if ($hints_used->contains(intval($row->get("level_id")))) {
-          $hints_used_teams = $hints_used->get(intval($row->get("level_id")));
-          /* HH_IGNORE_ERROR[4064] */
-          $hints_used_teams->add(intval($row->get("team_id")));
-          $hints_used->set(intval($row->get("level_id")), $hints_used_teams);
+        if ($hints_used->contains(intval($row->get('level_id')))) {
+          $hints_used_teams = $hints_used->get(intval($row->get('level_id')));
+          invariant(
+            $hints_used_teams !== null,
+            'hints_used_teams should not be null',
+          );
+          $hints_used_teams->add(intval($row->get('team_id')));
+          $hints_used->set(intval($row->get('level_id')), $hints_used_teams);
         } else {
           $hints_used_teams = Vector {};
-          $hints_used_teams->add(intval($row->get("team_id")));
+          $hints_used_teams->add(intval($row->get('team_id')));
           $hints_used->add(
-            Pair {intval($row->get("level_id")), $hints_used_teams},
+            Pair {intval($row->get('level_id')), $hints_used_teams},
           );
         }
       }
       self::setMCRecords('USED_HINTS', new Map($hints_used));
     }
     $hints_used = self::getMCRecords('USED_HINTS');
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant($hints_used !== null, 'hints_used should not be null');
+    invariant($hints_used instanceof Map, 'hints_used should be of type Map');
     if ($hints_used->contains($level_id)) {
       if ($any_team) {
-        $team_id_key = /* HH_IGNORE_ERROR[4062] */
-          $hints_used->get($level_id)->linearSearch($team_id);
+        $hints_used_teams = $hints_used->get($level_id);
+        invariant(
+          $hints_used_teams !== null,
+          'hints_used_teams should not be null',
+        );
+        $team_id_key = $hints_used_teams->linearSearch($team_id);
         if ($team_id_key != -1) {
-          /* HH_IGNORE_ERROR[4062] */
-          $hints_used->get($level_id)->removeKey($team_id_key);
+          $hints_used_teams->removeKey($team_id_key);
         }
-        /* HH_IGNORE_ERROR[4062] */
-        return intval(count($hints_used->get($level_id))) > 0;
+        return intval(count($hints_used_teams)) > 0;
       } else {
-        /* HH_IGNORE_ERROR[4062] */
-        return $hints_used->get($level_id)->linearSearch($team_id) != -1;
+        $hints_used_teams = $hints_used->get($level_id);
+        invariant(
+          $hints_used_teams !== null,
+          'hints_used_teams should not be null',
+        );
+        $team_id_key = $hints_used_teams->linearSearch($team_id);
+        return $team_id_key != -1;
       }
     } else {
       return false;
