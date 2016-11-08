@@ -314,7 +314,7 @@ class Team extends Model implements Importable, Exportable {
       $team_id,
     );
     MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
-    Control::invalidateMCRecords("ALL_ACTIVITY"); // Invalidate Memcached Control data.
+    Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
   }
 
   // Update team password.
@@ -339,7 +339,7 @@ class Team extends Model implements Importable, Exportable {
       $team_id,
     );
     MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
-    Control::invalidateMCRecords("ALL_ACTIVITY"); // Invalidate Memcached Control data.
+    Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
   }
 
   // Enable or disable teams by passing 1 or 0.
@@ -392,7 +392,7 @@ class Team extends Model implements Importable, Exportable {
       $team_id,
     );
     MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
-    Control::invalidateMCRecords("ALL_ACTIVITY"); // Invalidate Memcached Control data.
+    Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
   }
 
   // Check if a team name is already created.
