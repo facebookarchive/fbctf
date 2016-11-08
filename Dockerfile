@@ -15,6 +15,7 @@ COPY . $HOME
 RUN apt-get update \
   && apt-get install -y \
   rsync \
+  curl \
   ca-certificates \
   && chown www-data:www-data $HOME \
   && ./extra/provision.sh -m $MODE -c $TYPE -k $KEY -C $CRT -D $DOMAIN -e $EMAIL -s `pwd` --docker \
