@@ -8,9 +8,9 @@ class Attachment extends Model {
 
   protected static Map<string, string>
     $MC_KEYS = Map {
-      "LEVELS_COUNT" => "attachment_levels_count",
-      "LEVEL_ATTACHMENTS" => "attachment_levels",
-      "ATTACHMENTS" => "attachments_by_id",
+      'LEVELS_COUNT' => 'attachment_levels_count',
+      'LEVEL_ATTACHMENTS' => 'attachment_levels',
+      'ATTACHMENTS' => 'attachments_by_id',
     };
 
   private function __construct(
@@ -143,22 +143,30 @@ class Attachment extends Model {
       $attachments = array();
       $result = await $db->queryf('SELECT * FROM attachments');
       foreach ($result->mapRows() as $row) {
-        $attachments[$row->get("level_id")][] = self::attachmentFromRow($row);
+        $attachments[$row->get('level_id')][] = self::attachmentFromRow($row);
       }
       self::setMCRecords('LEVEL_ATTACHMENTS', new Map($attachments));
     }
     $attachments = self::getMCRecords('LEVEL_ATTACHMENTS');
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant($attachments !== null, 'attachments should not be null');
+    invariant(
+      $attachments instanceof Map,
+      'attachments should be of type Map',
+    );
     if ($attachments->contains($level_id)) {
-      /* HH_IGNORE_ERROR[4062] */
-      return $attachments->get($level_id);
+      $attachment = $attachments->get($level_id);
+      invariant(
+        is_array($attachment),
+        'attachment should be an array of Attachment',
+      );
+      return $attachment;
     } else {
       return array();
     }
   }
 
   // Get a single attachment.
-  /* HH_IGNORE_ERROR[4110]: HHVM is concerned that the attachment might not be present, this is verified by the caller */
+  /* HH_IGNORE_ERROR[4110]: Claims - It is incompatible with void because this async function implicitly returns Awaitable<void>, yet this returns Awaitable<Attachment> and the type is checked on line 185 */
   public static async function gen(
     int $attachment_id,
     bool $refresh = false,
@@ -170,22 +178,24 @@ class Attachment extends Model {
       $result = await $db->queryf('SELECT * FROM attachments');
       foreach ($result->mapRows() as $row) {
         $attachments->add(
-          Pair {intval($row->get("id")), self::attachmentFromRow($row)},
+          Pair {intval($row->get('id')), self::attachmentFromRow($row)},
         );
       }
       self::setMCRecords('ATTACHMENTS', $attachments);
     }
     $attachments = self::getMCRecords('ATTACHMENTS');
-
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant($attachments !== null, 'attachments should not be null');
+    invariant(
+      $attachments instanceof Map,
+      'attachments should be of type Map',
+    );
     if ($attachments->contains($attachment_id)) {
-      /* HH_IGNORE_ERROR[4062] */
-      return $attachments->get($attachment_id);
-    } else {
+      $attachment = $attachments->get($attachment_id);
       invariant(
-        /* HH_IGNORE_ERROR[4062] */ $attachments->contains($attachment_id),
-        'Attachment doesn\'t exist in cache',
+        $attachment instanceof Attachment,
+        'attachment should be of type Attachment',
       );
+      return $attachment;
     }
   }
 
@@ -204,17 +214,20 @@ class Attachment extends Model {
         );
       foreach ($result->mapRows() as $row) {
         $attachment_count->add(
-          Pair {intval($row->get("level_id")), intval($row->get("count"))},
+          Pair {intval($row->get('level_id')), intval($row->get('count'))},
         );
       }
       self::setMCRecords('LEVELS_COUNT', $attachment_count);
     }
     $attachment_count = self::getMCRecords('LEVELS_COUNT');
-
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant($attachment_count !== null, 'attachments should not be null');
+    invariant(
+      $attachment_count instanceof Map,
+      'attachments should be of type Map',
+    );
     if ($attachment_count->contains($level_id)) {
-      /* HH_IGNORE_ERROR[4062] */
-      return intval($attachment_count->get($level_id)) > 0;
+      $level_attachment_count = $attachment_count->get($level_id);
+      return intval($level_attachment_count) > 0;
     } else {
       return false;
     }
