@@ -81,7 +81,6 @@ class Progressive extends Model {
     }
 
     $progressive = self::getMCRecords('PROGRESSIVE_POINTS');
-    /* HH_IGNORE_ERROR[4062] */
     invariant($progressive !== null, 'progressive should not be null');
     invariant(
       $progressive instanceof Map,
@@ -115,7 +114,6 @@ class Progressive extends Model {
         intval($result->mapRows()[0]['C']),
       );
     }
-    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
     $iteration_count = intval(self::getMCRecords('ITERATION_COUNT'));
     invariant($iteration_count !== null, 'progressive should not be null');
     return $iteration_count;
