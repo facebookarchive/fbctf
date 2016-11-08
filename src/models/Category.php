@@ -6,8 +6,8 @@ class Category extends Model implements Importable, Exportable {
 
   protected static Map<string, string>
     $MC_KEYS = Map {
-      "ALL_CATEGORIES" => "categories",
-      "CATEGORIES" => "categories_id",
+      'ALL_CATEGORIES' => 'categories',
+      'CATEGORIES' => 'categories_id',
     };
 
   private function __construct(
@@ -90,8 +90,11 @@ class Category extends Model implements Importable, Exportable {
       self::setMCRecords('ALL_CATEGORIES', $categories);
     }
     $categories = self::getMCRecords('ALL_CATEGORIES');
-
-    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant($categories !== null, 'categories should not be null');
+    invariant(
+      is_array($categories),
+      'categories should be an array of Category',
+    );
     return $categories;
   }
 
@@ -163,7 +166,7 @@ class Category extends Model implements Importable, Exportable {
   }
 
   // Get category by id.
-  /* HH_IGNORE_ERROR[4110]: HHVM is concerned that the category might not be present, this is verified by the caller */
+  /* HH_IGNORE_ERROR[4110]: Claims - It is incompatible with void because this async function implicitly returns Awaitable<void>, yet this returns Awaitable<Category> and the type is checked on line 188 */
   public static async function genSingleCategory(
     int $category_id,
     bool $refresh = false,
@@ -175,22 +178,21 @@ class Category extends Model implements Importable, Exportable {
       $result = await $db->queryf('SELECT * FROM categories');
       foreach ($result->mapRows() as $row) {
         $categories->add(
-          Pair {intval($row->get("id")), self::categoryFromRow($row)},
+          Pair {intval($row->get('id')), self::categoryFromRow($row)},
         );
       }
       self::setMCRecords('CATEGORIES', $categories);
     }
     $categories = self::getMCRecords('CATEGORIES');
-
-    /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant($categories !== null, 'categories should not be null');
+    invariant($categories instanceof Map, 'categories should be type of Map');
     if ($categories->contains($category_id)) {
-      /* HH_IGNORE_ERROR[4062] */
-      return $categories->get($category_id);
-    } else {
+      $category = $categories->get($category_id);
       invariant(
-        /* HH_IGNORE_ERROR[4062] */ $categories->contains($category_id),
-        'Category doesn\'t exist in cache',
+        $category instanceof Category,
+        'category should be type of Category',
       );
+      return $category;
     }
   }
 
