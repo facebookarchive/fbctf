@@ -5,7 +5,7 @@ class Session extends Model {
   protected static string $MC_KEY = 'sessions:';
 
   protected static Map<string, string>
-    $MC_KEYS = Map {"SESSIONS" => "active_sessions:"};
+    $MC_KEYS = Map {'SESSIONS' => 'active_sessions:'};
 
   private function __construct(
     private int $id,
@@ -81,7 +81,11 @@ class Session extends Model {
     $session_data = Map {};
     $mc_result = self::getMCSession($cookie);
     if ($mc_result) {
-      /* HH_IGNORE_ERROR[4062]: getMCSession returns a 'mixed' type, HHVM is unsure of the type at this point */
+      invariant($mc_result !== null, 'mc_result should not be null');
+      invariant(
+        $mc_result instanceof Session,
+        'mc_result should be of type Session',
+      );
       $mc_result->team_id = self::decodeTeamId($data);
       self::setMCSession($cookie, $mc_result);
     } else {
@@ -113,7 +117,7 @@ class Session extends Model {
       $data,
       Router::getRequestedPage(),
     );
-    if ($data !== "") {
+    if ($data !== '') {
       await self::genCreateCacheSession($cookie);
     }
   }
@@ -143,8 +147,13 @@ class Session extends Model {
       $session_data = self::sessionFromRow($result->mapRows()[0]);
       self::setMCSession($cookie, $session_data);
     }
-    /* HH_IGNORE_ERROR[4110]: getMCSession returns a 'mixed' type, HHVM is unsure of the type at this point */
-    return self::getMCSession($cookie);
+    $session = self::getMCSession($cookie);
+    invariant($session !== null, 'session should not be null');
+    invariant(
+      $session instanceof Session,
+      'session should be of type Session',
+    );
+    return $session;
   }
 
   // Checks if session exists by cookie.
@@ -187,7 +196,11 @@ class Session extends Model {
     }
     $session = self::getMCSession($cookie);
     if ($session) {
-      /* HH_IGNORE_ERROR[4062]: getMCSession returns a 'mixed' type, HHVM is unsure of the type at this point */
+      invariant($session !== null, 'session should not be null');
+      invariant(
+        $session instanceof Session,
+        'session should be of type Session',
+      );
       return $session->getData();
     } else {
       return '';
@@ -221,19 +234,20 @@ class Session extends Model {
     string $cookie,
     string $data,
   ): Awaitable<void> {
-    if ($data === "") {
+    if ($data === '') {
       return;
     }
     $mc_result = self::getMCSession($cookie);
     if ($mc_result) {
-      /* HH_IGNORE_ERROR[4062]: getMCSession returns a 'mixed' type, HHVM is unsure of the type at this point */
+      invariant($mc_result !== null, 'session should not be null');
+      invariant(
+        $mc_result instanceof Session,
+        'session should be of type Session',
+      );
       $mc_result->last_access_ts = date("Y-m-d H:i:s");
-      /* HH_IGNORE_ERROR[4062] */
       $mc_result->data = $data;
-      /* HH_IGNORE_ERROR[4062] */
       $last_page_access = Router::getRequestedPage();
-      if ($last_page_access !== "index") {
-        /* HH_IGNORE_ERROR[4062] */
+      if ($last_page_access !== 'index') {
         $mc_result->last_page_access = $last_page_access;
       }
       self::setMCSession($cookie, $mc_result);
@@ -295,11 +309,16 @@ class Session extends Model {
       await self::genExpiredSessionsForCleanup($maxlifetime);
     $empty_sessions = await self::genEmptySessionsForCleanup();
     foreach ($expired_sessions as $session) {
-      /* HH_IGNORE_ERROR[4062]: getMCSession returns a 'mixed' type, HHVM is unsure of the type at this point */
       $cached_session = self::getMCSession($session->getCookie());
-      /* HH_IGNORE_ERROR[4062] */
+      invariant(
+        $cached_session !== null,
+        'cached_session should not be null',
+      );
+      invariant(
+        $cached_session instanceof Session,
+        'cached_session should be of type Session',
+      );
       $cached_timestamp = strtotime($cached_session->last_access_ts);
-      /* HH_IGNORE_ERROR[4062] */
       if (strtotime($cached_session->last_access_ts) <
           (time() - $maxlifetime)) {
         self::invalidateMCSessions($session->getCookie());
@@ -313,7 +332,7 @@ class Session extends Model {
     }
     foreach ($empty_sessions as $session) {
       $cached_session = self::getMCSession($session->getCookie());
-      if ($cached_session !== false && $cached_session === "") {
+      if ($cached_session !== false && $cached_session === '') {
         self::invalidateMCSessions($session->getCookie());
       }
     }
@@ -387,12 +406,12 @@ class Session extends Model {
       /* HH_IGNORE_ERROR[4053]: HHVM doesn't beleive there is a getAllKeys() method, there is... */
       $mc_keys = $mc->getAllKeys();
       $all_sessions = preg_grep(
-        "/".self::$MC_KEY.self::$MC_KEYS->get("SESSIONS")."/",
+        '/'.self::$MC_KEY.self::$MC_KEYS->get('SESSIONS').'/',
         $mc_keys,
       );
       foreach ($all_sessions as $session_key) {
         $session_key =
-          substr(strstr(substr(strstr($session_key, ":"), 1), ":"), 1);
+          substr(strstr(substr(strstr($session_key, ':'), 1), ':'), 1);
         $cached_sessions[] = $session_key;
         $sessions[] = self::getMCSession($session_key);
       }
@@ -404,7 +423,10 @@ class Session extends Model {
           $sessions[] = self::sessionFromRow($row);
         }
       }
-      /* HH_IGNORE_ERROR[4110]: getMCSession returns a 'mixed' type, HHVM is unsure of the type at this point */
+      invariant(
+        is_array($sessions),
+        '$sessions should be an array of Session',
+      );
       return $sessions;
     }
   }
@@ -413,7 +435,7 @@ class Session extends Model {
     $mc = self::getMc();
     $key = str_replace(' ', '', $key);
     $mc->set(
-      self::$MC_KEY.self::$MC_KEYS->get("SESSIONS").$key,
+      self::$MC_KEY.self::$MC_KEYS->get('SESSIONS').$key,
       $records,
       self::$MC_EXPIRE,
     );
@@ -423,7 +445,7 @@ class Session extends Model {
     $mc = self::getMc();
     $key = str_replace(' ', '', $key);
     $mc_result =
-      $mc->get(static::$MC_KEY.static::$MC_KEYS->get("SESSIONS").$key);
+      $mc->get(static::$MC_KEY.static::$MC_KEYS->get('SESSIONS').$key);
     return $mc_result;
   }
 
@@ -434,14 +456,14 @@ class Session extends Model {
     $mc_keys = $mc->getAllKeys();
     if ($key === null) {
       $all_sessions = preg_grep(
-        "/".self::$MC_KEY.self::$MC_KEYS->get("SESSIONS")."/",
+        '/'.self::$MC_KEY.self::$MC_KEYS->get('SESSIONS').'/',
         $mc_keys,
       );
       foreach ($all_sessions as $session_key) {
         $mc->delete($session_key);
       }
     } else {
-      $mc->delete(self::$MC_KEY.self::$MC_KEYS->get("SESSIONS").$key);
+      $mc->delete(self::$MC_KEY.self::$MC_KEYS->get('SESSIONS').$key);
     }
   }
 }
