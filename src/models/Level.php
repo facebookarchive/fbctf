@@ -121,7 +121,7 @@ class Level extends Model implements Importable, Exportable {
       $result = await $db->queryf('SELECT * FROM levels WHERE active = 1');
       foreach ($result->mapRows() as $row) {
         $level_by_country->add(
-          Pair {intval($row->get("entity_id")), self::levelFromRow($row)},
+          Pair {intval($row->get('entity_id')), self::levelFromRow($row)},
         );
       }
       self::setMCRecords('LEVEL_BY_COUNTRY', $level_by_country);
@@ -219,7 +219,7 @@ class Level extends Model implements Importable, Exportable {
       );
       foreach ($result->mapRows() as $row) {
         $active_levels->add(
-          Pair {intval($row->get("id")), self::levelFromRow($row)},
+          Pair {intval($row->get('id')), self::levelFromRow($row)},
         );
       }
       self::setMCRecords('ALL_ACTIVE_LEVELS', $active_levels);
@@ -251,7 +251,7 @@ class Level extends Model implements Importable, Exportable {
       );
       foreach ($result->mapRows() as $row) {
         $active_levels->add(
-          Pair {intval($row->get("id")), self::levelFromRow($row)},
+          Pair {intval($row->get('id')), self::levelFromRow($row)},
         );
       }
       self::setMCRecords('ALL_ACTIVE_LEVELS', $active_levels);
@@ -567,7 +567,7 @@ class Level extends Model implements Importable, Exportable {
     await Country::genUsedAdjust();
 
     self::invalidateMCRecords(); // Invalidate Memcached Level data.
-    Control::invalidateMCRecords("ALL_ACTIVITY"); // Invalidate Memcached Control data.
+    Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
   }
 
   // Delete level.
@@ -649,7 +649,7 @@ class Level extends Model implements Importable, Exportable {
       $result = await $db->queryf('SELECT * FROM levels ORDER BY id');
       foreach ($result->mapRows() as $row) {
         $all_levels->add(
-          Pair {intval($row->get("id")), self::levelFromRow($row)},
+          Pair {intval($row->get('id')), self::levelFromRow($row)},
         );
       }
       self::setMCRecords('ALL_LEVELS', new Map($all_levels));
@@ -674,7 +674,7 @@ class Level extends Model implements Importable, Exportable {
       );
       foreach ($result->mapRows() as $row) {
         $active_levels->add(
-          Pair {intval($row->get("id")), self::levelFromRow($row)},
+          Pair {intval($row->get('id')), self::levelFromRow($row)},
         );
       }
       self::setMCRecords('ALL_ACTIVE_LEVELS', $active_levels);
@@ -702,7 +702,7 @@ class Level extends Model implements Importable, Exportable {
       );
       foreach ($result->mapRows() as $row) {
         $active_levels->add(
-          Pair {intval($row->get("id")), self::levelFromRow($row)},
+          Pair {intval($row->get('id')), self::levelFromRow($row)},
         );
       }
       self::setMCRecords('ALL_ACTIVE_LEVELS', $active_levels);
@@ -735,7 +735,7 @@ class Level extends Model implements Importable, Exportable {
       $result = await $db->queryf('SELECT * FROM levels ORDER BY id');
       foreach ($result->mapRows() as $row) {
         $all_levels->add(
-          Pair {intval($row->get("id")), self::levelFromRow($row)},
+          Pair {intval($row->get('id')), self::levelFromRow($row)},
         );
       }
       self::setMCRecords('ALL_LEVELS', $all_levels);
@@ -781,7 +781,7 @@ class Level extends Model implements Importable, Exportable {
       $result = await $db->queryf('SELECT * FROM levels ORDER BY id');
       foreach ($result->mapRows() as $row) {
         $all_levels->add(
-          Pair {intval($row->get("id")), self::levelFromRow($row)},
+          Pair {intval($row->get('id')), self::levelFromRow($row)},
         );
       }
       self::setMCRecords('ALL_LEVELS', $all_levels);

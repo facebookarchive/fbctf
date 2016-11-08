@@ -69,7 +69,7 @@ class ScoreLog extends Model {
     $db = await self::genDb();
     await $db->queryf('DELETE FROM scores_log WHERE id > 0');
     self::invalidateMCRecords(); // Invalidate Memcached ScoreLog data.
-    Control::invalidateMCRecords("ALL_ACTIVITY"); // Invalidate Memcached Control data.
+    Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
     MultiTeam::invalidateMCRecords('ALL_TEAMS'); // Invalidate Memcached MultiTeam data.
     MultiTeam::invalidateMCRecords('POINTS_BY_TYPE'); // Invalidate Memcached MultiTeam data.
     MultiTeam::invalidateMCRecords('LEADERBOARD'); // Invalidate Memcached MultiTeam data.
@@ -92,12 +92,12 @@ class ScoreLog extends Model {
       foreach ($result->mapRows() as $row) {
         if ($level_captures->contains(intval($row->get('level_id')))) {
           $level_capture_teams =
-            $level_captures->get(intval($row->get("level_id")));
+            $level_captures->get(intval($row->get('level_id')));
           invariant(
             $level_capture_teams !== null,
             'level_captures should not be null',
           );
-          $level_capture_teams->add(intval($row->get("team_id")));
+          $level_capture_teams->add(intval($row->get('team_id')));
           $level_captures->set(
             intval($row->get('level_id')),
             $level_capture_teams,
@@ -229,7 +229,7 @@ class ScoreLog extends Model {
       $type,
     );
     self::invalidateMCRecords(); // Invalidate Memcached ScoreLog data.
-    Control::invalidateMCRecords("ALL_ACTIVITY"); // Invalidate Memcached Control data.
+    Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
     MultiTeam::invalidateMCRecords('ALL_TEAMS'); // Invalidate Memcached MultiTeam data.
     MultiTeam::invalidateMCRecords('POINTS_BY_TYPE'); // Invalidate Memcached MultiTeam data.
     MultiTeam::invalidateMCRecords('LEADERBOARD'); // Invalidate Memcached MultiTeam data.

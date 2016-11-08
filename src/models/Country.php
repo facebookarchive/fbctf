@@ -105,7 +105,7 @@ class Country extends Model {
 
     foreach ($rows as $row) {
       $all_countries->add(
-        Pair {intval($row->get("id")), self::countryFromRow($row)},
+        Pair {intval($row->get('id')), self::countryFromRow($row)},
       );
     }
     invariant(
@@ -236,7 +236,7 @@ class Country extends Model {
       $result = await $db->queryf('SELECT * FROM countries ORDER BY id');
       foreach ($result->mapRows() as $row) {
         $all_countries->add(
-          Pair {intval($row->get("id")), self::countryFromRow($row)},
+          Pair {intval($row->get('id')), self::countryFromRow($row)},
         );
       }
       self::setMCRecords('ALL_COUNTRIES_BY_ID', $all_countries);
