@@ -5,7 +5,7 @@ class Announcement extends Model {
   protected static string $MC_KEY = 'announcement:';
 
   protected static Map<string, string>
-    $MC_KEYS = Map {"ALL_ANNOUNCEMENTS" => "all_announcements"};
+    $MC_KEYS = Map {'ALL_ANNOUNCEMENTS' => 'all_announcements'};
 
   private function __construct(
     private int $id,
@@ -76,7 +76,11 @@ class Announcement extends Model {
       self::setMCRecords('ALL_ANNOUNCEMENTS', $announcements);
     }
     $announcements = self::getMCRecords('ALL_ANNOUNCEMENTS');
-    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
+    invariant($announcements !== null, 'announcements should not be null');
+    invariant(
+      is_array($announcements),
+      'announcements should be an array of Announcement',
+    );
     return $announcements;
   }
 }
