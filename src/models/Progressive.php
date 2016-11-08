@@ -6,8 +6,8 @@ class Progressive extends Model {
 
   protected static Map<string, string>
     $MC_KEYS = Map {
-      "ITERATION_COUNT" => "iterations_count",
-      "PROGRESSIVE_POINTS" => "points_by_teamname",
+      'ITERATION_COUNT' => 'iterations_count',
+      'PROGRESSIVE_POINTS' => 'points_by_teamname',
     };
 
   private function __construct(
@@ -74,7 +74,7 @@ class Progressive extends Model {
           'SELECT * FROM progressive_log GROUP BY team_name, iteration ORDER BY points ASC',
         );
       foreach ($result->mapRows() as $row) {
-        $progressive[$row->get("team_name")][] =
+        $progressive[$row->get('team_name')][] =
           self::progressiveFromRow($row);
       }
       self::setMCRecords('PROGRESSIVE_POINTS', new Map($progressive));
@@ -82,14 +82,21 @@ class Progressive extends Model {
 
     $progressive = self::getMCRecords('PROGRESSIVE_POINTS');
     /* HH_IGNORE_ERROR[4062] */
+    invariant($progressive !== null, 'progressive should not be null');
+    invariant(
+      $progressive instanceof Map,
+      'progressive should be of type Map',
+    );
     if ($progressive->contains($team_name)) {
-      /* HH_IGNORE_ERROR[4062] */
-      return $progressive->get($team_name);
+      $team_progressive = $progressive->get($team_name);
+      invariant(
+        $team_progressive !== null,
+        'team_progressive should not be null',
+      );
+      return $team_progressive;
     } else {
       return array();
     }
-    /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
-    return self::getMCRecords('PROGRESSIVE_POINTS');
   }
 
   // Count how many iterations of the progressive scoreboard we have.
@@ -109,7 +116,9 @@ class Progressive extends Model {
       );
     }
     /* HH_IGNORE_ERROR[4110]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
-    return self::getMCRecords('ITERATION_COUNT');
+    $iteration_count = intval(self::getMCRecords('ITERATION_COUNT'));
+    invariant($iteration_count !== null, 'progressive should not be null');
+    return $iteration_count;
   }
 
   // Acquire the data for one iteration of the progressive scoreboard.
