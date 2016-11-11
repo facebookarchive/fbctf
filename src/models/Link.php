@@ -80,24 +80,34 @@ class Link extends Model {
         $links[$row->get('level_id')][] = self::linkFromRow($row);
       }
       self::setMCRecords('LEVEL_LINKS', new Map($links));
-    }
-    $links = self::getMCRecords('LEVEL_LINKS');
-    invariant($links !== null, 'links should not be null');
-    invariant($links instanceof Map, 'links should be of type Map');
-    if ($links->contains($level_id)) {
-      $link_array = $links->get($level_id);
-      invariant(
-        is_array($link_array),
-        '$link_array should be an array of Link',
-      );
-      return $link_array;
+      $links = new Map($links);
+      if ($links->contains($level_id)) {
+        $link_array = $links->get($level_id);
+        invariant(
+          is_array($link_array),
+          '$link_array should be an array of Link',
+        );
+        return $link_array;
+      } else {
+        return array();
+      }
     } else {
-      return array();
+      invariant($mc_result instanceof Map, 'links should be of type Map');
+      if ($mc_result->contains($level_id)) {
+        $link_array = $mc_result->get($level_id);
+        invariant(
+          is_array($link_array),
+          '$link_array should be an array of Link',
+        );
+        return $link_array;
+      } else {
+        return array();
+      }
     }
   }
 
   // Get a single link.
-  /* HH_IGNORE_ERROR[4110]: HHVM is concerned that the link might not be present, this is verified by the caller */
+  /* HH_IGNORE_ERROR[4110]: Lines #827 and #835 prevent this function from failing to return */
   public static async function gen(
     int $link_id,
     bool $refresh = false,
@@ -111,14 +121,20 @@ class Link extends Model {
         $links->add(Pair {intval($row->get('id')), self::linkFromRow($row)});
       }
       self::setMCRecords('LINKS', $links);
-    }
-    $links = self::getMCRecords('LINKS');
-    invariant($links !== null, 'links should not be null');
-    invariant($links instanceof Map, 'links should be of type Map');
-    if ($links->contains($link_id)) {
-      $link = $links->get($link_id);
-      invariant($link instanceof Link, 'link should be of type Link');
-      return $link;
+      invariant($links->contains($link_id) !== false, 'link not found');
+      if ($links->contains($link_id)) {
+        $link = $links->get($link_id);
+        invariant($link instanceof Link, 'link should be of type Link');
+        return $link;
+      }
+    } else {
+      invariant($mc_result instanceof Map, 'links should be of type Map');
+      invariant($mc_result->contains($link_id) !== false, 'link not found');
+      if ($mc_result->contains($link_id)) {
+        $link = $mc_result->get($link_id);
+        invariant($link instanceof Link, 'link should be of type Link');
+        return $link;
+      }
     }
   }
 
@@ -141,15 +157,23 @@ class Link extends Model {
         );
       }
       self::setMCRecords('LEVELS_COUNT', $link_count);
-    }
-    $link_count = self::getMCRecords('LEVELS_COUNT');
-    invariant($link_count !== null, 'link_count should not be null');
-    invariant($link_count instanceof Map, 'link_count should be of type Map');
-    if ($link_count->contains($level_id)) {
-      $level_link_count = $link_count->get($level_id);
-      return intval($level_link_count) > 0;
+      if ($link_count->contains($level_id)) {
+        $level_link_count = $link_count->get($level_id);
+        return intval($level_link_count) > 0;
+      } else {
+        return false;
+      }
     } else {
-      return false;
+      invariant(
+        $mc_result instanceof Map,
+        'link_count should be of type Map',
+      );
+      if ($mc_result->contains($level_id)) {
+        $level_link_count = $mc_result->get($level_id);
+        return intval($level_link_count) > 0;
+      } else {
+        return false;
+      }
     }
   }
 
