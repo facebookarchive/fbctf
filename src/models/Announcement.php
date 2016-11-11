@@ -74,13 +74,12 @@ class Announcement extends Model {
         $announcements[] = self::announcementFromRow($row);
       }
       self::setMCRecords('ALL_ANNOUNCEMENTS', $announcements);
+      return $announcements;
     }
-    $announcements = self::getMCRecords('ALL_ANNOUNCEMENTS');
-    invariant($announcements !== null, 'announcements should not be null');
     invariant(
-      is_array($announcements),
-      'announcements should be an array of Announcement',
+      is_array($mc_result),
+      'cached return should be an array of Announcement',
     );
-    return $announcements;
+    return $mc_result;
   }
 }
