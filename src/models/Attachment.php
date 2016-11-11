@@ -146,22 +146,32 @@ class Attachment extends Model {
         $attachments[$row->get('level_id')][] = self::attachmentFromRow($row);
       }
       self::setMCRecords('LEVEL_ATTACHMENTS', new Map($attachments));
-    }
-    $attachments = self::getMCRecords('LEVEL_ATTACHMENTS');
-    invariant($attachments !== null, 'attachments should not be null');
-    invariant(
-      $attachments instanceof Map,
-      'attachments should be of type Map',
-    );
-    if ($attachments->contains($level_id)) {
-      $attachment = $attachments->get($level_id);
-      invariant(
-        is_array($attachment),
-        'attachment should be an array of Attachment',
-      );
-      return $attachment;
+      $attachments = new Map($attachments);
+      if ($attachments->contains($level_id)) {
+        $attachment = $attachments->get($level_id);
+        invariant(
+          is_array($attachment),
+          'attachment should be an array of Attachment',
+        );
+        return $attachment;
+      } else {
+        return array();
+      }
     } else {
-      return array();
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      if ($mc_result->contains($level_id)) {
+        $attachment = $mc_result->get($level_id);
+        invariant(
+          is_array($attachment),
+          'attachment should be an array of Attachment',
+        );
+        return $attachment;
+      } else {
+        return array();
+      }
     }
   }
 
@@ -182,20 +192,27 @@ class Attachment extends Model {
         );
       }
       self::setMCRecords('ATTACHMENTS', $attachments);
-    }
-    $attachments = self::getMCRecords('ATTACHMENTS');
-    invariant($attachments !== null, 'attachments should not be null');
-    invariant(
-      $attachments instanceof Map,
-      'attachments should be of type Map',
-    );
-    if ($attachments->contains($attachment_id)) {
-      $attachment = $attachments->get($attachment_id);
+      if ($attachments->contains($attachment_id)) {
+        $attachment = $attachments->get($attachment_id);
+        invariant(
+          $attachment instanceof Attachment,
+          'attachment should be of type Attachment',
+        );
+        return $attachment;
+      }
+    } else {
       invariant(
-        $attachment instanceof Attachment,
-        'attachment should be of type Attachment',
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
       );
-      return $attachment;
+      if ($mc_result->contains($attachment_id)) {
+        $attachment = $mc_result->get($attachment_id);
+        invariant(
+          $attachment instanceof Attachment,
+          'attachment should be of type Attachment',
+        );
+        return $attachment;
+      }
     }
   }
 
@@ -218,18 +235,23 @@ class Attachment extends Model {
         );
       }
       self::setMCRecords('LEVELS_COUNT', $attachment_count);
-    }
-    $attachment_count = self::getMCRecords('LEVELS_COUNT');
-    invariant($attachment_count !== null, 'attachments should not be null');
-    invariant(
-      $attachment_count instanceof Map,
-      'attachments should be of type Map',
-    );
-    if ($attachment_count->contains($level_id)) {
-      $level_attachment_count = $attachment_count->get($level_id);
-      return intval($level_attachment_count) > 0;
+      if ($attachment_count->contains($level_id)) {
+        $level_attachment_count = $attachment_count->get($level_id);
+        return intval($level_attachment_count) > 0;
+      } else {
+        return false;
+      }
     } else {
-      return false;
+      invariant(
+        $mc_result instanceof Map,
+        'attachments should be of type Map',
+      );
+      if ($mc_result->contains($level_id)) {
+        $level_attachment_count = $mc_result->get($level_id);
+        return intval($level_attachment_count) > 0;
+      } else {
+        return false;
+      }
     }
   }
 
