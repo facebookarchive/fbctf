@@ -146,14 +146,14 @@ class Session extends Model {
       invariant($result->numRows() === 1, 'Expected exactly one result');
       $session_data = self::sessionFromRow($result->mapRows()[0]);
       self::setMCSession($cookie, $session_data);
+      return $session_data;
+    } else {
+      invariant(
+        $mc_result instanceof Session,
+        'cache return should be of type Session',
+      );
+      return $mc_result;
     }
-    $session = self::getMCSession($cookie);
-    invariant($session !== null, 'session should not be null');
-    invariant(
-      $session instanceof Session,
-      'session should be of type Session',
-    );
-    return $session;
   }
 
   // Checks if session exists by cookie.
@@ -254,7 +254,6 @@ class Session extends Model {
     } else {
       await self::genCreateCacheSession($cookie);
     }
-    $sess = self::getMCSession($cookie);
   }
 
   // Delete the session for a given cookie.
