@@ -309,6 +309,9 @@ class Session extends Model {
     $empty_sessions = await self::genEmptySessionsForCleanup();
     foreach ($expired_sessions as $session) {
       $cached_session = self::getMCSession($session->getCookie());
+      if ($cached_session === false) {
+        continue;
+      }
       invariant(
         $cached_session !== null,
         'cached_session should not be null',
@@ -333,6 +336,12 @@ class Session extends Model {
       $cached_session = self::getMCSession($session->getCookie());
       if ($cached_session !== false && $cached_session === '') {
         self::invalidateMCSessions($session->getCookie());
+      } elseif ($cached_session !== false && $cached_session !== '') {
+        await self::genUpdate(
+            $session->getCookie(),
+            $session->getData(),
+            true,
+            );
       }
     }
     // Clean up expired sessions
