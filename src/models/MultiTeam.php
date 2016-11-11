@@ -307,7 +307,7 @@ class MultiTeam extends Team {
       $first_team_captured_by_level = array();
       $teams =
         await self::genTeamArrayFromDB(
-          'SELECT * FROM teams LEFT JOIN scores_log ON teams.id = scores_log.team_id WHERE scores_log.ts IN (SELECT MIN(scores_log.ts) FROM scores_log GROUP BY scores_log.level_id)',
+          'SELECT * FROM teams LEFT JOIN scores_log ON teams.id = scores_log.team_id WHERE scores_log.ts IN (SELECT MIN(scores_log.ts) FROM scores_log WHERE scores_log.team_id IN (SELECT id FROM teams) GROUP BY scores_log.level_id)',
         );
       foreach ($teams->items() as $team) {
         $first_team_captured_by_level[intval($team->get('level_id'))] =
