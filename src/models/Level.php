@@ -125,20 +125,21 @@ class Level extends Model implements Importable, Exportable {
         );
       }
       self::setMCRecords('LEVEL_BY_COUNTRY', $level_by_country);
-    }
-    $level_by_country = self::getMCRecords('LEVEL_BY_COUNTRY');
-    invariant(
-      $level_by_country !== null,
-      'level_by_country should not be null',
-    );
-    invariant(
-      $level_by_country instanceof Map,
-      'level_by_country should be of type Map',
-    );
-    if ($level_by_country->contains($country_id)) {
-      return $level_by_country->get($country_id);
+      if ($level_by_country->contains($country_id)) {
+        return $level_by_country->get($country_id);
+      } else {
+        return null;
+      }
     } else {
-      return null;
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      if ($mc_result->contains($country_id)) {
+        return $mc_result->get($country_id);
+      } else {
+        return null;
+      }
     }
   }
 
@@ -223,17 +224,21 @@ class Level extends Model implements Importable, Exportable {
         );
       }
       self::setMCRecords('ALL_ACTIVE_LEVELS', $active_levels);
-    }
-    $active_levels = self::getMCRecords('ALL_ACTIVE_LEVELS');
-    invariant($active_levels !== null, 'active_levels should not be null');
-    invariant(
-      $active_levels instanceof Map,
-      'active_levels should be of type Map',
-    );
-    if ($active_levels->contains($level_id)) {
-      return true;
+      if ($active_levels->contains($level_id)) {
+        return true;
+      } else {
+        return false;
+      }
     } else {
-      return false;
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      if ($mc_result->contains($level_id)) {
+        return true;
+      } else {
+        return false;
+      }
     }
   }
 
@@ -255,23 +260,33 @@ class Level extends Model implements Importable, Exportable {
         );
       }
       self::setMCRecords('ALL_ACTIVE_LEVELS', $active_levels);
-    }
-    $active_levels = self::getMCRecords('ALL_ACTIVE_LEVELS');
-    invariant($active_levels !== null, 'active_levels should not be null');
-    invariant(
-      $active_levels instanceof Map,
-      'active_levels should be of type Map',
-    );
-    if ($active_levels->contains($level_id)) {
-      $level = $active_levels->get($level_id);
-      invariant($level !== null, 'level should not be null');
-      if ($level->type == 'base') {
-        return true;
+      if ($active_levels->contains($level_id)) {
+        $level = $active_levels->get($level_id);
+        invariant($level instanceof Level, 'level should be type of Level');
+        if ($level->type == 'base') {
+          return true;
+        } else {
+          return false;
+        }
       } else {
         return false;
       }
     } else {
-      return false;
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      if ($mc_result->contains($level_id)) {
+        $level = $mc_result->get($level_id);
+        invariant($level instanceof Level, 'level should be type of Level');
+        if ($level->type == 'base') {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
     }
   }
 
@@ -653,12 +668,18 @@ class Level extends Model implements Importable, Exportable {
         );
       }
       self::setMCRecords('ALL_LEVELS', new Map($all_levels));
+      $levels = array();
+      $levels = $all_levels->toValuesArray();
+      return $levels;
+    } else {
+      $levels = array();
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      $levels = $mc_result->toValuesArray();
+      return $levels;
     }
-    $all_levels = self::getMCRecords('ALL_LEVELS');
-    $levels = array();
-    invariant($all_levels instanceof Map, 'all_levels should be of type Map');
-    $levels = $all_levels->toValuesArray();
-    return $levels;
   }
 
   // All levels by status.
@@ -678,15 +699,18 @@ class Level extends Model implements Importable, Exportable {
         );
       }
       self::setMCRecords('ALL_ACTIVE_LEVELS', $active_levels);
+      $levels = array();
+      $levels = $active_levels->toValuesArray();
+      return $levels;
+    } else {
+      $levels = array();
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      $levels = $mc_result->toValuesArray();
+      return $levels;
     }
-    $active_levels = self::getMCRecords('ALL_ACTIVE_LEVELS');
-    $levels = array();
-    invariant(
-      $active_levels instanceof Map,
-      'active_levels should be of type Map',
-    );
-    $levels = $active_levels->toValuesArray();
-    return $levels;
   }
 
   // All levels by status.
@@ -706,21 +730,30 @@ class Level extends Model implements Importable, Exportable {
         );
       }
       self::setMCRecords('ALL_ACTIVE_LEVELS', $active_levels);
-    }
-    $active_levels = self::getMCRecords('ALL_ACTIVE_LEVELS');
-    $levels = array();
-    invariant(
-      $active_levels instanceof Map,
-      'active_levels should be of type Map',
-    );
-    $levels = $active_levels->toValuesArray();
-    $bases = array();
-    foreach ($levels as $level) {
-      if ($level->type === 'base') {
-        $bases[] = $level;
+      $levels = array();
+      $levels = $active_levels->toValuesArray();
+      $bases = array();
+      foreach ($levels as $level) {
+        if ($level->type === 'base') {
+          $bases[] = $level;
+        }
       }
+      return $bases;
+    } else {
+      $levels = array();
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      $levels = $mc_result->toValuesArray();
+      $bases = array();
+      foreach ($levels as $level) {
+        if ($level->type === 'base') {
+          $bases[] = $level;
+        }
+      }
+      return $bases;
     }
-    return $bases;
   }
 
   // All levels by type.
@@ -739,18 +772,30 @@ class Level extends Model implements Importable, Exportable {
         );
       }
       self::setMCRecords('ALL_LEVELS', $all_levels);
-    }
-    $all_levels = self::getMCRecords('ALL_LEVELS');
-    $levels = array();
-    invariant($all_levels instanceof Map, 'all_levels should be of type Map');
-    $levels = $all_levels->toValuesArray();
-    $type_levels = array();
-    foreach ($levels as $level) {
-      if ($level->type === $type) {
-        $type_levels[] = $level;
+      $levels = array();
+      $levels = $all_levels->toValuesArray();
+      $type_levels = array();
+      foreach ($levels as $level) {
+        if ($level->type === $type) {
+          $type_levels[] = $level;
+        }
       }
+      return $type_levels;
+    } else {
+      $levels = array();
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      $levels = $mc_result->toValuesArray();
+      $type_levels = array();
+      foreach ($levels as $level) {
+        if ($level->type === $type) {
+          $type_levels[] = $level;
+        }
+      }
+      return $type_levels;
     }
-    return $type_levels;
   }
 
   // All quiz levels.
@@ -769,7 +814,7 @@ class Level extends Model implements Importable, Exportable {
   }
 
   // Get a single level.
-  /* HH_IGNORE_ERROR[4110]: Claims - It is incompatible with void because this async function implicitly returns Awaitable<void>, yet this returns Awaitable<Level> and the type is checked on line 778 */
+  /* HH_IGNORE_ERROR[4110]: Lines #827 and #835 prevent this function from failing to return */
   public static async function gen(
     int $level_id,
     bool $refresh = false,
@@ -785,15 +830,26 @@ class Level extends Model implements Importable, Exportable {
         );
       }
       self::setMCRecords('ALL_LEVELS', $all_levels);
-    }
-    $all_levels = self::getMCRecords('ALL_LEVELS');
-
-    invariant($all_levels !== null, 'all_levels should not be null');
-    invariant($all_levels instanceof Map, 'all_levels should be of type Map');
-    if ($all_levels->contains($level_id)) {
-      $level = $all_levels->get($level_id);
-      invariant($level instanceof Level, 'level should be of type Level');
-      return $level;
+      invariant(
+        $all_levels->contains($level_id) === false,
+        'level not found',
+      );
+      if ($all_levels->contains($level_id)) {
+        $level = $all_levels->get($level_id);
+        invariant($level instanceof Level, 'level should be of type Level');
+        return $level;
+      }
+    } else {
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      invariant($mc_result->contains($level_id) === false, 'level not found');
+      if ($mc_result->contains($level_id)) {
+        $level = $mc_result->get($level_id);
+        invariant($level instanceof Level, 'level should be of type Level');
+        return $level;
+      }
     }
   }
 

@@ -76,7 +76,6 @@ class Country extends Model {
       $status ? 1 : 0,
       $country_id,
     );
-
     self::invalidateMCRecords(); // Invalidate Memcached Country data.
   }
 
@@ -91,7 +90,6 @@ class Country extends Model {
       $status ? 1 : 0,
       $country_id,
     );
-
     self::invalidateMCRecords(); // Invalidate Memcached Country data.
   }
 
@@ -108,10 +106,6 @@ class Country extends Model {
         Pair {intval($row->get('id')), self::countryFromRow($row)},
       );
     }
-    invariant(
-      $all_countries instanceof Map,
-      'all_countries should be a Map of Country',
-    );
 
     $countries = array();
     $countries = $all_countries->toValuesArray();
@@ -134,13 +128,14 @@ class Country extends Model {
       $all_countries =
         await self::genAll('SELECT * FROM countries ORDER BY iso_code');
       self::setMCRecords('ALL_COUNTRIES', $all_countries);
+      return $all_countries;
+    } else {
+      invariant(
+        is_array($mc_result),
+        'cache return should be an array of Country',
+      );
+      return $mc_result;
     }
-    $all_countries = self::getMCRecords('ALL_COUNTRIES');
-    invariant(
-      is_array($all_countries),
-      'all_countries should be an array of Country',
-    );
-    return $all_countries;
   }
 
   public static async function genAllCountriesForMap(
@@ -151,13 +146,14 @@ class Country extends Model {
       $all_countries =
         await self::genAll('SELECT * FROM countries ORDER BY CHAR_LENGTH(d)');
       self::setMCRecords('ALL_COUNTRIES_FOR_MAP', $all_countries);
+      return $all_countries;
+    } else {
+      invariant(
+        is_array($mc_result),
+        'cache return should be an array of Country',
+      );
+      return $mc_result;
     }
-    $all_countries = self::getMCRecords('ALL_COUNTRIES_FOR_MAP');
-    invariant(
-      is_array($all_countries),
-      'all_countries should be an array of Country',
-    );
-    return $all_countries;
   }
 
   public static async function genAllEnabledCountries(
@@ -168,13 +164,14 @@ class Country extends Model {
       $all_countries =
         await self::genAll('SELECT * FROM countries WHERE enabled = 1');
       self::setMCRecords('ALL_ENABLED_COUNTRIES', $all_countries);
+      return $all_countries;
+    } else {
+      invariant(
+        is_array($mc_result),
+        'cache return should be an array of Country',
+      );
+      return $mc_result;
     }
-    $all_countries = self::getMCRecords('ALL_ENABLED_COUNTRIES');
-    invariant(
-      is_array($all_countries),
-      'all_countries should be an array of Country',
-    );
-    return $all_countries;
   }
 
   // All enabled countries. The weird sorting is because SVG lack of z-index
@@ -188,13 +185,14 @@ class Country extends Model {
         'SELECT * FROM countries WHERE enabled = 1 ORDER BY CHAR_LENGTH(d)',
       );
       self::setMCRecords('ALL_ENABLED_COUNTRIES_FOR_MAP', $all_countries);
+      return $all_countries;
+    } else {
+      invariant(
+        is_array($mc_result),
+        'cache return should be an array of Country',
+      );
+      return $mc_result;
     }
-    $all_countries = self::getMCRecords('ALL_ENABLED_COUNTRIES_FOR_MAP');
-    invariant(
-      is_array($all_countries),
-      'all_countries should be an array of Country',
-    );
-    return $all_countries;
   }
 
   // All enabled and unused countries
@@ -207,13 +205,14 @@ class Country extends Model {
         'SELECT * FROM countries WHERE enabled = 1 AND used = 0',
       );
       self::setMCRecords('ALL_AVAILABLE_COUNTRIES', $all_countries);
+      return $all_countries;
+    } else {
+      invariant(
+        is_array($mc_result),
+        'cache return should be an array of Country',
+      );
+      return $mc_result;
     }
-    $all_countries = self::getMCRecords('ALL_AVAILABLE_COUNTRIES');
-    invariant(
-      is_array($all_countries),
-      'all_countries should be an array of Country',
-    );
-    return $all_countries;
   }
 
   // Check if country is in an active level
@@ -224,7 +223,7 @@ class Country extends Model {
   }
 
   // Get a country by id.
-  /* HH_IGNORE_ERROR[4110]: Claims - It is incompatible with void because this async function implicitly returns Awaitable<void>, yet this returns Awaitable<Country> and the type is checked on line 230 */
+  /* HH_IGNORE_ERROR[4110]: Lines #246 and #260 prevent this function from failing to return */
   public static async function gen(
     int $country_id,
     bool $refresh = false,
@@ -240,19 +239,35 @@ class Country extends Model {
         );
       }
       self::setMCRecords('ALL_COUNTRIES_BY_ID', $all_countries);
-    }
-    $countries = self::getMCRecords('ALL_COUNTRIES_BY_ID');
-    invariant(
-      $countries instanceof Map,
-      'countries should be a Map of Country by Id',
-    );
-    if ($countries->contains($country_id)) {
-      $country = $countries->get($country_id);
       invariant(
-        $country instanceof Country,
-        'country should be of type Country',
+        $all_countries->contains($country_id) === false,
+        'country not found',
       );
-      return $country;
+      if ($all_countries->contains($country_id)) {
+        $country = $all_countries->get($country_id);
+        invariant(
+          $country instanceof Country,
+          'country should be of type Country',
+        );
+        return $country;
+      }
+    } else {
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be a Map of Country by Id',
+      );
+      invariant(
+        $mc_result->contains($country_id) === false,
+        'country not found',
+      );
+      if ($mc_result->contains($country_id)) {
+        $country = $mc_result->get($country_id);
+        invariant(
+          $country instanceof Country,
+          'country should be of type Country',
+        );
+        return $country;
+      }
     }
   }
 

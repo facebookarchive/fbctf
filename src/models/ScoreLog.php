@@ -69,6 +69,7 @@ class ScoreLog extends Model {
     $db = await self::genDb();
     await $db->queryf('DELETE FROM scores_log WHERE id > 0');
     self::invalidateMCRecords(); // Invalidate Memcached ScoreLog data.
+    Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
     MultiTeam::invalidateMCRecords('ALL_TEAMS'); // Invalidate Memcached MultiTeam data.
     MultiTeam::invalidateMCRecords('POINTS_BY_TYPE'); // Invalidate Memcached MultiTeam data.
     MultiTeam::invalidateMCRecords('LEADERBOARD'); // Invalidate Memcached MultiTeam data.
@@ -217,6 +218,7 @@ class ScoreLog extends Model {
       $type,
     );
     self::invalidateMCRecords(); // Invalidate Memcached ScoreLog data.
+    Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
     MultiTeam::invalidateMCRecords('ALL_TEAMS'); // Invalidate Memcached MultiTeam data.
     MultiTeam::invalidateMCRecords('POINTS_BY_TYPE'); // Invalidate Memcached MultiTeam data.
     MultiTeam::invalidateMCRecords('LEADERBOARD'); // Invalidate Memcached MultiTeam data.

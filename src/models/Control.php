@@ -262,13 +262,13 @@ class Control extends Model {
           'SELECT scores_log.ts AS time, teams.name AS team, countries.iso_code AS country, scores_log.team_id AS team_id FROM scores_log, levels, teams, countries WHERE scores_log.level_id = levels.id AND levels.entity_id = countries.id AND scores_log.team_id = teams.id AND teams.visible = 1 ORDER BY time DESC LIMIT 50',
         );
       self::setMCRecords('ALL_ACTIVITY', $result->mapRows());
+      return $result->mapRows();
     }
-    $all_activity = self::getMCRecords('ALL_ACTIVITY');
     invariant(
-      $all_activity instanceof Vector,
-      'all_activity should be of type Vector',
+      $mc_result instanceof Vector,
+      'cache return should be of type Vector',
     );
-    return $all_activity;
+    return $mc_result;
   }
 
   public static async function genResetBases(): Awaitable<void> {

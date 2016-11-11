@@ -3341,10 +3341,7 @@ class AdminController extends Controller {
 
           $level = $results->get('level');
           invariant($level !== null, 'Level should not be null');
-          invariant(
-            $level instanceof Level,
-            'level should be of type Level',
-          );
+          invariant($level instanceof Level, 'level should be of type Level');
 
           $country = await Country::gen($level->getEntityId());
 
