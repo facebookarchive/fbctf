@@ -96,33 +96,59 @@ class HintLog extends Model {
         }
       }
       self::setMCRecords('USED_HINTS', new Map($hints_used));
-    }
-    $hints_used = self::getMCRecords('USED_HINTS');
-    invariant($hints_used !== null, 'hints_used should not be null');
-    invariant($hints_used instanceof Map, 'hints_used should be of type Map');
-    if ($hints_used->contains($level_id)) {
-      if ($any_team) {
-        $hints_used_teams = $hints_used->get($level_id);
-        invariant(
-          $hints_used_teams !== null,
-          'hints_used_teams should not be null',
-        );
-        $team_id_key = $hints_used_teams->linearSearch($team_id);
-        if ($team_id_key != -1) {
-          $hints_used_teams->removeKey($team_id_key);
+      if ($hints_used->contains($level_id)) {
+        if ($any_team) {
+          $hints_used_teams = $hints_used->get($level_id);
+          invariant(
+            $hints_used_teams !== null,
+            'hints_used_teams should not be null',
+          );
+          $team_id_key = $hints_used_teams->linearSearch($team_id);
+          if ($team_id_key !== -1) {
+            $hints_used_teams->removeKey($team_id_key);
+          }
+          return intval(count($hints_used_teams)) > 0;
+        } else {
+          $hints_used_teams = $hints_used->get($level_id);
+          invariant(
+            $hints_used_teams !== null,
+            'hints_used_teams should not be null',
+          );
+          $team_id_key = $hints_used_teams->linearSearch($team_id);
+          return $team_id_key !== -1;
         }
-        return intval(count($hints_used_teams)) > 0;
       } else {
-        $hints_used_teams = $hints_used->get($level_id);
-        invariant(
-          $hints_used_teams !== null,
-          'hints_used_teams should not be null',
-        );
-        $team_id_key = $hints_used_teams->linearSearch($team_id);
-        return $team_id_key != -1;
+        return false;
       }
     } else {
-      return false;
+      invariant(
+        $mc_result instanceof Map,
+        'hints_used should be of type Map',
+      );
+      if ($mc_result->contains($level_id)) {
+        if ($any_team) {
+          $hints_used_teams = $mc_result->get($level_id);
+          invariant(
+            $hints_used_teams !== null,
+            'hints_used_teams should not be null',
+          );
+          $team_id_key = $hints_used_teams->linearSearch($team_id);
+          if ($team_id_key !== -1) {
+            $hints_used_teams->removeKey($team_id_key);
+          }
+          return intval(count($hints_used_teams)) > 0;
+        } else {
+          $hints_used_teams = $mc_result->get($level_id);
+          invariant(
+            $hints_used_teams !== null,
+            'hints_used_teams should not be null',
+          );
+          $team_id_key = $hints_used_teams->linearSearch($team_id);
+          return $team_id_key !== -1;
+        }
+      } else {
+        return false;
+      }
     }
   }
 
