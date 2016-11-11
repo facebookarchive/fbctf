@@ -42,7 +42,7 @@ class MultiTeam extends Team {
       return $all_teams;
     } else {
       invariant(
-        ($mc_result !== null && $mc_result instanceof Map),
+        $mc_result instanceof Map,
         'cache return should of type Map and not null',
       );
       return $mc_result;
@@ -56,7 +56,7 @@ class MultiTeam extends Team {
     $all_teams = await self::genAllTeamsCache($refresh);
     $team = $all_teams->get($team_id);
     invariant(
-      ($team !== null && $team instanceof Team),
+      $team instanceof Team,
       'all_teams should of type Team and not null',
     );
     return $team;
@@ -80,7 +80,7 @@ class MultiTeam extends Team {
       return $team_leaderboard;
     } else {
       invariant(
-        ($mc_result !== null && is_array($mc_result)),
+        is_array($mc_result),
         'cache return should be an array of Team and not null',
       );
       return $mc_result;
@@ -105,7 +105,7 @@ class MultiTeam extends Team {
           if ($points_by_type->contains(intval($team->get('id')))) {
             $type_pair = $points_by_type->get(intval($team->get('id')));
             invariant(
-              ($type_pair !== null && $type_pair instanceof Map),
+              $type_pair instanceof Map,
               'type_pair should of type Map and not null',
             );
             $type_pair->add(
@@ -125,8 +125,7 @@ class MultiTeam extends Team {
       if ($points_by_type->contains($team_id)) {
         $team_points_by_type = $points_by_type->get($team_id);
         invariant(
-          ($team_points_by_type !== null &&
-           $team_points_by_type instanceof Map),
+          $team_points_by_type instanceof Map,
           'team_points_by_type should of type Map and not null',
         );
         if ($team_points_by_type->contains($type)) {
@@ -139,14 +138,14 @@ class MultiTeam extends Team {
       }
     } else {
       invariant(
-        ($mc_result !== null && $mc_result instanceof Map),
+        $mc_result instanceof Map,
         'cache return should of type Map and not null',
       );
       if ($mc_result->contains($team_id)) {
         $team_points_by_type = $mc_result->get($team_id);
         invariant(
-          ($team_points_by_type !== null && $mc_result instanceof Map),
-          'cache return should of type Map and not null',
+          $team_points_by_type instanceof Map,
+          'team_points_by_type should of type Map and not null',
         );
         if ($team_points_by_type->contains($type)) {
           return intval($team_points_by_type->get($type));
@@ -176,7 +175,7 @@ class MultiTeam extends Team {
       return $all_active_teams;
     } else {
       invariant(
-        ($mc_result !== null && is_array($mc_result)),
+        is_array($mc_result),
         'cache return should be an array of Team and not null',
       );
       return $mc_result;
@@ -200,7 +199,7 @@ class MultiTeam extends Team {
       return $all_visible_teams;
     } else {
       invariant(
-        ($mc_result !== null && is_array($mc_result)),
+        is_array($mc_result),
         'cache return should be an array of Team and not null',
       );
       return $mc_result;
@@ -226,7 +225,7 @@ class MultiTeam extends Team {
           ($teams_by_logo->contains($logo))) {
         $teams = $teams_by_logo->get($logo);
         invariant(
-          ($teams !== null && is_array($teams)),
+          is_array($teams),
           'teams should be an array of Team and not null',
         );
         return $teams;
@@ -241,7 +240,7 @@ class MultiTeam extends Team {
       if ((count($mc_result) !== 0) && ($mc_result->contains($logo))) {
         $teams = $mc_result->get($logo);
         invariant(
-          ($teams !== null && is_array($teams)),
+          is_array($teams),
           'cache return should be an array of Team and not null',
         );
         return $teams;
@@ -274,7 +273,7 @@ class MultiTeam extends Team {
       if ($teams_by_completed_level->contains($level_id)) {
         $teams = $teams_by_completed_level->get($level_id);
         invariant(
-          ($teams !== null && is_array($teams)),
+          is_array($teams),
           'teams should be an array of Team and not null',
         );
         return $teams;
@@ -283,13 +282,13 @@ class MultiTeam extends Team {
       }
     } else {
       invariant(
-        ($mc_result !== null && $mc_result instanceof Map),
+        $mc_result instanceof Map,
         'cache return should of type Map and not null',
       );
       if ($mc_result->contains($level_id)) {
         $teams = $mc_result->get($level_id);
         invariant(
-          ($teams !== null && is_array($teams)),
+          is_array($teams),
           'cache return should be an array of Team and not null',
         );
         return $teams;
@@ -321,18 +320,18 @@ class MultiTeam extends Team {
       $first_team_captured_by_level = new Map($first_team_captured_by_level);
       $team = $first_team_captured_by_level->get($level_id);
       invariant(
-        ($team !== null && $team instanceof Team),
+        $team instanceof Team,
         'team should of type Team and not null',
       );
       return $team;
     } else {
       invariant(
-        ($mc_result !== null && $mc_result instanceof Map),
+        $mc_result instanceof Map,
         'cache return should of type Map and not null',
       );
       $team = $mc_result->get($level_id);
       invariant(
-        ($team !== null && $team instanceof Team),
+        $team instanceof Team,
         'team return should of type Map and not null',
       );
       return $team;
