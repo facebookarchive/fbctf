@@ -78,23 +78,32 @@ class Progressive extends Model {
           self::progressiveFromRow($row);
       }
       self::setMCRecords('PROGRESSIVE_POINTS', new Map($progressive));
-    }
-
-    $progressive = self::getMCRecords('PROGRESSIVE_POINTS');
-    invariant($progressive !== null, 'progressive should not be null');
-    invariant(
-      $progressive instanceof Map,
-      'progressive should be of type Map',
-    );
-    if ($progressive->contains($team_name)) {
-      $team_progressive = $progressive->get($team_name);
-      invariant(
-        $team_progressive !== null,
-        'team_progressive should not be null',
-      );
-      return $team_progressive;
+      $progressive = new Map($progressive);
+      if ($progressive->contains($team_name)) {
+        $team_progressive = $progressive->get($team_name);
+        invariant(
+          is_array($team_progressive),
+          'team_progressive should not an array of Progressive',
+        );
+        return $team_progressive;
+      } else {
+        return array();
+      }
     } else {
-      return array();
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      if ($mc_result->contains($team_name)) {
+        $team_progressive = $mc_result->get($team_name);
+        invariant(
+          is_array($team_progressive),
+          'team_progressive should not an array of Progressive',
+        );
+        return $team_progressive;
+      } else {
+        return array();
+      }
     }
   }
 
@@ -113,10 +122,10 @@ class Progressive extends Model {
         'ITERATION_COUNT',
         intval($result->mapRows()[0]['C']),
       );
+      return intval($result->mapRows()[0]['C']);
+    } else {
+      return intval($mc_result);
     }
-    $iteration_count = intval(self::getMCRecords('ITERATION_COUNT'));
-    invariant($iteration_count !== null, 'progressive should not be null');
-    return $iteration_count;
   }
 
   // Acquire the data for one iteration of the progressive scoreboard.
