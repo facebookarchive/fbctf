@@ -6,14 +6,14 @@ class MultiTeam extends Team {
 
   protected static Map<string, string>
     $MC_KEYS = Map {
-      "ALL_TEAMS" => "all_teams",
-      "LEADERBOARD" => "leaderboard_teams",
-      "POINTS_BY_TYPE" => "points_by_type",
-      "ALL_ACTIVE_TEAMS" => "active_teams",
-      "ALL_VISIBLE_TEAMS" => "visible_teams",
-      "TEAMS_BY_LOGO" => "logo_teams",
-      "TEAMS_BY_LEVEL" => "level_teams",
-      "TEAMS_FIRST_CAP" => "capture_teams",
+      'ALL_TEAMS' => 'all_teams',
+      'LEADERBOARD' => 'leaderboard_teams',
+      'POINTS_BY_TYPE' => 'points_by_type',
+      'ALL_ACTIVE_TEAMS' => 'active_teams',
+      'ALL_VISIBLE_TEAMS' => 'visible_teams',
+      'TEAMS_BY_LOGO' => 'logo_teams',
+      'TEAMS_BY_LEVEL' => 'level_teams',
+      'TEAMS_FIRST_CAP' => 'capture_teams',
     };
 
   private static async function genTeamArrayFromDB(
@@ -35,13 +35,18 @@ class MultiTeam extends Team {
       $teams = await self::genTeamArrayFromDB('SELECT * FROM teams');
       foreach ($teams->items() as $team) {
         $all_teams->add(
-          Pair {intval($team->get("id")), Team::teamFromRow($team)},
+          Pair {intval($team->get('id')), Team::teamFromRow($team)},
         );
       }
       self::setMCRecords('ALL_TEAMS', $all_teams);
+      return $all_teams;
+    } else {
+      invariant(
+        ($mc_result !== null && $mc_result instanceof Map),
+        'cache return should of type Map and not null',
+      );
+      return $mc_result;
     }
-    /* HH_IGNORE_ERROR[4110] */
-    return self::getMCRecords('ALL_TEAMS');
   }
 
   public static async function genTeam(
@@ -49,8 +54,12 @@ class MultiTeam extends Team {
     bool $refresh = false,
   ): Awaitable<Team> {
     $all_teams = await self::genAllTeamsCache($refresh);
-    /* HH_IGNORE_ERROR[4110] */
-    return $all_teams->get($team_id);
+    $team = $all_teams->get($team_id);
+    invariant(
+      ($team !== null && $team instanceof Team),
+      'all_teams should of type Team and not null',
+    );
+    return $team;
   }
 
   // Leaderboard order.
@@ -68,9 +77,14 @@ class MultiTeam extends Team {
         $team_leaderboard[] = Team::teamFromRow($team);
       }
       self::setMCRecords('LEADERBOARD', $team_leaderboard);
+      return $team_leaderboard;
+    } else {
+      invariant(
+        ($mc_result !== null && is_array($mc_result)),
+        'cache return should be an array of Team and not null',
+      );
+      return $mc_result;
     }
-    /* HH_IGNORE_ERROR[4110] */
-    return self::getMCRecords('LEADERBOARD');
   }
 
   // Get points by type.
@@ -87,39 +101,61 @@ class MultiTeam extends Team {
           'SELECT teams.id, scores_log.type, IFNULL(SUM(scores_log.points), 0) AS points FROM teams LEFT JOIN scores_log ON teams.id = scores_log.team_id GROUP BY teams.id, scores_log.type',
         );
       foreach ($teams->items() as $team) {
-        if ($team->get("type") !== null) {
-          if ($points_by_type->contains(intval($team->get("id")))) {
-            $type_pair = $points_by_type->get(intval($team->get("id")));
-            /* HH_IGNORE_ERROR[4064] */
-            $type_pair->add(
-              Pair {$team->get("type"), intval($team->get("points"))},
+        if ($team->get('type') !== null) {
+          if ($points_by_type->contains(intval($team->get('id')))) {
+            $type_pair = $points_by_type->get(intval($team->get('id')));
+            invariant(
+              ($type_pair !== null && $type_pair instanceof Map),
+              'type_pair should of type Map and not null',
             );
-            $points_by_type->set(intval($team->get("id")), $type_pair);
+            $type_pair->add(
+              Pair {$team->get('type'), intval($team->get('points'))},
+            );
+            $points_by_type->set(intval($team->get('id')), $type_pair);
           } else {
             $type_pair = Map {};
             $type_pair->add(
-              Pair {$team->get("type"), intval($team->get("points"))},
+              Pair {$team->get('type'), intval($team->get('points'))},
             );
-            $points_by_type->add(Pair {intval($team->get("id")), $type_pair});
+            $points_by_type->add(Pair {intval($team->get('id')), $type_pair});
           }
         }
       }
       self::setMCRecords('POINTS_BY_TYPE', new Map($points_by_type));
-    }
-    $team_points_by_type = self::getMCRecords('POINTS_BY_TYPE');
-    if (/* HH_IGNORE_ERROR[4110] */ (array_key_exists(
-                                       intval($team_id),
-                                       /* HH_IGNORE_ERROR[4110] */ $team_points_by_type,
-                                     )) &&
-        /* HH_IGNORE_ERROR[4062] */ ($team_points_by_type->contains(
-                                       $team_id,
-                                     )) &&
-        /* HH_IGNORE_ERROR[4062] */ ($team_points_by_type->get($team_id)
-                                       ->contains($type))) {
-      /* HH_IGNORE_ERROR[4062] */
-      return intval($team_points_by_type->get($team_id)->get($type));
+      if ($points_by_type->contains($team_id)) {
+        $team_points_by_type = $points_by_type->get($team_id);
+        invariant(
+          ($team_points_by_type !== null &&
+           $team_points_by_type instanceof Map),
+          'team_points_by_type should of type Map and not null',
+        );
+        if ($team_points_by_type->contains($type)) {
+          return intval($team_points_by_type->get($type));
+        } else {
+          return intval(0);
+        }
+      } else {
+        return intval(0);
+      }
     } else {
-      return intval(0);
+      invariant(
+        ($mc_result !== null && $mc_result instanceof Map),
+        'cache return should of type Map and not null',
+      );
+      if ($mc_result->contains($team_id)) {
+        $team_points_by_type = $mc_result->get($team_id);
+        invariant(
+          ($team_points_by_type !== null && $mc_result instanceof Map),
+          'cache return should of type Map and not null',
+        );
+        if ($team_points_by_type->contains($type)) {
+          return intval($team_points_by_type->get($type));
+        } else {
+          return intval(0);
+        }
+      } else {
+        return intval(0);
+      }
     }
   }
 
@@ -137,9 +173,14 @@ class MultiTeam extends Team {
         $all_active_teams[] = Team::teamFromRow($team);
       }
       self::setMCRecords('ALL_ACTIVE_TEAMS', $all_active_teams);
+      return $all_active_teams;
+    } else {
+      invariant(
+        ($mc_result !== null && is_array($mc_result)),
+        'cache return should be an array of Team and not null',
+      );
+      return $mc_result;
     }
-    /* HH_IGNORE_ERROR[4110] */
-    return self::getMCRecords('ALL_ACTIVE_TEAMS');
   }
 
   // All visible teams.
@@ -156,9 +197,14 @@ class MultiTeam extends Team {
         $all_visible_teams[] = Team::teamFromRow($team);
       }
       self::setMCRecords('ALL_VISIBLE_TEAMS', $all_visible_teams);
+      return $all_visible_teams;
+    } else {
+      invariant(
+        ($mc_result !== null && is_array($mc_result)),
+        'cache return should be an array of Team and not null',
+      );
+      return $mc_result;
     }
-    /* HH_IGNORE_ERROR[4110] */
-    return self::getMCRecords('ALL_VISIBLE_TEAMS');
   }
 
   // Retrieve how many teams are using one logo.
@@ -175,17 +221,33 @@ class MultiTeam extends Team {
         $teams_by_logo[$team->getLogo()][] = $team;
       }
       self::setMCRecords('TEAMS_BY_LOGO', new Map($teams_by_logo));
-    }
-    $teams_by_logo = self::getMCRecords('TEAMS_BY_LOGO');
-    if ((count($teams_by_logo) !== 0) &&
-        (array_key_exists(
-           $logo,
-           /* HH_IGNORE_ERROR[4110] */ $teams_by_logo,
-         ))) {
-      /* HH_IGNORE_ERROR[4062] */
-      return $teams_by_logo->get($logo);
+      $teams_by_logo = new Map($teams_by_logo);
+      if ((count($teams_by_logo) !== 0) &&
+          ($teams_by_logo->contains($logo))) {
+        $teams = $teams_by_logo->get($logo);
+        invariant(
+          ($teams !== null && is_array($teams)),
+          'teams should be an array of Team and not null',
+        );
+        return $teams;
+      } else {
+        return array();
+      }
     } else {
-      return array();
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      if ((count($mc_result) !== 0) && ($mc_result->contains($logo))) {
+        $teams = $mc_result->get($logo);
+        invariant(
+          ($teams !== null && is_array($teams)),
+          'cache return should be an array of Team and not null',
+        );
+        return $teams;
+      } else {
+        return array();
+      }
     }
   }
 
@@ -201,21 +263,39 @@ class MultiTeam extends Team {
           'SELECT scores_log.level_id, teams.* FROM teams LEFT JOIN scores_log ON teams.id = scores_log.team_id WHERE teams.visible = 1 AND teams.active = 1 AND level_id IS NOT NULL ORDER BY scores_log.ts',
         );
       foreach ($teams->items() as $team) {
-        $teams_by_completed_level[intval($team->get("level_id"))][] =
+        $teams_by_completed_level[intval($team->get('level_id'))][] =
           Team::teamFromRow($team);
       }
       self::setMCRecords(
         'TEAMS_BY_LEVEL',
         new Map($teams_by_completed_level),
       );
-    }
-    $teams_by_completed_level = self::getMCRecords('TEAMS_BY_LEVEL');
-    /* HH_IGNORE_ERROR[4062] */
-    if ($teams_by_completed_level->contains($level_id)) {
-      /* HH_IGNORE_ERROR[4062] */
-      return $teams_by_completed_level->get($level_id);
+      $teams_by_completed_level = new Map($teams_by_completed_level);
+      if ($teams_by_completed_level->contains($level_id)) {
+        $teams = $teams_by_completed_level->get($level_id);
+        invariant(
+          ($teams !== null && is_array($teams)),
+          'teams should be an array of Team and not null',
+        );
+        return $teams;
+      } else {
+        return array();
+      }
     } else {
-      return array();
+      invariant(
+        ($mc_result !== null && $mc_result instanceof Map),
+        'cache return should of type Map and not null',
+      );
+      if ($mc_result->contains($level_id)) {
+        $teams = $mc_result->get($level_id);
+        invariant(
+          ($teams !== null && is_array($teams)),
+          'cache return should be an array of Team and not null',
+        );
+        return $teams;
+      } else {
+        return array();
+      }
     }
   }
 
@@ -231,16 +311,31 @@ class MultiTeam extends Team {
           'SELECT * FROM teams LEFT JOIN scores_log ON teams.id = scores_log.team_id WHERE scores_log.ts IN (SELECT MIN(scores_log.ts) FROM scores_log GROUP BY scores_log.level_id)',
         );
       foreach ($teams->items() as $team) {
-        $first_team_captured_by_level[intval($team->get("level_id"))] =
+        $first_team_captured_by_level[intval($team->get('level_id'))] =
           Team::teamFromRow($team);
       }
       self::setMCRecords(
         'TEAMS_FIRST_CAP',
         new Map($first_team_captured_by_level),
       );
+      $first_team_captured_by_level = new Map($first_team_captured_by_level);
+      $team = $first_team_captured_by_level->get($level_id);
+      invariant(
+        ($team !== null && $team instanceof Team),
+        'team should of type Team and not null',
+      );
+      return $team;
+    } else {
+      invariant(
+        ($mc_result !== null && $mc_result instanceof Map),
+        'cache return should of type Map and not null',
+      );
+      $team = $mc_result->get($level_id);
+      invariant(
+        ($team !== null && $team instanceof Team),
+        'team return should of type Map and not null',
+      );
+      return $team;
     }
-    $first_team_captured_by_level = self::getMCRecords('TEAMS_FIRST_CAP');
-    /* HH_IGNORE_ERROR[4062] */
-    return $first_team_captured_by_level->get($level_id);
   }
 }

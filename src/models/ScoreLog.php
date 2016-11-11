@@ -5,7 +5,7 @@ class ScoreLog extends Model {
   protected static string $MC_KEY = 'scorelog:';
 
   protected static Map<string, string>
-    $MC_KEYS = Map {"LEVEL_CAPTURES" => "capture_teams"};
+    $MC_KEYS = Map {'LEVEL_CAPTURES' => 'capture_teams'};
 
   private function __construct(
     private int $id,
@@ -68,6 +68,12 @@ class ScoreLog extends Model {
   public static async function genResetScores(): Awaitable<void> {
     $db = await self::genDb();
     await $db->queryf('DELETE FROM scores_log WHERE id > 0');
+    self::invalidateMCRecords(); // Invalidate Memcached ScoreLog data.
+    MultiTeam::invalidateMCRecords('ALL_TEAMS'); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('POINTS_BY_TYPE'); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('LEADERBOARD'); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('TEAMS_BY_LEVEL'); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('TEAMS_FIRST_CAP'); // Invalidate Memcached MultiTeam data.
   }
 
   // Check if there is a previous score.
@@ -77,46 +83,87 @@ class ScoreLog extends Model {
     bool $any_team,
     bool $refresh = false,
   ): Awaitable<bool> {
-    $db = await self::genDb();
     $mc_result = self::getMCRecords('LEVEL_CAPTURES');
     if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
       $level_captures = Map {};
       $result = await $db->queryf('SELECT level_id, team_id FROM scores_log');
       foreach ($result->mapRows() as $row) {
-        if ($level_captures->contains(intval($row->get("level_id")))) {
+        if ($level_captures->contains(intval($row->get('level_id')))) {
           $level_capture_teams =
-            $level_captures->get(intval($row->get("level_id")));
-          /* HH_IGNORE_ERROR[4064] */
-          $level_capture_teams->add(intval($row->get("team_id")));
+            $level_captures->get(intval($row->get('level_id')));
+          invariant(
+            ($level_capture_teams !== null &&
+             $level_capture_teams instanceof Vector),
+            'level_capture_teams should of type Vector and not null',
+          );
+          $level_capture_teams->add(intval($row->get('team_id')));
           $level_captures->set(
-            intval($row->get("level_id")),
+            intval($row->get('level_id')),
             $level_capture_teams,
           );
         } else {
           $level_capture_teams = Vector {};
-          $level_capture_teams->add(intval($row->get("team_id")));
+          $level_capture_teams->add(intval($row->get('team_id')));
           $level_captures->add(
-            Pair {intval($row->get("level_id")), $level_capture_teams},
+            Pair {intval($row->get('level_id')), $level_capture_teams},
           );
         }
       }
       self::setMCRecords('LEVEL_CAPTURES', new Map($level_captures));
-    }
-    $level_captures = self::getMCRecords('LEVEL_CAPTURES');
-    /* HH_IGNORE_ERROR[4062] */
-    if ($level_captures->contains($level_id)) {
-      if ($any_team) {
-        $team_id_key = /* HH_IGNORE_ERROR[4062]: getMCRecords returns a 'mixed' type, HHVM is unsure of the type at this point */
-          $level_captures->get($level_id)->linearSearch($team_id);
-        if ($team_id_key != -1) {
-          /* HH_IGNORE_ERROR[4062] */
-          $level_captures->get($level_id)->removeKey($team_id_key);
+      if ($level_captures->contains($level_id)) {
+        if ($any_team) {
+          $level_capture_teams = $level_captures->get($level_id);
+          invariant(
+            ($level_capture_teams !== null &&
+             $level_capture_teams instanceof Vector),
+            'level_capture_teams should of type Vector and not null',
+          );
+          $team_id_key = $level_capture_teams->linearSearch($team_id);
+          if ($team_id_key != -1) {
+            $level_capture_teams->removeKey($team_id_key);
+          }
+          return intval(count($level_capture_teams)) > 0;
+        } else {
+          $level_capture_teams = $level_captures->get($level_id);
+          invariant(
+            ($level_capture_teams !== null &&
+             $level_capture_teams instanceof Vector),
+            'level_capture_teams should of type Vector and not null',
+          );
+          $team_id_key = $level_capture_teams->linearSearch($team_id);
+          return $team_id_key != -1;
         }
-        /* HH_IGNORE_ERROR[4062] */
-        return intval(count($level_captures->get($level_id))) > 0;
       } else {
-        /* HH_IGNORE_ERROR[4062] */
-        return $level_captures->get($level_id)->linearSearch($team_id) != -1;
+        return false;
+      }
+    }
+    invariant(
+      ($mc_result !== null && $mc_result instanceof Map),
+      'cache return should of type Map and not null',
+    );
+    if ($mc_result->contains($level_id)) {
+      if ($any_team) {
+        $level_capture_teams = $mc_result->get($level_id);
+        invariant(
+          ($level_capture_teams !== null &&
+           $level_capture_teams instanceof Vector),
+          'level_capture_teams should of type Vector and not null',
+        );
+        $team_id_key = $level_capture_teams->linearSearch($team_id);
+        if ($team_id_key != -1) {
+          $level_capture_teams->removeKey($team_id_key);
+        }
+        return intval(count($level_capture_teams)) > 0;
+      } else {
+        $level_capture_teams = $mc_result->get($level_id);
+        invariant(
+          ($level_capture_teams !== null &&
+           $level_capture_teams instanceof Vector),
+          'level_capture_teams should of type Vector and not null',
+        );
+        $team_id_key = $level_capture_teams->linearSearch($team_id);
+        return $team_id_key != -1;
       }
     } else {
       return false;
@@ -174,5 +221,11 @@ class ScoreLog extends Model {
       $points,
       $type,
     );
+    self::invalidateMCRecords(); // Invalidate Memcached ScoreLog data.
+    MultiTeam::invalidateMCRecords('ALL_TEAMS'); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('POINTS_BY_TYPE'); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('LEADERBOARD'); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('TEAMS_BY_LEVEL'); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('TEAMS_FIRST_CAP'); // Invalidate Memcached MultiTeam data.
   }
 }
