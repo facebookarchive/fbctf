@@ -88,14 +88,15 @@ class Category extends Model implements Importable, Exportable {
         $categories[] = self::categoryFromRow($row);
       }
       self::setMCRecords('ALL_CATEGORIES', $categories);
+      return $categories;
+      return $categories;
+    } else {
+      invariant(
+        is_array($mc_result),
+        'cache return should be an array of Category',
+      );
+      return $mc_result;
     }
-    $categories = self::getMCRecords('ALL_CATEGORIES');
-    invariant($categories !== null, 'categories should not be null');
-    invariant(
-      is_array($categories),
-      'categories should be an array of Category',
-    );
-    return $categories;
   }
 
   // Check if category is used.
@@ -182,17 +183,27 @@ class Category extends Model implements Importable, Exportable {
         );
       }
       self::setMCRecords('CATEGORIES', $categories);
-    }
-    $categories = self::getMCRecords('CATEGORIES');
-    invariant($categories !== null, 'categories should not be null');
-    invariant($categories instanceof Map, 'categories should be type of Map');
-    if ($categories->contains($category_id)) {
-      $category = $categories->get($category_id);
+      if ($categories->contains($category_id)) {
+        $category = $categories->get($category_id);
+        invariant(
+          $category instanceof Category,
+          'category should be type of Category',
+        );
+        return $category;
+      }
+    } else {
       invariant(
-        $category instanceof Category,
-        'category should be type of Category',
+        $mc_result instanceof Map,
+        'categories should be type of Map',
       );
-      return $category;
+      if ($mc_result->contains($category_id)) {
+        $category = $mc_result->get($category_id);
+        invariant(
+          $category instanceof Category,
+          'category should be type of Category',
+        );
+        return $category;
+      }
     }
   }
 
