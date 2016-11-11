@@ -831,7 +831,7 @@ class Level extends Model implements Importable, Exportable {
       }
       self::setMCRecords('ALL_LEVELS', $all_levels);
       invariant(
-        $all_levels->contains($level_id) === false,
+        $all_levels->contains($level_id) !== false,
         'level not found',
       );
       if ($all_levels->contains($level_id)) {
@@ -844,7 +844,7 @@ class Level extends Model implements Importable, Exportable {
         $mc_result instanceof Map,
         'cache return should be of type Map',
       );
-      invariant($mc_result->contains($level_id) === false, 'level not found');
+      invariant($mc_result->contains($level_id) !== false, 'level not found');
       if ($mc_result->contains($level_id)) {
         $level = $mc_result->get($level_id);
         invariant($level instanceof Level, 'level should be of type Level');

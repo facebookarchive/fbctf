@@ -240,7 +240,7 @@ class Country extends Model {
       }
       self::setMCRecords('ALL_COUNTRIES_BY_ID', $all_countries);
       invariant(
-        $all_countries->contains($country_id) === false,
+        $all_countries->contains($country_id) !== false,
         'country not found',
       );
       if ($all_countries->contains($country_id)) {
@@ -257,7 +257,7 @@ class Country extends Model {
         'cache return should be a Map of Country by Id',
       );
       invariant(
-        $mc_result->contains($country_id) === false,
+        $mc_result->contains($country_id) !== false,
         'country not found',
       );
       if ($mc_result->contains($country_id)) {
