@@ -279,7 +279,7 @@ class Level extends Model implements Importable, Exportable {
       if ($mc_result->contains($level_id)) {
         $level = $mc_result->get($level_id);
         invariant($level instanceof Level, 'level should be type of Level');
-        if ($level->type == 'base') {
+        if ($level->type === 'base') {
           return true;
         } else {
           return false;
@@ -814,7 +814,6 @@ class Level extends Model implements Importable, Exportable {
   }
 
   // Get a single level.
-  /* HH_IGNORE_ERROR[4110]: Lines #827 and #835 prevent this function from failing to return */
   public static async function gen(
     int $level_id,
     bool $refresh = false,
@@ -834,22 +833,19 @@ class Level extends Model implements Importable, Exportable {
         $all_levels->contains($level_id) !== false,
         'level not found',
       );
-      if ($all_levels->contains($level_id)) {
-        $level = $all_levels->get($level_id);
-        invariant($level instanceof Level, 'level should be of type Level');
-        return $level;
-      }
+      invariant($all_levels->contains($level_id) !== false, 'level not found');
+      $level = $all_levels->get($level_id);
+      invariant($level instanceof Level, 'level should be of type Level');
+      return $level;
     } else {
       invariant(
         $mc_result instanceof Map,
         'cache return should be of type Map',
       );
       invariant($mc_result->contains($level_id) !== false, 'level not found');
-      if ($mc_result->contains($level_id)) {
-        $level = $mc_result->get($level_id);
-        invariant($level instanceof Level, 'level should be of type Level');
-        return $level;
-      }
+      $level = $mc_result->get($level_id);
+      invariant($level instanceof Level, 'level should be of type Level');
+      return $level;
     }
   }
 
