@@ -833,7 +833,10 @@ class Level extends Model implements Importable, Exportable {
         $all_levels->contains($level_id) !== false,
         'level not found',
       );
-      invariant($all_levels->contains($level_id) !== false, 'level not found');
+      invariant(
+        $all_levels->contains($level_id) !== false,
+        'level not found',
+      );
       $level = $all_levels->get($level_id);
       invariant($level instanceof Level, 'level should be of type Level');
       return $level;
