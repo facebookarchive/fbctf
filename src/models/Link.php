@@ -107,7 +107,6 @@ class Link extends Model {
   }
 
   // Get a single link.
-  /* HH_IGNORE_ERROR[4110]: Lines #827 and #835 prevent this function from failing to return */
   public static async function gen(
     int $link_id,
     bool $refresh = false,
@@ -122,19 +121,15 @@ class Link extends Model {
       }
       self::setMCRecords('LINKS', $links);
       invariant($links->contains($link_id) !== false, 'link not found');
-      if ($links->contains($link_id)) {
-        $link = $links->get($link_id);
-        invariant($link instanceof Link, 'link should be of type Link');
-        return $link;
-      }
+      $link = $links->get($link_id);
+      invariant($link instanceof Link, 'link should be of type Link');
+      return $link;
     } else {
       invariant($mc_result instanceof Map, 'links should be of type Map');
       invariant($mc_result->contains($link_id) !== false, 'link not found');
-      if ($mc_result->contains($link_id)) {
-        $link = $mc_result->get($link_id);
-        invariant($link instanceof Link, 'link should be of type Link');
-        return $link;
-      }
+      $link = $mc_result->get($link_id);
+      invariant($link instanceof Link, 'link should be of type Link');
+      return $link;
     }
   }
 
