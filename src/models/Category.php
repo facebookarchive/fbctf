@@ -183,27 +183,31 @@ class Category extends Model implements Importable, Exportable {
         );
       }
       self::setMCRecords('CATEGORIES', $categories);
-      if ($categories->contains($category_id)) {
-        $category = $categories->get($category_id);
-        invariant(
-          $category instanceof Category,
-          'category should be type of Category',
-        );
-        return $category;
-      }
+      invariant(
+        $categories->contains($category_id) !== false,
+        'category not found',
+      );
+      $category = $categories->get($category_id);
+      invariant(
+        $category instanceof Category,
+        'category should be type of Category',
+      );
+      return $category;
     } else {
       invariant(
         $mc_result instanceof Map,
         'categories should be type of Map',
       );
-      if ($mc_result->contains($category_id)) {
-        $category = $mc_result->get($category_id);
-        invariant(
-          $category instanceof Category,
-          'category should be type of Category',
-        );
-        return $category;
-      }
+      invariant(
+        $mc_result->contains($category_id) !== false,
+        'category not found',
+      );
+      $category = $mc_result->get($category_id);
+      invariant(
+        $category instanceof Category,
+        'category should be type of Category',
+      );
+      return $category;
     }
   }
 
