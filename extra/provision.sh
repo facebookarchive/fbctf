@@ -246,6 +246,10 @@ composer.phar install
 
 # Install NPM and grunt
 package npm
+
+# Update NPM with itself: https://github.com/npm/npm/issues/14610
+sudo npm install -g npm@lts
+
 package nodejs-legacy
 sudo npm install
 sudo npm install -g grunt
