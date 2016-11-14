@@ -81,7 +81,6 @@ class Session extends Model {
     $session_data = Map {};
     $mc_result = self::getMCSession($cookie);
     if ($mc_result) {
-      invariant($mc_result !== null, 'mc_result should not be null');
       invariant(
         $mc_result instanceof Session,
         'mc_result should be of type Session',
@@ -196,7 +195,6 @@ class Session extends Model {
     }
     $session = self::getMCSession($cookie);
     if ($session) {
-      invariant($session !== null, 'session should not be null');
       invariant(
         $session instanceof Session,
         'session should be of type Session',
@@ -239,7 +237,6 @@ class Session extends Model {
     }
     $mc_result = self::getMCSession($cookie);
     if ($mc_result) {
-      invariant($mc_result !== null, 'session should not be null');
       invariant(
         $mc_result instanceof Session,
         'session should be of type Session',
@@ -313,10 +310,6 @@ class Session extends Model {
         continue;
       }
       invariant(
-        $cached_session !== null,
-        'cached_session should not be null',
-      );
-      invariant(
         $cached_session instanceof Session,
         'cached_session should be of type Session',
       );
@@ -334,14 +327,21 @@ class Session extends Model {
     }
     foreach ($empty_sessions as $session) {
       $cached_session = self::getMCSession($session->getCookie());
-      if ($cached_session !== false && $cached_session === '') {
+      if ($cached_session === false) {
+        continue;
+      }
+      invariant(
+        $cached_session instanceof Session,
+        'cached_session should be of type Session',
+      );
+      if ($cached_session->getData() === '') {
         self::invalidateMCSessions($session->getCookie());
-      } elseif ($cached_session !== false && $cached_session !== '') {
+      } else if ($cached_session->getData() !== '') {
         await self::genUpdate(
-            $session->getCookie(),
-            $session->getData(),
-            true,
-            );
+          $session->getCookie(),
+          $session->getData(),
+          true,
+        );
       }
     }
     // Clean up expired sessions
