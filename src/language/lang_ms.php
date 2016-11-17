@@ -3,7 +3,7 @@
 /* HH_IGNORE_ERROR[1002] */
 $translations = array(
   'date and time format' =>
-    'D, d-m-Y H:i:s', //used by date() function
+    'H:i:s D m/d/Y', //used by date() function
   //Translations for IndexController
   'Facebook CTF' =>
     'Facebook CTF',
@@ -12,21 +12,21 @@ $translations = array(
   'Play' =>
     'Main',
   'Welcome to the Facebook Capture the Flag Competition. By clicking "Play," you will be entered into the official CTF challenge. Good luck in your conquest.' =>
-    'Selamat datang ke Pertandingan Facebook Capture the Flag. Dengan menekan "Main" anda akan menyertai cabaran rasmi CTF. Selamat maju jaya dalam penaklukan anda.',
+    'Selamat datang ke Pertandingan Capture the Flag Facebook. Dengan menekan "Main" anda akan menyertai cabaran rasmi CTF. Selamat maju jaya dalam penaklukan anda.',
   'Get ready for the CTF to start and access the gameboard now!' =>
-    'Bersedia untuk bermain dan akses papan permainan sekarang!',
+    'Bersedia untuk bermain CTF dan mengakses papan permainan sekarang!',
   'Gameboard' =>
     'Papan Permainan',
   'Register Team' =>
     'Daftar Pasukan',
   'Get ready for the CTF to start and register your team now!' =>
-    'Bersedia untuk bermain dan daftar pasukan anda sekarang juga!',
+    'Bersedia untuk bermain CTF dan daftar pasukan anda sekarang juga!',
   'Login' =>
     'Log Masuk',
   'Soon' =>
     'Tidak Lama Lagi',
   'Upcoming Game' =>
-    'Permainan Akan datang',
+    'Permainan Akan Datang',
   '_days' =>
     '_hari',
   '_hours' =>
@@ -44,29 +44,29 @@ $translations = array(
   'Cooperation' =>
     'Kerjasama',
   'No cooperation between teams with independent accounts. Sharing of keys or providing revealing hints to other teams is cheating, don’t do it.' =>
-    'Tiada kerjasama antara pasukan dengan akaun bebas. Berkongsi kunci atau menyediakan atau mendedahkan petujuk kepada kumpulan lain, hal ini dianggap sebagai menipu, jangan lakukannya.',
+    'Tiada kerjasama antara pasukan dengan akaun bebas. Berkongsi kunci atau menyediakan atau mendedahkan petunjuk kepada kumpulan lain adalah dianggap sebagai menipu, jangan lakukannya.',
   'Attacking Scoreboard' =>
-    'Menyerang Papan Nilai',
+    'Menyerang Papan Skor',
   'No attacking the competition infrastructure. If bugs or vulns are found, please alert the competition organizers immediately.' =>
-    'Tidak menyerang infrastruktur pertandingan. Jika pepijat atau kerentanan dijumpai, sila beri maklumkan kepada penganjur pertandingan serta-merta.',
+    'Tidak menyerang infrastruktur pertandingan. Jika pepijat atau kerentanan dijumpai, sila maklumkan kepada penganjur pertandingan dengan serta-merta.',
   'Sabotage' =>
     'Sabotaj',
   'Absolutely no sabotaging of other competing teams, or in any way hindering their independent progress.' =>
-    'Sama sekali tidak mensabotaj pasukan lain yang sedang bersaing, atau dalam apa-apa cara menghalang kemajuan mereka.',
+    'Sama sekali tidak mensabotaj pasukan lain yang sedang bersaing, atau dalam apa jua cara yang menghalang kemajuan mereka.',
   'Bruteforcing' =>
     'Bruteforcing',
   'No brute forcing of challenge flag/ keys against the scoring site.' =>
-    'Tidak melakukan brute force flag/ kunci keatas laman penilaian.',
+    'Tidak melakukan brute force flag/ kunci terhadap laman skor.',
   'Denial Of Service' =>
     'Denial Of Service',
   'DoSing the CTF platform or any of the challenges is forbidden.' =>
-    'DoS platform CTF atau mana-mana cabaran adalah dilarang.',
+    'DoSing platform CTF atau mana-mana cabaran adalah dilarang.',
   'Legal' =>
     'Undang-undang',
   'Disclaimer' =>
     'Penafian',
   'By participating in the contest, you agree to release Facebook and its employees, and the hosting organization from any and all liability, claims or actions of any kind whatsoever for injuries, damages or losses to persons and property which may be sustained in connection with the contest. You acknowledge and agree that Facebook et al is not responsible for technical, hardware or software failures, or other errors or problems which may occur in connection with the contest.' =>
-    'Dengan menyertai pertandingan ini, anda bersetuju untuk melepaskan Facebook dan pekerjanya, dan organisasi hosting dari sebarang dan semua liabiliti, tuntutan atau tindakan keatas kecederaan, kerosakan atau kerugian kepada orang dan harta yang boleh dikaitan dengan pertandingan ini. Anda mengakui dan bersetuju bahawa Facebook dan lain-lain tidak bertanggungjawab atas kegagalan teknikal, perkakasan atau perisian, atau kesilapan atau masalah yang mungkin berlaku berkaitan dengan pertandingan ini.',
+    'Dengan menyertai pertandingan ini, anda bersetuju untuk melepaskan Facebook dan pekerjanya, dan organisasi hosting daripada sebarang dan semua liabiliti, tuntutan atau tindakan ke atas kecederaan, kerosakan atau kerugian kepada orang dan harta yang boleh dikaitan dengan pertandingan ini. Anda mengakui dan bersetuju bahawa Facebook dan lain-lain tidak bertanggungjawab atas kegagalan teknikal, perkakasan atau perisian, atau kesilapan atau masalah yang mungkin berlaku berkaitan dengan pertandingan ini.',
   'If you have any questions about what is or is not allowed, please ask an organizer.' =>
     'Jika anda mempunyai sebarang soalan mengenai apa yang boleh atau tidak boleh dilakukan, sila kemukakan soalan kepada penganjur.',
   'Have fun!' =>
@@ -74,7 +74,7 @@ $translations = array(
   'Name' =>
     'Nama',
   'Email' =>
-    'Email',
+    'E-mel',
   'Token' =>
     'Token',
   'Team Registration' =>
@@ -82,13 +82,13 @@ $translations = array(
   'Team Name' =>
     'Nama Pasukan',
   'Password' =>
-    'Katalaluan',
+    'Kata Laluan',
   'Choose an Emblem' =>
     'Pilih Emblem',
   'Sign Up' =>
     'Daftar Baru',
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
-    'Daftarlah untuk bermain Capture The Flag disini. Sebaik sahaja anda telah mendaftar, anda akan log masuk.',
+    'Daftarlah untuk bermain Capture The Flag di sini. Sebaik sahaja anda telah mendaftar, anda akan dilog masuk.',
   'Not Available' =>
     'Tiada',
   'Team Registration will be open soon, stay tuned!' =>
@@ -98,23 +98,23 @@ $translations = array(
   'Select' =>
     'Pilih',
   'Team Login' =>
-    'Login Pasukan',
+    'Log Masuk Pasukan',
   'Please login here. If you have not registered, you may do so by clicking "Sign Up" below. ' =>
-    'Sila login di sini. Jika anda belum berdaftar, anda boleh berbuat demikian dengan mengklik "Daftar Baru" di bawah. ',
+    'Sila log masuk di sini. Jika anda belum berdaftar, anda boleh berbuat demikian dengan mengklik "Daftar Baru" di bawah. ',
   'Team Login will be open soon, stay tuned!' =>
-    'Login Pasukan akan dibuka tidak lama lagi, harap sabar menunggu!',
+    'Log Masuk Pasukan akan dibuka tidak lama lagi, harap sabar menunggu!',
   'ERROR' =>
-    'ERROR',
+    'RALAT',
   'Start Over' =>
-    'Semula',
+    'Mula Semula',
   'Window is too small' =>
-    'Tetingkap browser terlalu kecil',
+    'Tetingkap terlalu kecil',
   'For the best CTF experience, please make window size bigger.' =>
-    'Untuk pengalaman CTF yang terbaik, sila laraskan saiz tetingkap browser yang lebih besar.',
+    'Untuk pengalaman CTF yang terbaik, sila laraskan saiz tetingkap yang lebih besar.',
   'Thank you.' =>
     'Terima kasih.',
   'Logout' =>
-    'Keluar',
+    'Log Keluar',
   'Registration' =>
     'Pendaftaran',
   'Play CTF' =>
@@ -135,7 +135,7 @@ $translations = array(
   'Tutorial' =>
     'Tutorial',
   'Scoreboard' =>
-    'Papan Nilai',
+    'Papan Skor',
   'You' =>
     'Anda',
   'Others' =>
@@ -143,17 +143,17 @@ $translations = array(
   'All' =>
     'Semua',
   'Leaderboard' =>
-    'Papan Ranking',
+    'Papan Peneraju',
   'Announcements' =>
     'Pengumuman',
   'Teams' =>
     'Pasukan',
   'Filter' =>
-    'Filter',
+    'Tapis',
   'Activity' =>
     'Aktiviti',
   'Game Clock' =>
-    'Waktu Permainan',
+    'Jam Permainan',
   //Translations for AdminController
   'Auto' =>
     'Auto',
@@ -176,7 +176,7 @@ $translations = array(
   'Registration Tokens' =>
     'Pendaftaran Token',
   'Create More' =>
-    'Buat Lagi',
+    'Cipta Lagi',
   'Export Available' =>
     'Export Yang Ada',
   'Not started yet' =>
@@ -202,29 +202,29 @@ $translations = array(
   'Registration Type' =>
     'Jenis Pendaftaran',
   'Strong Passwords' =>
-    'Katalaluan yang Kuat',
+    'Kata Laluan yang Kuat',
   'Team Selection' =>
     'Pemilihan Pasukan',
   'Game' =>
     'Permainan',
   'Scoring' =>
-    'Cara Penilaian',
+    'Penskoran',
   'Progressive Cycle (s)' =>
-    'Progressive Cycle (s)',
+    'Kitaran Kemajuan',
   'Refresh Gameboard' =>
     'Refresh Papan Permainan',
   'Default Bonus' =>
-    'Default Bonus',
+    'Bonus Lalai',
   'Bases Cycle (s)' =>
-    'Bases Cycle (s)',
+    'Kitaran Pangkalan',
   'Default Bonus Dec' =>
     'Default Bonus Dec',
   'Timer' =>
-    'Timer',
+    'Pemasa',
   'Server Time' =>
-    'Waktu Server',
+    'Waktu Pelayar',
   'Game Duration' =>
-    'Durasi Permainan',
+    'Tempoh Permainan',
   'Begin Time' =>
     'Masa Mula',
   'Expected End Time' =>
@@ -240,43 +240,43 @@ $translations = array(
   'Game Controls' =>
     'Kawalan Permainan',
   'Write New Announcement here' =>
-    'Tuliskan Pengumuman Baru disini',
+    'Tuliskan Pengumuman Baru di sini',
   'Create' =>
-    'Buat',
+    'Cipta',
   'General' =>
-    'General',
+    'Am',
   'Back Up Database' =>
-    'Back Up Database',
+    'Sandar Pangkalan Data',
   'Export Full Game' =>
-    'Export Semua Permainan',
+    'Eksport Semua Permainan',
   'Import Full Game' =>
     'Import Semua Permainan',
   'Import Teams' =>
     'Import Pasukan',
   'Export Teams' =>
-    'Export Pasukan',
+    'Eksport Pasukan',
   'Import Logos' =>
     'Import Logo',
   'Export Logos' =>
-    'Export Logo',
+    'Eksport Logo',
   'Import Levels' =>
-    'Import Level',
+    'Import Tahap',
   'Export Levels' =>
-    'Export Level',
+    'Eksport Tahap',
   'Import Categories' =>
     'Import Kategori',
   'Export Categories' =>
-    'Export Kategori',
+    'Eksport Kategori',
   'Levels' =>
-    'Level',
+    'Tahap',
   'New Quiz Level' =>
-    'Kuiz Baru',
+    'Tahap Kuiz Baru',
   'Title' =>
-    'Judul',
+    'Tajuk',
   'Question' =>
     'Pertanyaan',
   'Level title' =>
-    'Judul level',
+    'Tajuk tahap',
   'Quiz question' =>
     'Soalan kuiz',
   'Country' =>
@@ -284,23 +284,23 @@ $translations = array(
   'Answer' =>
     'Jawapan',
   'Points' =>
-    'Nilai',
+    'Mata',
   'Hint' =>
     'Petunjuk',
   'Hint Penalty' =>
-    'Denda penggunaan Petunjuk',
+    'Denda Petunjuk',
   'EDIT' =>
-    'UBAH',
+    'EDIT',
   'All Quiz Levels' =>
-    'Semua Kuiz',
+    'Semua Tahap Kuiz',
   'Filter By:' =>
-    'Filter Berdasarkan:',
+    'Tapis Mengikut:',
   'All Status' =>
     'Semua Status',
   'Enabled' =>
-    'Dihidupkan',
+    'Didayakan',
   'Disabled' =>
-    'Dimatikan',
+    'Dinyahdayakan',
   'Quiz Level' =>
     'Level Kuiz',
   'Show Answer' =>
@@ -308,19 +308,19 @@ $translations = array(
   'Bonus' =>
     'Bonus',
   '-Dec' =>
-    '-Dec',
+    '-Susut',
   'Save' =>
     'Simpan',
   'Quiz Management' =>
     'Pengurusan Kuiz',
   'Add Quiz Level' =>
-    'Tambah Kuiz',
+    'Tambah Tahap Kuiz',
   'New Flag Level' =>
-    'Flag Baru',
+    'Tahap Flag Baru',
   'Description' =>
     'Penerangan',
   'Level description' =>
-    'Penerangan Level',
+    'Penerangan tahap',
   'Category' =>
     'Kategori',
   'Flag' =>
@@ -328,7 +328,7 @@ $translations = array(
   'flag' =>
     'flag',
   'All Flag Levels' =>
-    'Semua Flag',
+    'Semua Tahap Flag',
   'New Attachment:' =>
     'Lampiran Baru:',
   'Attachment' =>
@@ -338,7 +338,7 @@ $translations = array(
   'New Link:' =>
     'Pautan Baru:',
   'Flag Level' =>
-    'Flag Level',
+    'Tahap Flag',
   'Categories' =>
     'Kategori',
   '+ Attachment' =>
@@ -348,21 +348,21 @@ $translations = array(
   'Flags Management' =>
     'Pengurusan Flag',
   'Add Flag Level' =>
-    'Tambah Flag',
+    'Tambah Tahap Flag',
   'New Base Level' =>
-    'Base Baru',
+    'Tahap Pangkalan Baru',
   'Keep Points' =>
-    'Nilai Menyimpan Flag',
+    'Mata Simpan',
   'Capture points' =>
-    'Nilai Capture',
+    'Mata menang',
   'All Base Levels' =>
-    'Semua Base Level',
+    'Semua Tahap Pangkalan',
   'Base Level' =>
-    'Base Level',
+    'Tahap Pangkalan',
   'Bases Management' =>
-    'Pengurusan Base',
+    'Pengurusan Pangkalan',
   'Add Base Level' =>
-    'Tambahkan Base Level',
+    'Tambah Tahap Pangkalan',
   'New Category' =>
     'Kategori Baru',
   'Category: ' =>
@@ -384,23 +384,23 @@ $translations = array(
   'No' =>
     'Tidak',
   'ISO Code' =>
-    'Kode ISO',
+    'Kod ISO',
   'Countries Management' =>
     'Pengurusan Negara',
   'No Team Names' =>
-    'Tidak Ada Nama Pasukan',
+    'Tiada Nama Pasukan',
   'time' =>
     'waktu',
   'type' =>
     'jenis',
   'pts' =>
-    'point',
+    'mata',
   'Level' =>
-    'Level',
+    'Tahap',
   'level' =>
-    'level',
+    'tahap',
   'No Scores' =>
-    'Tiada Nilai',
+    'Tiada Skor',
   'Attempt' =>
     'Percubaan',
   'No Failures' =>
@@ -412,7 +412,7 @@ $translations = array(
   'Names' =>
     'Nama',
   'Scores' =>
-    'Nilai',
+    'Skor',
   'Failures' =>
     'Kegagalan',
   'New Team' =>
@@ -426,15 +426,15 @@ $translations = array(
   'All Teams' =>
     'Semua Pasukan',
   'Protected' =>
-    'Protected',
+    'Dilindungi',
   'Score' =>
-    'Nilai',
+    'Skor',
   'Change Password' =>
-    'Ubah Password',
+    'Ubah Kata Laluan',
   'Admin Level' =>
-    'Admin Level',
+    'Tahap Admin',
   'Visibility' =>
-    'Visibility',
+    'Kebolehlihatan',
   'Team Management' =>
     'Pengurusan Pasukan',
   'Add Team' =>
@@ -446,25 +446,27 @@ $translations = array(
   'Logo Management' =>
     'Pengurusan Logo',
   'Session' =>
-    'Session',
+    'Sesi',
   'Cookie' =>
-    'Cookie',
+    'Kuki',
   'Creation Time' =>
     'Masa Penciptaan',
   'Last Access' =>
-    'Diakses Terakhir',
+    'Akses Terakhir',
+  'Last Page Access' =>
+    'Akses Laman Terakhir',
   'Data' =>
     'Data',
   'Sessions' =>
-    'Session',
+    'Sesi',
   'entry' =>
     'entri',
   'No Entries' =>
-    'Tidak Ada Entri',
+    'Tiada Entri',
   'Game Logs' =>
     'Log Permainan',
   'Game Logs Timeline' =>
-    'Garis Waktu Log',
+    'Garis Masa Log Permainan',
   'End Game' =>
     'Tamatkan Permainan',
   'Begin Game' =>
@@ -478,14 +480,14 @@ $translations = array(
   'Flags' =>
     'Flag',
   'Bases' =>
-    'Base',
+    'Pangkalan',
   'Countries' =>
     'Negara',
   'Logos' =>
     'Logo',
   //Translations for inc/* and inc/gameboard/*
   'captured' =>
-    'menguasai',
+    'dimenangi',
   'Status' =>
     'Status',
   'Completed' =>
@@ -497,19 +499,19 @@ $translations = array(
   'End' =>
     'Akhiri',
   'Rank' =>
-    'Ranking',
+    'Kedudukan',
   'pts' =>
-    'point', //points
+    'mata', //points
   'Your Rank' =>
-    'Ranking Anda',
+    'Kedudukan Anda',
   'Your Score' =>
-    'Nilai Anda',
+    'Skor Anda',
   'Everyone' =>
     'Semua Orang',
   'Your Team' =>
     'Pasukan Anda',
   'Captured' =>
-    'Menguasai',
+    'Dimenangi',
   'Initiating' =>
     'Memulai',
   'run : > boot_sequence' =>
@@ -541,21 +543,21 @@ $translations = array(
   'begin_' =>
     'mulai_',
   'Are you sure you want to kick off the game? Logs will be cleared and progressive scoreboard will start' =>
-    'Adakah anda pasti ingin memulakan permainan? Log akan dikosongkan dan papan progresif akan bermula',
+    'Adakah anda pasti ingin memulakan permainan? Log akan dikosongkan dan papan skor kemajuan akan bermula',
   'end_' =>
     'akhir_',
   'Are you sure you want to finish the current game?' =>
     'Apakah anda pasti ingin menamatkan permainan yang sedang berlangsung?',
   'Are you sure you want to logout from the game?' =>
-    'Apakah anda pasti ingin keluar dari permainan?',
+    'Apakah anda pasti ingin log keluar daripada permainan?',
   'Saved' =>
-    'Tersimpan',
+    'Disimpan',
   'All changes have been successfully saved.' =>
     'Semua perubahan telah berjaya disimpan.',
   'Error' =>
-    'Error',
+    'Ralat',
   'Sorry your form was not saved. Please correct the all errors and save again.' =>
-    'Maaf form anda tidak disimpan. Sila perbetulkan semua kesilapan dan simpan semula.',
+    'Maaf borang anda tidak disimpan. Sila perbetulkan semua ralat dan simpan semula.',
   'cancel_' =>
     'batal_',
   'Are you sure you want to cancel? You have unsaved changes that will be reverted.' =>
@@ -563,17 +565,17 @@ $translations = array(
   'choose_logo' =>
     'pilih_logo',
   'captured_' =>
-    'menguasai_',
+    'dimenangi_',
   'flag_owner_' =>
     'pemilik_flag',
   'INACTIVE' =>
     'TIDAK AKTIF',
   'PTS' =>
-    'PTS',
+    'MATA',
   'category' =>
     'kategori',
   'capture_' =>
-    'kuasai_',
+    'menangi_',
   'Insert your answer' =>
     'Masukkan jawapan',
   'Request Hint' =>
@@ -583,77 +585,77 @@ $translations = array(
   'hint_' =>
     'petunjuk_',
   'first_capture' =>
-    'tangkapan_pertama',
+    'kemenangan_pertama',
   'completed_by' =>
     'diselesaikan_oleh',
   'scoreboard_' =>
-    'papan_nilai_',
+    'papan_skor_',
   'filter_' =>
-    'filter_',
+    'tapis_',
   'rank_' =>
-    'ranking_',
+    'kedudukan_',
   'team_name_' =>
     'nama_pasukan_',
   'quiz_pts_' =>
-    'nilai_kuiz_',
+    'mata_kuiz_',
   'flag_pts_' =>
-    'nilai_flag_',
+    'mata_flag_',
   'base_pts_' =>
-    'nilai_base_',
+    'mata_pangkalan_',
   'total_pts_' =>
-    'nilai_total',
+    'jumlah_mata_',
   'team_' =>
     'pasukan_',
   'team_members' =>
     'ahli_pasukan',
   'base_pts' =>
-    'nilai_base',
+    'mata_pangkalan',
   'quiz_pts' =>
-    'nilai_kuiz',
+    'mata_kuiz',
   'flag_pts' =>
-    'nilai_flag',
+    'mata_flag',
   'total_pts' =>
-    'nilai_total',
+    'jumlah_mata',
   'Tool bars are located on all edges of the gameboard. Tap a category to expand and close each tool bar.' =>
-    'Tool bar terletak pada semua hujung papan permainan. Ketik kategori untuk membuka dan menutup setiap tool bar.',
+    'Bar alat terletak pada semua hujung papan permainan. Ketik kategori untuk membuka dan menutup setiap bar alat.',
   'Tool_Bars' =>
-    'Tool_Bar',
+    'Bar_Alat',
   'Tap the "Game Clock" to keep track of time during gameplay. Don’t let time get the best of you.' =>
-    'Ketik "Waktu Permainan" untuk mengetahui waktu permainan. Jangan sampai kehabisan waktu.',
+    'Ketik "Jam Permainan" untuk mengetahui waktu semasa bermain. Jangan sampai kehabisan waktu.',
   'Game_Clock' =>
-    'Waktu_Permainan',
+    'Jam_Permainan',
   'Countries marked with an ' =>
     'Negara yang ditandai oleh ',
   'are captured by you.' =>
-    'telah anda kuasai.',
+    'telah anda menangi.',
   ' are owned by others.' =>
-    ' telah dikuasai oleh orang lain.',
+    ' telah dimiliki oleh orang lain.',
   'Captures' =>
-    'Menguasai',
+    'Memenangi',
   'Tap Plus[+] to Zoom In. Tap Minus[-] to Zoom Out.' =>
-    'Ketik Tanda Tambah [+] untuk Zoom In. Ketik Tanda Minus [-] untuk Zoom Out.',
+    'Ketik Tambah [+] untuk Zum Masuk. Ketik Tolak [-] untuk Zum Keluar.',
   'Click and Drag to move left, right, up and down.' =>
-    'Klik dan Drag untuk memindahkan ke kiri, kanan, atas, dan bawah.',
+    'Klik dan Seret untuk bergerak ke kiri, kanan, atas dan bawah.',
   'Zoom' =>
     'Zoom',
   'Tap Forward Slash [/] to activate computer commands. A list of commands can be found under "Rules".' =>
-    'Ketik Forward Slash [/] untuk mengaktifkan arahan komputer. Senarai arahan boleh didapati di bawah "Peraturan".',
+    'Ketik Palang ke Depan [/] untuk mengaktifkan arahan komputer. Senarai arahan boleh didapati di bawah "Peraturan".',
   'Command_Line' =>
-    'Command_Line',
+    'Baris_Arahan',
   'Click "Nav" to access main navigation links like Rules of Play, Registration, Blog, Jobs & more.' =>
     'Klik "Nav" untuk mengakses pautan navigasi utama seperti Peraturan Permainan, Pendaftaran, Blog, Pekerjaan, dan lain-lain.',
   'Track your competition by clicking "scorboard" to access real-time game statistics and graphs.' =>
-    'Jejaki persaingan anda dengan mengklik "Papan Nilai" untuk mengakses graf dan statistik permainan secara langsung.',
+    'Jejaki persaingan anda dengan mengklik "papan skor" untuk mengakses graf dan statistik permainan masa sebenar.',
   'Have fun, be the best and conquer the world.' =>
     'Selamat bermain, jadilah yang terbaik dan taklukilah dunia.',
   'Game_On' =>
-    'Game_On',
+    'Permainan_Bermula',
   'tutorial_' =>
     'tutorial_',
   'Next' =>
     'Seterusnya',
   'Skip to play' =>
-    'Langkau ke bermain',
+    'Langkau untuk bermain',
   'Powered By Facebook' =>
     'Dikuasakan Oleh Facebook',
 );
