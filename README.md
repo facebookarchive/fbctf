@@ -124,7 +124,7 @@ This step is not necessary if all development is done on the VM.
 
 #### Keep code updated
 
-If you are already running the fbctf platform and want to keep the code up to day, there is an easy way to do that with the provision script.
+If you are already running the fbctf platform and want to keep the code updated, there is an easy way to do that with the provision script.
 For example, the following command will run in a production environment and it will pull master from Github and get it ready to run, from the folder ```/var/www/fbctf```:
 
 ```
