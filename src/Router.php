@@ -13,7 +13,7 @@ class Router {
     if ($ajax) {
       return await self::genRouteAjax($page);
     } else if ($modal !== null) {
-      $xhp = await self::genRouteModel($page, strval($modal));
+      $xhp = await self::genRouteModal($page, strval($modal));
       return strval($xhp);
     } else {
       $response = await self::genRouteNormal($page);
@@ -21,7 +21,7 @@ class Router {
     }
   }
 
-  private static async function genRouteModel(
+  private static async function genRouteModal(
     string $page,
     string $modal,
   ): Awaitable<:xhp> {
