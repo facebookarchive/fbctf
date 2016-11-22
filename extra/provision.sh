@@ -47,6 +47,7 @@ P_ROOT="root"
 
 # Default values
 MODE="dev"
+NOREPOMODE=false
 TYPE="self"
 KEYFILE="none"
 CERTFILE="none"
@@ -280,7 +281,7 @@ sudo chmod 777 "$CTF_PATH/src/data/attachments/deleted"
 
 # In production, enable HHVM Repo Authoritative mode by default.
 # More info here: https://docs.hhvm.com/hhvm/advanced-usage/repo-authoritative
-if [[ "$MODE" == "prod" ]] && [[ "$NOREPOMODE" != true ]]; then
+if [[ "$MODE" == "prod" ]] && [[ "$NOREPOMODE" == false ]]; then
   hhvm_performance "$CTF_PATH"
 else
   log "HHVM Repo Authoritative mode NOT enabled"
