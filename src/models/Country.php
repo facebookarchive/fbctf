@@ -223,7 +223,6 @@ class Country extends Model {
   }
 
   // Get a country by id.
-  /* HH_IGNORE_ERROR[4110]: Lines #246 and #260 prevent this function from failing to return */
   public static async function gen(
     int $country_id,
     bool $refresh = false,
@@ -243,14 +242,12 @@ class Country extends Model {
         $all_countries->contains($country_id) !== false,
         'country not found',
       );
-      if ($all_countries->contains($country_id)) {
-        $country = $all_countries->get($country_id);
-        invariant(
-          $country instanceof Country,
-          'country should be of type Country',
-        );
-        return $country;
-      }
+      $country = $all_countries->get($country_id);
+      invariant(
+        $country instanceof Country,
+        'country should be of type Country',
+      );
+      return $country;
     } else {
       invariant(
         $mc_result instanceof Map,
@@ -260,14 +257,12 @@ class Country extends Model {
         $mc_result->contains($country_id) !== false,
         'country not found',
       );
-      if ($mc_result->contains($country_id)) {
-        $country = $mc_result->get($country_id);
-        invariant(
-          $country instanceof Country,
-          'country should be of type Country',
-        );
-        return $country;
-      }
+      $country = $mc_result->get($country_id);
+      invariant(
+        $country instanceof Country,
+        'country should be of type Country',
+      );
+      return $country;
     }
   }
 
