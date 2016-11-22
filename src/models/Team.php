@@ -176,11 +176,18 @@ class Team extends Model implements Importable, Exportable {
         $ldap_server = await Configuration::gen('ldap_server');
         $ldap_port = await Configuration::gen('ldap_port');
         $ldap_domain_suffix = await Configuration::gen('ldap_domain_suffix');
-        $ldapconn = ldap_connect($ldap_server->getValue(), intval($ldap_port->getValue()));
+        $ldapconn = ldap_connect(
+          $ldap_server->getValue(),
+          intval($ldap_port->getValue()),
+        );
         if (!$ldapconn)
           return null;
         $team_name = trim($team->getName());
-        $bind = ldap_bind($ldapconn, $team_name.$ldap_domain_suffix->getValue(), $password);
+        $bind = ldap_bind(
+          $ldapconn,
+          $team_name.$ldap_domain_suffix->getValue(),
+          $password,
+        );
         if (!$bind)
           return null;
         //Successful Login via LDAP

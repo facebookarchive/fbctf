@@ -322,7 +322,8 @@ class IndexController extends Controller {
                   name="teamname"
                   type="text"
                   maxlength={20}
-                /> {$ldap_domain_suffix}
+                />
+                {$ldap_domain_suffix}
               </div>
               <div class="form-el el--text">
                 <label for="">{tr('Password')}</label>
@@ -394,7 +395,8 @@ class IndexController extends Controller {
                   name="teamname"
                   type="text"
                   maxlength={20}
-                /> {$ldap_domain_suffix}
+                />
+                {$ldap_domain_suffix}
               </div>
               <div class="form-el el--text">
                 <label for="">{tr('Password')}</label>
