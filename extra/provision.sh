@@ -21,7 +21,7 @@
 #
 # Optional Parameters:
 #   -U,      --update            Pull from master GitHub branch and sync files to fbctf folder.
-#   -R,      --repo-mode         Enables HHVM Repo Authoritative mode to improve HHVM performance.
+#   -R,      --no-repo-mode      Disables HHVM Repo Authoritative mode in production mode.
 #   -k PATH, --keyfile PATH      Path to supplied SSL key file.
 #   -C PATH, --certfile PATH     Path to supplied SSL certificate pem file.
 #   -D DOMAIN, --domain DOMAIN   Domain for the SSL certificate to be generated using letsencrypt.
@@ -76,7 +76,7 @@ function usage() {
   printf "  cerbot Provision will generate a SSL certificate using letsencrypt/certbot. More info here: https://certbot.eff.org/\n"
   printf "\nOptional Parameters:\n"
   printf "  -U,      --update \t\tPull from master GitHub branch and sync files to fbctf folder.\n"
-  printf "  -R,      --repo-mode \t\tEnables HHVM Repo Authoritative mode to improve HHVM performance.\n"
+  printf "  -R,      --no-repo-mode \tDisables HHVM Repo Authoritative mode in production mode.\n"
   printf "  -k PATH, --keyfile PATH \tPath to supplied SSL key file.\n"
   printf "  -C PATH, --certfile PATH \tPath to supplied SSL certificate pem file.\n"
   printf "  -D DOMAIN, --domain DOMAIN \tDomain for the SSL certificate to be generated using letsencrypt.\n"
@@ -126,8 +126,8 @@ while true; do
       UPDATE=true
       shift
       ;;
-    -R|--repo-mode)
-      REPOMODE=true
+    -R|--no-repo-mode)
+      NOREPOMODE=true
       shift
       ;;
     -k|--keyfile)
@@ -278,10 +278,12 @@ import_empty_db "root" "$P_ROOT" "$DB" "$CTF_PATH" "$MODE"
 sudo chmod 777 "$CTF_PATH/src/data/attachments"
 sudo chmod 777 "$CTF_PATH/src/data/attachments/deleted"
 
-# Check if HHVM Repo Authoritative mode needs to be enabled.
+# In production, enable HHVM Repo Authoritative mode by default.
 # More info here: https://docs.hhvm.com/hhvm/advanced-usage/repo-authoritative
-if [[ "$REPOMODE" == true ]]; then
-    hhvm_performance "$CTF_PATH"
+if [[ "$MODE" == "prod" ]] && [[ "$NOREPOMODE" != true ]]; then
+  hhvm_performance "$CTF_PATH"
+else
+  log "HHVM Repo Authoritative mode NOT enabled"
 fi
 
 # Display the final message, depending on the context
