@@ -19,12 +19,14 @@ class TeamModuleController {
       foreach ($leaderboard as $leader) {
         $logo_model = await $leader->getLogoModel();
         if ($logo_model->getCustom()) {
-          $image = <img class="icon--badge" src={$logo_model->getLogo()}></img>;
+          $image =
+            <img class="icon--badge" src={$logo_model->getLogo()}></img>;
         } else {
-          $iconbadge = '#icon--badge-' . $logo_model->getName();
-          $image = <svg class="icon--badge">
-                     <use href={$iconbadge}/>
-                   </svg>;
+          $iconbadge = '#icon--badge-'.$logo_model->getName();
+          $image =
+            <svg class="icon--badge">
+              <use href={$iconbadge} />
+            </svg>;
         }
         $list->appendChild(
           <li>

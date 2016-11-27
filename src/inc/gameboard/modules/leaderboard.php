@@ -26,12 +26,14 @@ class LeaderboardModuleController {
         // TODO also duplicated in modules/teams.php. Needs to be un-duplicated.
         $logo_model = await $team->getLogoModel();
         if ($logo_model->getCustom()) {
-          $image = <img class="icon--badge" src={$logo_model->getLogo()}></img>;
+          $image =
+            <img class="icon--badge" src={$logo_model->getLogo()}></img>;
         } else {
-          $iconbadge = '#icon--badge-' . $logo_model->getName();
-          $image = <svg class="icon--badge">
-                     <use href={$iconbadge}/>
-                   </svg>;
+          $iconbadge = '#icon--badge-'.$logo_model->getName();
+          $image =
+            <svg class="icon--badge">
+              <use href={$iconbadge} />
+            </svg>;
         }
 
         $xlink_href = '#icon--badge-'.$team->getLogo();

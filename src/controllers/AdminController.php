@@ -2897,10 +2897,11 @@ class AdminController extends Controller {
       if ($logo_model->getCustom()) {
         $image = <img class="icon--badge" src={$logo_model->getLogo()}></img>;
       } else {
-        $iconbadge = '#icon--badge-' . $logo_model->getName();
-        $image = <svg class="icon--badge">
-                   <use href={$iconbadge}/>
-                 </svg>;
+        $iconbadge = '#icon--badge-'.$logo_model->getName();
+        $image =
+          <svg class="icon--badge">
+            <use href={$iconbadge} />
+          </svg>;
       }
 
       $team_protected = $team->getProtected();
@@ -3188,14 +3189,16 @@ class AdminController extends Controller {
     $adminsections = <div class="admin-sections"></div>;
 
     $all_logos = await Logo::genAllLogos();
+
     foreach ($all_logos as $logo) {
       if ($logo->getCustom()) {
         $image = <img class="icon--badge" src={$logo->getLogo()}></img>;
       } else {
-        $iconbadge = '#icon--badge-' . $logo->getName();
-        $image = <svg class="icon--badge">
-                   <use href={$iconbadge}/>
-                 </svg>;
+        $iconbadge = '#icon--badge-'.$logo->getName();
+        $image =
+          <svg class="icon--badge">
+            <use href={$iconbadge} />
+          </svg>;
       }
       $using_logo = await MultiTeam::genWhoUses($logo->getName());
       $current_use = (count($using_logo) > 0) ? tr('Yes') : tr('No');

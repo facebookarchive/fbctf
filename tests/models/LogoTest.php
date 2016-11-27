@@ -4,9 +4,10 @@ class LogoTest extends FBCTFTest {
 
   public function testAllLogos(): void {
     $all = HH\Asio\join(Logo::genAllLogos());
+    $all = $all->toArray();
     $this->assertEquals(1, count($all));
 
-    $l = $all[0];
+    $l = array_pop($all);
     $this->assertEquals(1, $l->getId());
     $this->assertEquals('name', $l->getName());
     $this->assertEquals('logo_path', $l->getLogo());

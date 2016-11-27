@@ -30,7 +30,7 @@ class TeamDataController extends DataController {
         'logo' => array(
           'path' => $logo_model->getLogo(),
           'name' => $logo_model->getName(),
-          'custom' => $logo_model->getCustom()
+          'custom' => $logo_model->getCustom(),
         ),
         'team_members' => array(),
         'rank' => $rank,

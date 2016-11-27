@@ -13,7 +13,7 @@ class IndexAjaxController extends AjaxController {
           'options' => array('regexp' => '/^[\w+-\/]+={0,2}$/'),
         ),
         'isCustomLogo' => FILTER_VALIDATE_BOOLEAN,
-        'logoType'     => FILTER_UNSAFE_RAW,
+        'logoType' => FILTER_UNSAFE_RAW,
         'token' => array(
           'filter' => FILTER_VALIDATE_REGEXP,
           'options' => array('regexp' => '/^[\w]+$/'),
@@ -57,8 +57,7 @@ class IndexAjaxController extends AjaxController {
         $names = json_decode(must_have_string($params, 'names'));
         $emails = json_decode(must_have_string($params, 'emails'));
         invariant(
-          is_array($names) &&
-          is_array($emails),
+          is_array($names) && is_array($emails),
           'names and emails should be arrays',
         );
 
