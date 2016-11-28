@@ -365,6 +365,16 @@ class Team extends Model implements Importable, Exportable {
       'DELETE FROM teams WHERE id = %d AND protected = 0 LIMIT 1',
       $team_id,
     );
+    await $db->queryf(
+      'DELETE FROM registration_tokens WHERE team_id = %d',
+      $team_id,
+    );
+    await $db->queryf('DELETE FROM scores_log WHERE team_id = %d', $team_id);
+    await $db->queryf('DELETE FROM hints_log WHERE team_id = %d', $team_id);
+    await $db->queryf(
+      'DELETE FROM failures_log WHERE team_id = %d',
+      $team_id,
+    );
     MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
     Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
     await Session::genDeleteByTeam($team_id);

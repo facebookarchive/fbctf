@@ -37,6 +37,15 @@ function unpauseGame() {
   sendAdminRequest(unpause_data, true);
 }
 
+//Confirm team deletion
+function deleteTeamPopup(team_id) {
+  var delete_team = {
+    action: 'delete_team',
+    team_id: team_id
+  };
+  sendAdminRequest(delete_team, true);
+}
+
 /**
  * submits an ajax request to the admin endpoint
  *
@@ -1299,6 +1308,17 @@ module.exports = {
       event.preventDefault();
       Modal.loadPopup('p=action&modal=unpause-game', 'action-unpause-game', function() {
         $('#unpause_game').click(unpauseGame);
+      });
+    });
+
+    // prompt delete team
+    $('.js-delete-team').on('click', function(event) {
+      event.preventDefault();
+      var team_id = $(this).prev('input').attr('value');
+      Modal.loadPopup('p=action&modal=delete-team', 'action-delete-team', function() {
+        $('#delete_team').click(function() {
+          deleteTeamPopup(team_id);
+        });
       });
     });
 

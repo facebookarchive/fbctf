@@ -2901,6 +2901,7 @@ class AdminController extends Controller {
       $team_admin_off = !$team->getAdmin();
       $team_visible_on = $team->getVisible();
       $team_visible_off = !$team->getVisible();
+      $team_id = strval($team->getId());
 
       $team_status_name = 'fb--teams--team-'.strval($team->getId()).'-status';
       $team_status_on_id =
@@ -2980,9 +2981,15 @@ class AdminController extends Controller {
             <label for={$team_admin_off_id}>{tr('Off')}</label>
           </div>;
         $delete_button =
-          <button class="fb-cta cta--red" data-action="delete">
-            {tr('Delete')}
-          </button>;
+          <div style="display: inline">
+            <input type="hidden" name="team_id" value={$team_id} />
+            <a
+              href="#"
+              class="fb-cta cta--red js-delete-team"
+              style="margin-right: 20px">
+              {tr('Delete')}
+            </a>
+          </div>;
       }
 
       $tab_team = 'team'.strval($team->getId());
