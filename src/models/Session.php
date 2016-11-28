@@ -267,10 +267,7 @@ class Session extends Model {
   public static async function genDeleteByTeam(int $team_id): Awaitable<void> {
     $db = await self::genDb();
     $team_sessions = await self::genSessionsByTeam($team_id);
-    await $db->queryf(
-      'DELETE FROM sessions WHERE team_id = %d LIMIT 1',
-      $team_id,
-    );
+    await $db->queryf('DELETE FROM sessions WHERE team_id = %d', $team_id);
     foreach ($team_sessions as $session) {
       self::invalidateMCSessions($session->getCookie());
     }
@@ -291,6 +288,18 @@ class Session extends Model {
     }
 
     return $sessions;
+  }
+
+  // Delete all sessions for unprotected teams
+  public static async function genDeleteAllUnprotected(): Awaitable<void> {
+    $db = await self::genDb();
+    $team_sessions = await self::genUnprotectedSessions();
+    await $db->queryf(
+      'DELETE FROM sessions USING sessions, teams WHERE sessions.team_id = teams.id and teams.protected = 0',
+    );
+    foreach ($team_sessions as $session) {
+      self::invalidateMCSessions($session->getCookie());
+    }
   }
 
   // Does cleanup of cookies.
@@ -355,6 +364,22 @@ class Session extends Model {
       '',
       '',
     );
+  }
+
+  public static async function genUnprotectedSessions(
+  ): Awaitable<array<Session>> {
+    $db = await self::genDb();
+    $sessions = array();
+    $result =
+      await $db->queryf(
+        'SELECT * FROM sessions, teams WHERE sessions.team_id = teams.id AND teams.protected = 0',
+      );
+
+    foreach ($result->mapRows() as $row) {
+      $sessions[] = self::sessionFromRow($row);
+    }
+
+    return $sessions;
   }
 
   public static async function genExpiredSessionsForCleanup(

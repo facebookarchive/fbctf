@@ -58,6 +58,9 @@ class Configuration extends Model {
       $value,
       $field,
     );
+    if ($field === 'login' && intval($value) === 0) {
+      await Session::genDeleteAllUnprotected();
+    }
 
     self::getMc()->delete(self::MC_KEY.$field);
   }
