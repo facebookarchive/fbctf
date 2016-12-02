@@ -207,6 +207,7 @@ function install_nginx() {
 # second where the repo is installed
 function install_hhvm() {
   local __path=$1
+  local __config=$2
 
   package software-properties-common
 
@@ -225,12 +226,14 @@ function install_hhvm() {
   sudo apt-get remove hhvm -y
   # Clear old files
   sudo rm -Rf /var/run/hhvm/*
+  sudo rm -Rf /var/cache/hhvm/*
+
   local __package="hhvm_3.14.5~$(lsb_release -sc)_amd64.deb"
   dl "http://dl.hhvm.com/ubuntu/pool/main/h/hhvm/$__package" "/tmp/$__package"
   sudo dpkg -i "/tmp/$__package"
 
   log "Copying HHVM configuration"
-  cat "$__path/extra/hhvm.conf" | sed "s|CTFPATH|$__path/|g" | sudo tee /etc/hhvm/server.ini
+  cat "$__path/extra/hhvm.conf" | sed "s|CTFPATH|$__path/|g" | sudo tee "$__config"
 
   log "HHVM as PHP systemwide"
   sudo /usr/bin/update-alternatives --install /usr/bin/php php /usr/bin/hhvm 60
@@ -244,10 +247,12 @@ function install_hhvm() {
 
 function hhvm_performance() {
   local __path=$1
+  local __config=$2
+  local __repopath=`cat "$__config" | grep "hhvm.repo.central.path" | awk -F"= " '{print $2}'`
 
   log "Enabling HHVM RepoAuthoritative mode"
   sudo hhvm-repo-mode enable "$__path"
-  sudo chown www-data:www-data /var/run/hhvm/hhvm.hhbc
+  sudo chown www-data:www-data "$__repopath"
 }
 
 function install_composer() {

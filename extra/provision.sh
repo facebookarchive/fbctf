@@ -55,6 +55,7 @@ DOMAIN="none"
 EMAIL="none"
 CODE_PATH="/vagrant"
 CTF_PATH="/var/www/fbctf"
+HHVM_CONFIG_PATH="/etc/hhvm/server.ini"
 
 # Arrays with valid arguments
 VALID_MODE=("dev" "prod")
@@ -245,11 +246,19 @@ install_mysql "$P_ROOT"
 package git
 
 # Install HHVM
-install_hhvm "$CTF_PATH"
+install_hhvm "$CTF_PATH" "$HHVM_CONFIG_PATH"
 
 # Install Composer
 install_composer "$CTF_PATH"
 composer.phar install
+
+# In production, enable HHVM Repo Authoritative mode by default.
+# More info here: https://docs.hhvm.com/hhvm/advanced-usage/repo-authoritative
+if [[ "$MODE" == "prod" ]] && [[ "$NOREPOMODE" == false ]]; then
+  hhvm_performance "$CTF_PATH" "$HHVM_CONFIG_PATH"
+else
+  log "HHVM Repo Authoritative mode NOT enabled"
+fi
 
 # Install NPM and grunt
 package npm
@@ -265,6 +274,8 @@ sudo npm install -g flow-bin
 # Run grunt to generate JS files
 run_grunt "$CTF_PATH" "$MODE"
 
+
+
 # Install nginx and certificates
 install_nginx "$CTF_PATH" "$MODE" "$TYPE" "$EMAIL" "$DOMAIN" "$DOCKER"
 
@@ -278,14 +289,6 @@ import_empty_db "root" "$P_ROOT" "$DB" "$CTF_PATH" "$MODE"
 # Make attachments folder world writable
 sudo chmod 777 "$CTF_PATH/src/data/attachments"
 sudo chmod 777 "$CTF_PATH/src/data/attachments/deleted"
-
-# In production, enable HHVM Repo Authoritative mode by default.
-# More info here: https://docs.hhvm.com/hhvm/advanced-usage/repo-authoritative
-if [[ "$MODE" == "prod" ]] && [[ "$NOREPOMODE" == false ]]; then
-  hhvm_performance "$CTF_PATH"
-else
-  log "HHVM Repo Authoritative mode NOT enabled"
-fi
 
 # Display the final message, depending on the context
 if [[ -d "/vagrant" ]]; then
