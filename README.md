@@ -74,7 +74,7 @@ cd fbctf
 *Note*: Because this is a production environment, the password will be randomly generated when the provision script finishes. This ensures that you can't forget to change the default password after provisioning. Make sure to watch the very end of the provision script, as the password will be printed out. It will not be stored elsewhere, so either keep track of it or change it. In order to change the password, run the following command:
 
 ```
-. ./extra/lib.sh
+source ./extra/lib.sh
 set_password new_password ctf ctf fbctf $PWD
 ```
 
