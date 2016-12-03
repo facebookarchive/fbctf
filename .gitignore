@@ -37,4 +37,4 @@ src/data/attachments/deleted/*
 
 # Custom logos directory
 src/data/customlogos/*
-!src/data/attachments/index.php
+!src/data/customlogos/index.php

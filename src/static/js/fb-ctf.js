@@ -2514,8 +2514,8 @@ function setupInputListeners() {
 console.log('foo');
       var input = this;
       if (input.files && input.files[0]) {
-        if (input.files[0].size > (500*1024)) {
-          alert('Please upload an image less than 500KB!');
+        if (input.files[0].size > (1000*1024)) {
+          alert('Please upload an image less than 1000KB!');
           return;
         }
 

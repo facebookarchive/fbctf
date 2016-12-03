@@ -356,7 +356,9 @@ class IndexController extends Controller {
                   <div class="center-wrapper">
                     <h6>
                       <a href="#" id="custom-emblem-clear-link">
-                        Clear your custom emblem to use a default emblem
+                        {tr(
+                          'Clear your custom emblem to use a default emblem.',
+                        )}
                       </a>
                     </h6>
                   </div>
@@ -370,7 +372,7 @@ class IndexController extends Controller {
                   id="register_button"
                   class="fb-cta cta--yellow"
                   type="button">
-                  Sign Up
+                  {tr('Sign Up')}
                 </button>
               </p>
             </div>
@@ -436,7 +438,9 @@ class IndexController extends Controller {
             <div class="fb-choose-emblem">
               <h6>{tr('Choose an Emblem')}</h6>
               <h6>
-                <a href="#" id="custom-emblem-link">or upload your own</a>
+                <a href="#" id="custom-emblem-link">
+                  {tr('or upload your own')}
+                </a>
               </h6>
               <div class="custom-emblem">
                 <input
@@ -458,7 +462,9 @@ class IndexController extends Controller {
                   <div class="center-wrapper">
                     <h6>
                       <a href="#" id="custom-emblem-clear-link">
-                        Clear your custom emblem to use a default emblem
+                        {tr(
+                          'Clear your custom emblem to use a default emblem.',
+                        )}
                       </a>
                     </h6>
                   </div>

@@ -11,11 +11,10 @@ class Logo extends Model implements Importable, Exportable {
     };
 
   const string CUSTOM_LOGO_DIR = '/data/customlogos/';
-  const int MAX_CUSTOM_LOGO_SIZE_BYTES = 500000;
+  const int MAX_CUSTOM_LOGO_SIZE_BYTES = 1000;
   const int DEFAULT_LOGO_WIDTH = 80;
   const int DEFAULT_LOGO_HEIGHT = 62;
   const string DEFAULT_LOGO_TYPE = "png";
-  const string DEFAULT_LOGO_TYPE_FUNCTION = "imagepng";
   private static array<int, string>
     $CUSTOM_LOGO_TYPES = [
       IMAGETYPE_JPEG => 'jpg',
@@ -340,16 +339,39 @@ class Logo extends Model implements Importable, Exportable {
       $original_height,
     );
 
-    $image_function = self::DEFAULT_LOGO_TYPE_FUNCTION;
-    ob_start();
-    invariant(
-      function_exists($image_function),
-      "image_function is not a vaild function",
-    );
-    /* HH_IGNORE_ERROR[4009]: HHVM is not understanding the variable function call, line 347 ensures a valid function is used. */
-    $image_function($resized_image);
-    $binary_data = ob_get_contents();
-    ob_end_clean();
+    $binary_data = "";
+    switch (self::DEFAULT_LOGO_TYPE) {
+      case "png":
+        ob_start();
+        imagepng($resized_image);
+        $binary_data = ob_get_contents();
+        ob_end_clean();
+        break;
+      case "jpg":
+        ob_start();
+        imagejpeg($resized_image);
+        $binary_data = ob_get_contents();
+        ob_end_clean();
+        break;
+      case "gif":
+        ob_start();
+        imagegif($resized_image);
+        $binary_data = ob_get_contents();
+        ob_end_clean();
+        break;
+      case "bmp":
+        ob_start();
+        imagewbmp($resized_image);
+        $binary_data = ob_get_contents();
+        ob_end_clean();
+        break;
+      default:
+        ob_start();
+        imagepng($resized_image);
+        $binary_data = ob_get_contents();
+        ob_end_clean();
+        break;
+    }
 
     return $binary_data;
   }
