@@ -1062,6 +1062,13 @@ class Level extends Model implements Importable, Exportable {
           // Log the hint
           await HintLog::genLogGetHint($level_id, $team_id, $penalty);
 
+          Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
+          MultiTeam::invalidateMCRecords('ALL_TEAMS'); // Invalidate Memcached MultiTeam data.
+          MultiTeam::invalidateMCRecords('POINTS_BY_TYPE'); // Invalidate Memcached MultiTeam data.
+          MultiTeam::invalidateMCRecords('LEADERBOARD'); // Invalidate Memcached MultiTeam data.
+          MultiTeam::invalidateMCRecords('TEAMS_BY_LEVEL'); // Invalidate Memcached MultiTeam data.
+          MultiTeam::invalidateMCRecords('TEAMS_FIRST_CAP'); // Invalidate Memcached MultiTeam data.
+
           // Hint!
           return $level->getHint();
         },
