@@ -334,7 +334,7 @@ class IndexController extends Controller {
             <div class="fb-choose-emblem">
               <h6>{tr('Choose an Emblem')}</h6>
               <h6>
-                <a href="#" id="custom-emblem-link">or upload your own</a>
+                <a href="#" id="custom-emblem-link">{tr('or upload your own')}</a>
               </h6>
               <div class="custom-emblem">
                 <input
