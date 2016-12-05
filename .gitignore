@@ -18,6 +18,7 @@ www.pid
 # Vagrant Artifacts
 .vagrant
 .sources
+*.log
 
 # OS artifacts
 .DS_Store

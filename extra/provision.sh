@@ -207,7 +207,7 @@ if [[ "$CODE_PATH" != "$CTF_PATH" ]]; then
     # This is because sync'ing files is done with unison
     if [[ "$MODE" == "dev" ]]; then
         log "Configuring git to ignore permission changes"
-        git --git-dir="$CTF_PATH/" config core.filemode false
+        git -C "$CTF_PATH/" config core.filemode false
         log "Setting permissions"
         sudo chmod -R 777 "$CTF_PATH/"
     fi
@@ -229,8 +229,9 @@ package language-pack-en
 
 # Packages to be installed in dev mode
 if [[ "$MODE" == "dev" ]]; then
-    sudo apt-get install -y build-essential curl python-dev
+    sudo apt-get install -y build-essential python-all-dev python-setuptools
     package python-pip
+    sudo -H pip install --upgrade pip
     sudo -H pip install mycli
     package emacs
     package htop
@@ -242,14 +243,12 @@ package memcached
 # Install MySQL
 install_mysql "$P_ROOT"
 
-# Install git
-package git
-
 # Install HHVM
 install_hhvm "$CTF_PATH" "$HHVM_CONFIG_PATH"
 
 # Install Composer
 install_composer "$CTF_PATH"
+# This step has done `cd "$CTF_PATH"`
 composer.phar install
 
 # In production, enable HHVM Repo Authoritative mode by default.
@@ -260,21 +259,21 @@ else
   log "HHVM Repo Authoritative mode NOT enabled"
 fi
 
-# Install NPM and grunt
+# Install and update NPM
 package npm
-
 # Update NPM with itself: https://github.com/npm/npm/issues/14610
 sudo npm install -g npm@lts
 
+# Install node
 package nodejs-legacy
-sudo npm install
+
+# Install all required node_modules in the CTF folder
+sudo npm install --prefix "$CTF_PATH"
 sudo npm install -g grunt
 sudo npm install -g flow-bin
 
 # Run grunt to generate JS files
 run_grunt "$CTF_PATH" "$MODE"
-
-
 
 # Install nginx and certificates
 install_nginx "$CTF_PATH" "$MODE" "$TYPE" "$EMAIL" "$DOMAIN" "$DOCKER"
