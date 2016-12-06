@@ -11,7 +11,7 @@ class Logo extends Model implements Importable, Exportable {
     };
 
   const string CUSTOM_LOGO_DIR = '/data/customlogos/';
-  const int MAX_CUSTOM_LOGO_SIZE_BYTES = 1000;
+  const int MAX_CUSTOM_LOGO_SIZE_BYTES = 1000000;
   const int DEFAULT_LOGO_WIDTH = 80;
   const int DEFAULT_LOGO_HEIGHT = 62;
   const string DEFAULT_LOGO_TYPE = "png";
