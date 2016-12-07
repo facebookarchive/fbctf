@@ -5,18 +5,18 @@ if (php_sapi_name() !== 'cli') {
   exit(0);
 }
 
-require_once ('/var/www/fbctf/src/Db.php');
-require_once ('/var/www/fbctf/src/Utils.php');
-require_once ('/var/www/fbctf/src/models/Model.php');
-require_once ('/var/www/fbctf/src/models/Importable.php');
-require_once ('/var/www/fbctf/src/models/Exportable.php');
-require_once ('/var/www/fbctf/src/models/Level.php');
-require_once ('/var/www/fbctf/src/models/Link.php');
-require_once ('/var/www/fbctf/src/models/Team.php');
-require_once ('/var/www/fbctf/src/models/Configuration.php');
-require_once ('/var/www/fbctf/src/models/ScoreLog.php');
-require_once ('/var/www/fbctf/src/models/Control.php');
-require_once ('/var/www/fbctf/src/models/MultiTeam.php');
+require_once (__DIR__.'/../Db.php');
+require_once (__DIR__.'/../Utils.php');
+require_once (__DIR__.'/../models/Model.php');
+require_once (__DIR__.'/../models/Importable.php');
+require_once (__DIR__.'/../models/Exportable.php');
+require_once (__DIR__.'/../models/Level.php');
+require_once (__DIR__.'/../models/Link.php');
+require_once (__DIR__.'/../models/Team.php');
+require_once (__DIR__.'/../models/Configuration.php');
+require_once (__DIR__.'/../models/ScoreLog.php');
+require_once (__DIR__.'/../models/Control.php');
+require_once (__DIR__.'/../models/MultiTeam.php');
 
 $conf_game = \HH\Asio\join(Configuration::gen('game'));
 while ($conf_game->getValue() === '1') {
