@@ -3481,11 +3481,25 @@ class AdminController extends Controller {
   public async function genRenderMainNav(): Awaitable<:xhp> {
     $game = await Configuration::gen('game');
     $game_status = $game->getValue() === '1';
+    $pause_action = "";
     if ($game_status) {
       $game_action =
         <a href="#" class="fb-cta cta--red js-end-game">
           {tr('End Game')}
         </a>;
+      $pause = await Configuration::gen('game_paused');
+      $game_paused = $pause->getValue() === '1';
+      if ($game_paused) {
+        $pause_action =
+          <a href="#" class="fb-cta cta--yellow js-unpause-game">
+            {tr('Unpause Game')}
+          </a>;
+      } else {
+        $pause_action =
+          <a href="#" class="fb-cta cta--red js-pause-game">
+            {tr('Pause Game')}
+          </a>;
+      }
     } else {
       $game_action =
         <a href="#" class="fb-cta cta--yellow js-begin-game">
@@ -3557,6 +3571,8 @@ class AdminController extends Controller {
             </li>
           </ul>
           {$game_action}
+          <p><br /></p>
+          {$pause_action}
         </nav>
         <div class="admin-nav--footer row-fixed">
           <a href="/index.php?p=game">{tr('Gameboard')}</a>

@@ -92,6 +92,12 @@ class Control extends Model {
     $end_ts = $start_ts + $duration;
     await Configuration::genUpdate('end_ts', strval($end_ts));
 
+    // Set pause to zero
+    await Configuration::genUpdate('pause_ts', '0');
+
+    // Set gane to not paused
+    await Configuration::genUpdate('game_paused', '0');
+
     // Kick off timer
     await Configuration::genUpdate('timer', '1');
 
@@ -114,6 +120,38 @@ class Control extends Model {
     await Configuration::genUpdate('start_ts', '0');
     await Configuration::genUpdate('end_ts', '0');
 
+    // Set pause to zero
+    await Configuration::genUpdate('pause_ts', '0');
+
+    // Stop timer
+    await Configuration::genUpdate('timer', '0');
+
+    $pause = await Configuration::gen('game_paused');
+    $game_paused = $pause->getValue() === '1';
+
+    if (!$game_paused) {
+      // Stop bases scoring process
+      await Level::genStopBaseScoring();
+
+      // Stop progressive scoreboard process
+      await Progressive::genStop();
+    } else {
+      // Set game to not paused
+      await Configuration::genUpdate('game_paused', '0');
+    }
+  }
+
+  public static async function genPause(): Awaitable<void> {
+    // Disable scoring
+    await Configuration::genUpdate('scoring', '0');
+
+    // Set pause timestamp
+    $pause_ts = time();
+    await Configuration::genUpdate('pause_ts', strval($pause_ts));
+
+    // Set gane to paused
+    await Configuration::genUpdate('game_paused', '1');
+
     // Stop timer
     await Configuration::genUpdate('timer', '0');
 
@@ -122,6 +160,47 @@ class Control extends Model {
 
     // Stop progressive scoreboard process
     await Progressive::genStop();
+  }
+
+  public static async function genUnPause(): Awaitable<void> {
+    // Enable scoring
+    await Configuration::genUpdate('scoring', '1');
+
+    // Get pause time
+    $config_pause_ts = await Configuration::gen('pause_ts');
+    $pause_ts = intval($config_pause_ts->getValue());
+
+    // Get start time
+    $config_start_ts = await Configuration::gen('start_ts');
+    $start_ts = intval($config_start_ts->getValue());
+
+    // Get end time
+    $config_end_ts = await Configuration::gen('end_ts');
+    $end_ts = intval($config_end_ts->getValue());
+
+    // Calulcate game remaining
+    $game_duration = $end_ts - $start_ts;
+    $game_played_duration = $pause_ts - $start_ts;
+    $remaining_duration = $game_duration - $game_played_duration;
+    $end_ts = time() + $remaining_duration;
+
+    // Set new endtime
+    await Configuration::genUpdate('end_ts', strval($end_ts));
+
+    // Set pause to zero
+    await Configuration::genUpdate('pause_ts', '0');
+
+    // Set gane to not paused
+    await Configuration::genUpdate('game_paused', '0');
+
+    // Start timer
+    await Configuration::genUpdate('timer', '1');
+
+    // Kick off progressive scoreboard
+    await Progressive::genRun();
+
+    // Kick off scoring for bases
+    await Level::genBaseScoring();
   }
 
   public static async function importGame(): Awaitable<bool> {

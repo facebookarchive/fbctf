@@ -121,6 +121,8 @@ class AdminAjaxController extends AjaxController {
       'delete_announcement',
       'create_tokens',
       'end_game',
+      'pause_game',
+      'unpause_game',
       'reset_game',
       'backup_db',
       'export_game',
@@ -421,6 +423,12 @@ class AdminAjaxController extends AjaxController {
         return Utils::ok_response('Success', 'admin');
       case 'end_game':
         await Control::genEnd();
+        return Utils::ok_response('Success', 'admin');
+      case 'pause_game':
+        await Control::genPause();
+        return Utils::ok_response('Success', 'admin');
+      case 'unpause_game':
+        await Control::genUnPause();
         return Utils::ok_response('Success', 'admin');
       case 'backup_db':
         Control::backupDb();

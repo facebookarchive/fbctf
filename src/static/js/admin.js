@@ -21,6 +21,22 @@ function endGame() {
   sendAdminRequest(end_data, true);
 }
 
+// Pauses the currently running game
+function pauseGame() {
+  var pause_data = {
+    action: 'pause_game'
+  };
+  sendAdminRequest(pause_data, true);
+}
+
+// Unuauses the currently running game
+function unpauseGame() {
+  var unpause_data = {
+    action: 'unpause_game'
+  };
+  sendAdminRequest(unpause_data, true);
+}
+
 /**
  * submits an ajax request to the admin endpoint
  *
@@ -1267,6 +1283,22 @@ module.exports = {
       event.preventDefault();
       Modal.loadPopup('p=action&modal=end-game', 'action-end-game', function() {
         $('#end_game').click(endGame);
+      });
+    });
+
+    // prompt pause game
+    $('.js-pause-game').on('click', function(event) {
+      event.preventDefault();
+      Modal.loadPopup('p=action&modal=pause-game', 'action-pause-game', function() {
+        $('#pause_game').click(pauseGame);
+      });
+    });
+
+    // prompt pause game
+    $('.js-unpause-game').on('click', function(event) {
+      event.preventDefault();
+      Modal.loadPopup('p=action&modal=unpause-game', 'action-unpause-game', function() {
+        $('#unpause_game').click(unpauseGame);
       });
     });
 
