@@ -252,7 +252,7 @@ function hhvm_performance() {
   local __repofile="/var/cache/hhvm/hhvm.hhbc"
 
   log "Enabling HHVM RepoAuthoritative mode"
-  cat "$__config" | sed "s|$__oldrepo|$__repofile/|g" | sudo tee "$__config"
+  cat "$__config" | sed "s|$__oldrepo|$__repofile|g" | sudo tee "$__config"
   sudo hhvm-repo-mode enable "$__path"
   sudo chown www-data:www-data "$__repofile"
 }
