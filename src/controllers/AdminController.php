@@ -3481,7 +3481,7 @@ class AdminController extends Controller {
   public async function genRenderMainNav(): Awaitable<:xhp> {
     $game = await Configuration::gen('game');
     $game_status = $game->getValue() === '1';
-    $pause_action = "";
+    $pause_action = '';
     if ($game_status) {
       $game_action =
         <a href="#" class="fb-cta cta--red js-end-game">

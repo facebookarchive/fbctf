@@ -95,7 +95,7 @@ class Control extends Model {
     // Set pause to zero
     await Configuration::genUpdate('pause_ts', '0');
 
-    // Set gane to not paused
+    // Set game to not paused
     await Configuration::genUpdate('game_paused', '0');
 
     // Kick off timer
@@ -162,7 +162,7 @@ class Control extends Model {
     await Progressive::genStop();
   }
 
-  public static async function genUnPause(): Awaitable<void> {
+  public static async function genUnpause(): Awaitable<void> {
     // Enable scoring
     await Configuration::genUpdate('scoring', '1');
 

@@ -428,7 +428,7 @@ class AdminAjaxController extends AjaxController {
         await Control::genPause();
         return Utils::ok_response('Success', 'admin');
       case 'unpause_game':
-        await Control::genUnPause();
+        await Control::genUnpause();
         return Utils::ok_response('Success', 'admin');
       case 'backup_db':
         Control::backupDb();

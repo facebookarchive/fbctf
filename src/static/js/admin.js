@@ -29,7 +29,7 @@ function pauseGame() {
   sendAdminRequest(pause_data, true);
 }
 
-// Unuauses the currently running game
+// Unpauses the currently running game
 function unpauseGame() {
   var unpause_data = {
     action: 'unpause_game'
