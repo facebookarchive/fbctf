@@ -272,6 +272,7 @@ class AdminController extends Controller {
 
   public async function genRenderConfigurationContent(): Awaitable<:xhp> {
     $awaitables = Map {
+      'game' => Configuration::gen('game'),
       'registration' => Configuration::gen('registration'),
       'registration_players' => Configuration::gen('registration_players'),
       'login' => Configuration::gen('login'),
@@ -295,6 +296,7 @@ class AdminController extends Controller {
 
     $results = await \HH\Asio\m($awaitables);
 
+    $game = $results['game'];
     $registration = $results['registration'];
     $registration_players = $results['registration_players'];
     $login = $results['login'];
@@ -334,12 +336,45 @@ class AdminController extends Controller {
     $timer_on = $timer->getValue() === '1';
     $timer_off = $timer->getValue() === '0';
 
-    if ($start_ts->getValue() === '0') {
-      $start_ts = tr('Not started yet');
-      $end_ts = tr('Not started yet');
+    if ($start_ts->getValue() !== '0' && $start_ts->getValue() !== 'NaN') {
+      $game_start_ts = $start_ts->getValue();
+      $game_start_year = date('Y', $game_start_ts);
+      $game_start_month = date('n', $game_start_ts);
+      $game_start_day = date('j', $game_start_ts);
+      $game_start_hour = date('G', $game_start_ts);
+      $game_start_min = date('i', $game_start_ts);
     } else {
-      $start_ts = date(tr('date and time format'), $start_ts->getValue());
-      $end_ts = date(tr('date and time format'), $end_ts->getValue());
+      $game_start_ts = '0';
+      $game_start_year = '0';
+      $game_start_month = '0';
+      $game_start_day = '0';
+      $game_start_hour = '0';
+      $game_start_min = '0';
+    }
+
+    if ($end_ts->getValue() !== '0' && $end_ts->getValue() !== 'NaN') {
+      $game_end_ts = $end_ts->getValue();
+      $game_end_year = date('Y', $game_end_ts);
+      $game_end_month = date('n', $game_end_ts);
+      $game_end_day = date('j', $game_end_ts);
+      $game_end_hour = date('G', $game_end_ts);
+      $game_end_min = date('i', $game_end_ts);
+    } else {
+      $game_end_ts = '0';
+      $game_end_year = '0';
+      $game_end_month = '0';
+      $game_end_day = '0';
+      $game_end_hour = '0';
+      $game_end_min = '0';
+    }
+
+    if ($game->getValue() === '0') {
+      $timer_start_ts = tr('Not started yet');
+      $timer_end_ts = tr('Not started yet');
+    } else {
+      $timer_start_ts =
+        date(tr('date and time format'), $start_ts->getValue());
+      $timer_end_ts = date(tr('date and time format'), $end_ts->getValue());
     }
 
     $registration_type = await Configuration::gen('registration_type');
@@ -691,6 +726,103 @@ class AdminController extends Controller {
               </section>
               <section class="admin-box">
                 <header class="admin-box-header">
+                  <h3>{tr('Game Schedule')}</h3>
+                </header>
+                <div class="fb-column-container">
+                  <div class="col col-pad col-1-5">
+                    <div class="form-el el--block-label el--full-text">
+                      <label for="">{tr('Game Start Year')}</label>
+                      <input
+                        type="number"
+                        value={$game_start_year}
+                        name="fb--schedule--start_year"
+                      />
+                    </div>
+                    <div class="form-el el--block-label el--full-text">
+                      <label for="">{tr('Game End Year')}</label>
+                      <input
+                        type="number"
+                        value={$game_end_year}
+                        name="fb--schedule--end_year"
+                      />
+                    </div>
+                  </div>
+                  <div class="col col-pad col-2-5">
+                    <div class="form-el el--block-label el--full-text">
+                      <label for="">{tr('Month')}</label>
+                      <input
+                        type="number"
+                        value={$game_start_month}
+                        name="fb--schedule--start_month"
+                      />
+                    </div>
+                    <div class="form-el el--block-label el--full-text">
+                      <label for="">{tr('Month')}</label>
+                      <input
+                        type="number"
+                        value={$game_end_month}
+                        name="fb--schedule--end_month"
+                      />
+                    </div>
+                  </div>
+                  <div class="col col-pad col-3-5">
+                    <div class="form-el el--block-label el--full-text">
+                      <label for="">{tr('Day')}</label>
+                      <input
+                        type="number"
+                        value={$game_start_day}
+                        name="fb--schedule--start_day"
+                      />
+                    </div>
+                    <div class="form-el el--block-label el--full-text">
+                      <label for="">{tr('Day')}</label>
+                      <input
+                        type="number"
+                        value={$game_end_day}
+                        name="fb--schedule--end_day"
+                      />
+                    </div>
+                  </div>
+                  <div class="col col-pad col-4-5">
+                    <div class="form-el el--block-label el--full-text">
+                      <label for="">{tr('Hour')}</label>
+                      <input
+                        type="number"
+                        value={$game_start_hour}
+                        name="fb--schedule--start_hour"
+                      />
+                    </div>
+                    <div class="form-el el--block-label el--full-text">
+                      <label for="">{tr('Hour')}</label>
+                      <input
+                        type="number"
+                        value={$game_end_hour}
+                        name="fb--schedule--end_hour"
+                      />
+                    </div>
+                  </div>
+                  <div class="col col-pad col-5-5">
+                    <div class="form-el el--block-label el--full-text">
+                      <label for="">{tr('Minute')}</label>
+                      <input
+                        type="number"
+                        value={$game_start_min}
+                        name="fb--schedule--start_min"
+                      />
+                    </div>
+                    <div class="form-el el--block-label el--full-text">
+                      <label for="">{tr('Minute')}</label>
+                      <input
+                        type="number"
+                        value={$game_end_min}
+                        name="fb--schedule--end_min"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <section class="admin-box">
+                <header class="admin-box-header">
                   <h3>{tr('Timer')}</h3>
                   <div class="admin-section-toggle radio-inline">
                     <input
@@ -727,23 +859,23 @@ class AdminController extends Controller {
                       {$configuration_duration_select}
                     </div>
                   </div>
-                  <div class="col col-pad col-2-4">
+                  <div class="col col-pad col-3-4">
                     <div class="form-el el--block-label el--full-text">
                       <label for="">{tr('Begin Time')}</label>
                       <input
                         type="text"
-                        value={$start_ts}
+                        value={$timer_start_ts}
                         id="fb--conf--start_ts"
                         disabled={true}
                       />
                     </div>
                   </div>
-                  <div class="col col-pad col-3-4">
+                  <div class="col col-pad col-4-4">
                     <div class="form-el el--block-label el--full-text">
                       <label for="">{tr('Expected End Time')}</label>
                       <input
                         type="text"
-                        value={$end_ts}
+                        value={$timer_end_ts}
                         id="fb--conf--end_ts"
                         disabled={true}
                       />

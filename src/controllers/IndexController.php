@@ -109,10 +109,21 @@ class IndexController extends Controller {
     }
     $next_game = await Configuration::gen('next_game');
     $next_game = $next_game->getValue();
-    if ($next_game === "0") {
+    $game = await Configuration::gen('game');
+    $game = $game->getValue();
+    if ($game === '1') {
+      $next_game_text = tr('In Progress');
+      $countdown = array('--', '--', '--', '--');
+    } else if ($next_game === '0' || intval($next_game) < time()) {
       $next_game_text = tr('Soon');
+      $countdown = array('--', '--', '--', '--');
     } else {
-      $next_game_text = $next_game;
+      $next_game_text = date(tr('date and time format'), $next_game);
+      $game_start = new DateTime();
+      $game_start->setTimestamp(intval($next_game));
+      $now = new DateTime('now');
+      $countdown_diff = $now->diff($game_start);
+      $countdown = explode('-', $countdown_diff->format('%d-%h-%i-%s'));
     }
     return
       <div class="fb-row-container full-height fb-scroll">
@@ -126,10 +137,22 @@ class IndexController extends Controller {
               {$next_game_text}
             </h1>
             <ul class="upcoming-game-countdown">
-              <li><span class="count-number">--</span>{tr('_days')}</li>
-              <li><span class="count-number">--</span>{tr('_hours')}</li>
-              <li><span class="count-number">--</span>{tr('_minutes')}</li>
-              <li><span class="count-number">--</span>{tr('_seconds')}</li>
+              <li>
+                <span class="count-number">{$countdown[0]}</span>
+                {tr('_days')}
+              </li>
+              <li>
+                <span class="count-number">{$countdown[1]}</span>
+                {tr('_hours')}
+              </li>
+              <li>
+                <span class="count-number">{$countdown[2]}</span>
+                {tr('_minutes')}
+              </li>
+              <li>
+                <span class="count-number">{$countdown[3]}</span>
+                {tr('_seconds')}
+              </li>
             </ul>
             {$play_nav}
           </div>

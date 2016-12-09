@@ -1130,6 +1130,29 @@ module.exports = {
       }
     });
 
+    // game schedule fields
+    $('input[type="number"][name^="fb--schedule"]').on('change', function() {
+      var start_year = $('input[type="number"][name="fb--schedule--start_year"]')[0].value;
+      var start_month = $('input[type="number"][name="fb--schedule--start_month"]')[0].value;
+      var start_day = $('input[type="number"][name="fb--schedule--start_day"]')[0].value;
+      var start_hour = $('input[type="number"][name="fb--schedule--start_hour"]')[0].value;
+      var start_min = $('input[type="number"][name="fb--schedule--start_min"]')[0].value;
+      var start_ts = new Date(start_month + "/" + start_day + "/" + start_year + " " + start_hour + ":" + start_min).getTime() / 1000;
+      if ($.isNumeric(start_ts)) {
+        changeConfiguration("start_ts", start_ts);
+        changeConfiguration("next_game", start_ts);
+      }
+      var end_year = $('input[type="number"][name="fb--schedule--end_year"]')[0].value;
+      var end_month = $('input[type="number"][name="fb--schedule--end_month"]')[0].value;
+      var end_day = $('input[type="number"][name="fb--schedule--end_day"]')[0].value;
+      var end_hour = $('input[type="number"][name="fb--schedule--end_hour"]')[0].value;
+      var end_min = $('input[type="number"][name="fb--schedule--end_min"]')[0].value;
+      var end_ts = new Date(end_month + "/" + end_day + "/" + end_year + " " + end_hour + ":" + end_min).getTime() / 1000;
+      if ($.isNumeric(end_ts)) {
+        changeConfiguration("end_ts", end_ts);
+      }
+    });
+
     // modal actionable
     $body.on('click', '.js-confirm-save', function() {
       var $status = $('.admin-section--status .highlighted');
