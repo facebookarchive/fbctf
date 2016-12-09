@@ -66,6 +66,9 @@ class Attachment extends Model {
         $tmp_name,
         must_have_string($server, 'DOCUMENT_ROOT').$local_filename,
       );
+
+      // Force 0600 Permissions
+      chmod(must_have_string($server, 'DOCUMENT_ROOT').$local_filename, 0600);
     } else {
       return false;
     }
