@@ -288,6 +288,9 @@ import_empty_db "root" "$P_ROOT" "$DB" "$CTF_PATH" "$MODE"
 # Make attachments folder world writable
 sudo chmod 777 "$CTF_PATH/src/data/attachments"
 sudo chmod 777 "$CTF_PATH/src/data/attachments/deleted"
+# Make custom logos folder, and make it world writable
+sudo mkdir -p "$CTF_PATH/src/data/customlogos"
+sudo chmod 777 "$CTF_PATH/src/data/customlogos"
 
 # Display the final message, depending on the context
 if [[ -d "/vagrant" ]]; then

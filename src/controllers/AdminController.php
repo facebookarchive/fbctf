@@ -2893,7 +2893,16 @@ class AdminController extends Controller {
     $c = 1;
     $all_teams = await Team::genAllTeams();
     foreach ($all_teams as $team) {
-      $xlink_href = '#icon--badge-'.$team->getLogo();
+      $logo_model = await $team->getLogoModel();
+      if ($logo_model->getCustom()) {
+        $image = <img class="icon--badge" src={$logo_model->getLogo()}></img>;
+      } else {
+        $iconbadge = '#icon--badge-' . $logo_model->getName();
+        $image = <svg class="icon--badge">
+                   <use href={$iconbadge}/>
+                 </svg>;
+      }
+
       $team_protected = $team->getProtected();
       $team_active_on = $team->getActive();
       $team_active_off = !$team->getActive();
@@ -3108,10 +3117,7 @@ class AdminController extends Controller {
                     <div class="fb-column-container">
                       <div class="col col-shrink">
                         <div class="post-avatar has-avatar">
-                          <svg class="icon icon--badge">
-                            <use href={$xlink_href} />
-
-                          </svg>
+                          {$image}
                         </div>
                       </div>
                       <div class="form-el--required col col-grow">
@@ -3190,7 +3196,14 @@ class AdminController extends Controller {
 
     $all_logos = await Logo::genAllLogos();
     foreach ($all_logos as $logo) {
-      $xlink_href = '#icon--badge-'.$logo->getName();
+      if ($logo->getCustom()) {
+        $image = <img class="icon--badge" src={$logo->getLogo()}></img>;
+      } else {
+        $iconbadge = '#icon--badge-' . $logo->getName();
+        $image = <svg class="icon--badge">
+                   <use href={$iconbadge}/>
+                 </svg>;
+      }
       $using_logo = await MultiTeam::genWhoUses($logo->getName());
       $current_use = (count($using_logo) > 0) ? tr('Yes') : tr('No');
       if ($logo->getEnabled()) {
@@ -3239,10 +3252,7 @@ class AdminController extends Controller {
             <div class="fb-column-container">
               <div class="col col-pad col-shrink">
                 <div class="post-avatar has-avatar">
-                  <svg class="icon icon--badge">
-                    <use href={$xlink_href}></use>
-
-                  </svg>
+                  {$image}
                 </div>
               </div>
               <div class="col col-pad col-grow">

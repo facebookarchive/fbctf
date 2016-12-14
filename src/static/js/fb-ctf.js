@@ -67,7 +67,25 @@ function activateTeams() {
       // team name
       $('.team-name', $modal).text(team);
       // team badge
-      $('.icon--badge use', $modal).attr('xlink:href', "#icon--badge-" + teamData.badge);
+      if (teamData.logo.custom) {
+        // css styles are applied here since 'svg' has a 'use' child, and
+        // css can't select parents based on children
+        $('svg.icon--badge', $modal)
+            .css('display', 'none')
+            .children('use')
+            .attr('xlink:href', "");
+        $('img.icon--badge', $modal)
+            .css('display', '')
+            .attr('src', teamData.logo.path);
+      } else {
+        $('svg.icon--badge', $modal)
+            .css('display', '')
+            .children('use')
+            .attr('xlink:href', "#icon--badge-" + teamData.logo.name);
+        $('img.icon--badge', $modal)
+            .css('display', 'none')
+            .attr('src', "");
+      }
       // team members
       $.each(teamData.team_members, function() {
         $teamMembers.append('<li>' + this + '</li>');
@@ -2225,7 +2243,26 @@ function setupInputListeners() {
           // team name
           $('.team-name', $modal).text(team);
           // team badge
-          $('.icon--badge use', $modal).attr('xlink:href', "#icon--badge-" + teamData.badge);
+          // TODO this if/else is duplicated further up in this file. Un-duplicate.
+          if (teamData.logo.custom) {
+            // css styles are applied here since 'svg' has a 'use' child, and
+            // css can't select parents based on children
+            $('svg.icon--badge', $modal)
+                .css('display', 'none')
+                .children('use')
+                .attr('xlink:href', "");
+            $('img.icon--badge', $modal)
+                .css('display', '')
+                .attr('src', teamData.logo.path);
+          } else {
+            $('svg.icon--badge', $modal)
+                .css('display', '')
+                .children('use')
+                .attr('xlink:href', "#icon--badge-" + teamData.logo.name);
+            $('img.icon--badge', $modal)
+                .css('display', 'none')
+                .attr('src', "");
+          }
           // team members
           $.each(teamData.team_members, function() {
             $teamMembers.append('<li>' + this + '</li>');
@@ -2464,6 +2501,41 @@ function setupInputListeners() {
       event.preventDefault();
       $(this).onlySiblingWithClass('active');
     });
+
+    // custom logo file selector
+    var $customEmblemInput = $('#custom-emblem-input');
+    var $customEmblemPreview = $('#custom-emblem-preview');
+    var $customEmblemCarouselNotice = $('#custom-emblem-carousel-notice');
+    $('#custom-emblem-link').on('click', function() {
+      $customEmblemInput.trigger('click');
+    });
+    // on file input change, set image preview and emblem carousel notice
+    $customEmblemInput.change(function() {
+console.log('foo');
+      var input = this;
+      if (input.files && input.files[0]) {
+        if (input.files[0].size > (500*1024)) {
+          alert('Please upload an image less than 500KB!');
+          return;
+        }
+
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+          $customEmblemPreview.attr('src', e.target.result);
+          $customEmblemCarouselNotice.addClass('active');
+        };
+
+        reader.readAsDataURL(input.files[0]);
+      }
+    });
+    // custom logo remover
+    $('#custom-emblem-clear-link').on('click', function() {
+      $customEmblemInput.val(''); // changing file input value doesn't work on IE10/11
+      $customEmblemPreview.attr('src', '');
+      $customEmblemCarouselNotice.removeClass('active');
+    });
+
   }; // FB_CTF.init()
 })(window.FB_CTF = {});
 

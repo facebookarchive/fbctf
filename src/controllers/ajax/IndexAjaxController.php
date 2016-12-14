@@ -10,8 +10,10 @@ class IndexAjaxController extends AjaxController {
         'password' => FILTER_UNSAFE_RAW,
         'logo' => array(
           'filter' => FILTER_VALIDATE_REGEXP,
-          'options' => array('regexp' => '/^[\w-]+$/'),
+          'options' => array('regexp' => '/^[\w+-\/]+={0,2}$/'),
         ),
+        'isCustomLogo' => FILTER_VALIDATE_BOOLEAN,
+        'logoType'     => FILTER_UNSAFE_RAW,
         'token' => array(
           'filter' => FILTER_VALIDATE_REGEXP,
           'options' => array('regexp' => '/^[\w]+$/'),
@@ -45,6 +47,8 @@ class IndexAjaxController extends AjaxController {
           must_have_string($params, 'password'),
           strval(must_have_idx($params, 'token')),
           must_have_string($params, 'logo'),
+          must_have_bool($params, 'isCustomLogo'),
+          strval(must_have_idx($params, 'logoType')),
           false,
           array(),
           array(),
@@ -53,7 +57,8 @@ class IndexAjaxController extends AjaxController {
         $names = json_decode(must_have_string($params, 'names'));
         $emails = json_decode(must_have_string($params, 'emails'));
         invariant(
-          is_array($names) && is_array($emails),
+          is_array($names) &&
+          is_array($emails),
           'names and emails should be arrays',
         );
 
@@ -62,6 +67,8 @@ class IndexAjaxController extends AjaxController {
           must_have_string($params, 'password'),
           strval(must_have_idx($params, 'token')),
           must_have_string($params, 'logo'),
+          must_have_bool($params, 'isCustomLogo'),
+          strval(must_have_idx($params, 'logoType')),
           true,
           $names,
           $emails,
@@ -97,6 +104,8 @@ class IndexAjaxController extends AjaxController {
     string $password,
     ?string $token,
     string $logo,
+    bool $is_custom_logo,
+    ?string $logo_type,
     bool $register_names,
     array<string> $names,
     array<string> $emails,
@@ -154,10 +163,20 @@ class IndexAjaxController extends AjaxController {
     }
 
     // Check logo
-    $final_logo = $logo;
-    $check_exists = await Logo::genCheckExists($final_logo);
+    $logo_name = $logo;
+
+    if ($is_custom_logo) {
+      $custom_logo = await Logo::genCreateCustom($logo);
+      if ($custom_logo) {
+        $logo_name = $custom_logo->getName();
+      } else {
+        return Utils::error_response('Registration failed', 'registration');
+      }
+    }
+
+    $check_exists = await Logo::genCheckExists($logo_name);
     if (!$check_exists) {
-      $final_logo = await Logo::genRandomLogo();
+      $logo_name = await Logo::genRandomLogo();
     }
 
     // Check if team name is not empty or just spaces
@@ -173,7 +192,7 @@ class IndexAjaxController extends AjaxController {
     if (!$team_exists) {
       $password_hash = Team::generateHash($password);
       $team_id =
-        await Team::genCreate($shortname, $password_hash, $final_logo);
+        await Team::genCreate($shortname, $password_hash, $logo_name);
       if ($team_id) {
         // Store team players data, if enabled
         if ($register_names) {
