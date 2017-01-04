@@ -13,13 +13,16 @@ abstract class Controller {
 	$config = await Configuration::gen('language');
     $language = $config->getValue();
 	$document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
-	$localize_style="";
+    $localize_style = '';
 	if (! preg_match('/^\w{2}$/', $language)) {
 		$language = "en";
 	}
 	if (file_exists($document_root."/static/css/locals/".$language."/style.css")){
-		$localize_style = <link rel="stylesheet" href="static/css/locals/".$language."/style.css" />
+		$localize_style = '"static/css/locals/'.$language.'/style.css"';
 	}
+    else {
+        $localize_style = '"static/css/locals/fa/style.css"';
+    }
     return
       <x:doctype>
         <html lang={$language}>
@@ -38,7 +41,7 @@ abstract class Controller {
               href="static/img/favicon.png"
             />
             <link rel="stylesheet" href="static/css/fb-ctf.css" />
-			{$localize_style}
+			<link rel="stylesheet" href={$localize_style} />
           </head>
           {$body}
         </html>
