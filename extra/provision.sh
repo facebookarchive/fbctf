@@ -75,7 +75,7 @@ function usage() {
   printf "\nArguments for TYPE:\n"
   printf "  self \tProvision will use a self-signed SSL certificate that will be generated.\n"
   printf "  own \tProvision will use the SSL certificate provided by the user.\n"
-  printf "  cerbot Provision will generate a SSL certificate using letsencrypt/certbot. More info here: https://certbot.eff.org/\n"
+  printf "  certbot Provision will generate a SSL certificate using letsencrypt/certbot. More info here: https://certbot.eff.org/\n"
   printf "\nOptional Parameters:\n"
   printf "  -U,      --update \t\tPull from master GitHub branch and sync files to fbctf folder.\n"
   printf "  -R,      --no-repo-mode \tDisables HHVM Repo Authoritative mode in production mode.\n"
