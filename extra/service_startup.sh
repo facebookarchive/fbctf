@@ -9,6 +9,7 @@ fi
 service hhvm restart
 service nginx restart
 service mysql restart
+service memcached restart
 
 chown www-data:www-data /var/run/hhvm/sock
 
