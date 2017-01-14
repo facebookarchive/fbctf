@@ -170,6 +170,7 @@ class Session extends Model {
       invariant($result->numRows() === 1, 'Expected exactly one result');
       if (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0) {
         await self::genCreateCacheSession($cookie);
+        return true;
       }
     }
     return self::getMCSession($cookie) != false;
@@ -188,7 +189,8 @@ class Session extends Model {
       );
 
       if ($result->numRows() === 1) {
-        await self::genCreateCacheSession($cookie);
+        $session = await self::gen($cookie);
+        return $session->getData();
       } else {
         return '';
       }
