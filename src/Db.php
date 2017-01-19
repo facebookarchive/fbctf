@@ -54,7 +54,16 @@ class Db {
   }
 
   private async function genConnect(): Awaitable<void> {
-    $host = must_have_idx($this->config, 'DB_HOST');
+    if (array_key_exists('DB_SLAVE', $this->config)) {
+      if (random_int(1,2) == 1){
+        $host = must_have_idx($this->config, 'DB_MASTER');
+      } else {
+        $host = must_have_idx($this->config, 'DB_SLAVE');
+      }
+    } else {
+      $host = must_have_idx($this->config, 'DB_HOST');
+    }
+
     $port = must_have_idx($this->config, 'DB_PORT');
     $db_name = must_have_idx($this->config, 'DB_NAME');
     $username = must_have_idx($this->config, 'DB_USERNAME');
