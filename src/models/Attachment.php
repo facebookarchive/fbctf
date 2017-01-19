@@ -68,17 +68,12 @@ class Attachment extends Model {
       );
 
       // Force 0600 Permissions
-      chmod(must_have_string($server, 'DOCUMENT_ROOT').$local_filename, 0600);
+      $chmod = chmod(
+        must_have_string($server, 'DOCUMENT_ROOT').$local_filename,
+        0600,
+      );
       invariant(
-        substr(
-          decoct(
-            fileperms(
-              must_have_string($server, 'DOCUMENT_ROOT').$local_filename,
-            ),
-          ),
-          2,
-        ) ===
-        '0600',
+        $chmod === true,
         'Failed to set attachment file permissions to 0600',
       );
     } else {
