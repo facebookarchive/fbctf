@@ -10,16 +10,17 @@ abstract class Controller {
   public async function genRender(): Awaitable<:xhp> {
     $page = $this->processRequest();
     $body = await $this->genRenderBody($page);
-	$config = await Configuration::gen('language');
+    $config = await Configuration::gen('language');
     $language = $config->getValue();
-	$document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
-	$localize_style="";
-	if (! preg_match('/^\w{2}$/', $language)) {
-		$language = "en";
-	}
-	if (file_exists($document_root."/static/css/locals/".$language."/style.css")){
-		$localize_style = <link rel="stylesheet" href="static/css/locals/".$language."/style.css" />
-	}
+    if (!preg_match('/^\w{2}$/', $language)) {
+      $language = 'en';
+    }
+    // TODO: Potential LFI - Review how to do internationalization better
+    $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
+    $language_style = '';
+    if (file_exists($document_root. '/static/css/locals/' .$language. '/style.css')) {
+      $language_style = 'static/css/locals/' .$language. '/style.css';
+    }
     return
       <x:doctype>
         <html lang={$language}>
@@ -38,7 +39,7 @@ abstract class Controller {
               href="static/img/favicon.png"
             />
             <link rel="stylesheet" href="static/css/fb-ctf.css" />
-			{$localize_style}
+            <link rel="stylesheet" href={$language_style} />
           </head>
           {$body}
         </html>

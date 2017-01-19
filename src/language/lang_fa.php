@@ -1,4 +1,4 @@
-﻿<?hh // strict
+<?hh // strict
 
 /* HH_IGNORE_ERROR[1002] */
 $translations = array(
@@ -56,7 +56,7 @@ $translations = array(
   'Bruteforcing' =>
     ' حمله بی‌رحمانه',
   'No brute forcing of challenge flag/ keys against the scoring site.' =>
-    '    'هیچ گونه حمله بی‌رحمانه (brute forcing) روی سایت مسابقه برای بدست آوردن پرچم/کلید مسابقه نزنید.',
+    'هیچ گونه حمله بی‌رحمانه (brute forcing) روی سایت مسابقه برای بدست آوردن پرچم/کلید مسابقه نزنید.',
   'Denial Of Service' =>
     'ممانعت از سرویس',
   'DoSing the CTF platform or any of the challenges is forbidden.' =>
@@ -188,8 +188,7 @@ $translations = array(
   'Game Configuration' =>
     'تنظیمات بازی',
   'OK' =>
-    'تأیید
-',
+    'تأیید',
   'status_' =>
     'وضعیت_',
   'On' =>
