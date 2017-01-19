@@ -310,12 +310,17 @@ function import_empty_db() {
 function create_replication_user() {
   local __user=$1
   local __pwd=$2
+  local __db=$3
+  local __replicator_password=$4
 
   log "Creating replication user..."
-  mysql -u "$__user" --password="$__pwd" -e "CREATE USER 'replicator'@'%' IDENTIFIED BY 'replicator';" || true # don't fail if the user exists
+  mysql -u "$__user" --password="$__pwd" -e "CREATE USER 'replicator'@'%' IDENTIFIED BY '$__replicator_password';" || true # don't fail if the user exists
   #Unfortunately, I need to grant SUPER to replicator, because vagrant does not let us run a second script after the other server is finished setting up
   #There is a "trigger" vagrant plugin that could resolve this issue, and help ensure we do not grant more permissions then we should be
   mysql -u "$__user" --password="$__pwd" -e "GRANT SUPER ON *.* TO 'replicator'@'%'"
+  mysql -u "$__user" --password="$__pwd" -e "GRANT ALL PRIVILEGES ON \`$__db\`.* TO 'replicator'@'%';"
+  mysql -u "$__user" --password="$__pwd" -e "GRANT REPLICATION SLAVE ON *.* TO 'replicator'@'%';"
+  mysql -u "$__user" --password="$__pwd" -e "FLUSH PRIVILEGES;"
 }
 
 function setup_db_replication() {
@@ -323,6 +328,8 @@ function setup_db_replication() {
   CURRENT_SERVER_NUMBER=$2
   PREVIOUS_SERVER_IP=$(($CURRENT_SERVER_NUMBER+3))
   CURRENT_SERVER_IP=$((CURRENT_SERVER_NUMBER+4))
+  replicator_password=$3
+
   log "Adding replication settings to my.cnf..."
   sed -i '/bind-address\s\+= 127.0.0.1/c\#bind-address		= 127.0.0.1' "/etc/mysql/my.cnf"
   sed -i "/#server-id\s\+= 1/c\server-id		= $CURRENT_SERVER_NUMBER" "/etc/mysql/my.cnf"
@@ -336,8 +343,6 @@ function setup_db_replication() {
   #Example: 5 servers. Server 1 has an offset of 1, Server 2 an offset of 2, up to Server 5 with an offset of 5.
   echo "auto_increment_offset = $CURRENT_SERVER_NUMBER" >> "/etc/mysql/my.cnf"
 
-
-
   #Unfortunately Vagrant does not allow for a provision script to be run AFTER all machines have been created
   #So I have to configure the setting in this script
 
@@ -350,33 +355,32 @@ function setup_db_replication() {
     sudo service mysql restart
     log "Retrieve bin_log information to give to the other server..."
     SMS=/tmp/show_master_status.txt
-    mysql -ureplicator -preplicator -ANe "SHOW MASTER STATUS" > ${SMS}
+    mysql -ureplicator --password="${replicator_password}" -ANe "SHOW MASTER STATUS" > ${SMS}
     CURRENT_LOG=`cat ${SMS} | awk '{print $1}'`
     CURRENT_POS=`cat ${SMS} | awk '{print $2}'`
 
     log "Configuring Master info onto remote mysql database..."
-    mysql -h 10.10.10.${PREVIOUS_SERVER_IP} -u replicator --password=replicator -e "CHANGE MASTER TO MASTER_HOST = '10.10.10.${CURRENT_SERVER_IP}', MASTER_USER = 'replicator', MASTER_PASSWORD = 'replicator', MASTER_LOG_FILE = '${CURRENT_LOG}', MASTER_LOG_POS = ${CURRENT_POS}"
+    mysql -h 10.10.10.${PREVIOUS_SERVER_IP} -u replicator --password="${replicator_password}" -e "CHANGE MASTER TO MASTER_HOST = '10.10.10.${CURRENT_SERVER_IP}', MASTER_USER = 'replicator', MASTER_PASSWORD = '${replicator_password}', MASTER_LOG_FILE = '${CURRENT_LOG}', MASTER_LOG_POS = ${CURRENT_POS}"
   else
     log "Restarting mysql so it generates bin_log info..."
     sudo service mysql restart
     log "Retrieve bin_log information to give to the other server..."
     SMS2=/tmp/show_master_status2.txt
-    mysql -ureplicator -preplicator -ANe "SHOW MASTER STATUS" > ${SMS2}
+    mysql -ureplicator --password="${replicator_password}" -ANe "SHOW MASTER STATUS" > ${SMS2}
     CURRENT_LOG2=`cat ${SMS2} | awk '{print $1}'`
     CURRENT_POS2=`cat ${SMS2} | awk '{print $2}'`
 
     log "Configuring Master info onto remote mysql database..."
-    mysql -h 10.10.10.${PREVIOUS_SERVER_IP} -u "replicator" --password="replicator" -e "CHANGE MASTER TO MASTER_HOST = '10.10.10.${CURRENT_SERVER_IP}', MASTER_USER = 'replicator', MASTER_PASSWORD = 'replicator', MASTER_LOG_FILE = '${CURRENT_LOG2}', MASTER_LOG_POS = ${CURRENT_POS2}"
-
+    mysql -h 10.10.10.${PREVIOUS_SERVER_IP} -u "replicator" --password="${replicator_password}" -e "CHANGE MASTER TO MASTER_HOST = '10.10.10.${CURRENT_SERVER_IP}', MASTER_USER = 'replicator', MASTER_PASSWORD = '${replicator_password}', MASTER_LOG_FILE = '${CURRENT_LOG2}', MASTER_LOG_POS = ${CURRENT_POS2}"
 
    log "Connecting to other master server to retrieve bin_log information..."
    SMS=/tmp/show_master_status.txt
-   mysql -h 10.10.10.5 -ureplicator -preplicator -ANe "SHOW MASTER STATUS" > ${SMS}
+   mysql -h 10.10.10.5 -ureplicator --password="${replicator_password}" -ANe "SHOW MASTER STATUS" > ${SMS}
    CURRENT_LOG=`cat ${SMS} | awk '{print $1}'`
    CURRENT_POS=`cat ${SMS} | awk '{print $2}'`
 
    log "Configuring Master info onto local mysql database..."
-   mysql -u "root" --password="root" -e "CHANGE MASTER TO MASTER_HOST = '10.10.10.5', MASTER_USER = 'replicator', MASTER_PASSWORD = 'replicator', MASTER_LOG_FILE = '${CURRENT_LOG}', MASTER_LOG_POS = ${CURRENT_POS}"
+   mysql -u "root" --password="root" -e "CHANGE MASTER TO MASTER_HOST = '10.10.10.5', MASTER_USER = 'replicator', MASTER_PASSWORD = '${replicator_password}', MASTER_LOG_FILE = '${CURRENT_LOG}', MASTER_LOG_POS = ${CURRENT_POS}"
   fi
 }
 

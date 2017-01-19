@@ -19,7 +19,7 @@ CODE_PATH="/vagrant"
 CTF_PATH="/var/www/fbctf"
 HHVM_CONFIG_PATH="/etc/hhvm/server.ini"
 
-ARGS=$(getopt -n "$0" -o hm:c:URk:C:D:e:s:d:r:N: -l "help,mode:,cert:,update,repo-mode,keyfile:,certfile:,domain:,email:,code:,destination:,replication,server-number,docker" -- "$@")
+ARGS=$(getopt -n "$0" -o hm:c:URk:C:D:e:s:d:r:N:P: -l "help,mode:,cert:,update,repo-mode,keyfile:,certfile:,domain:,email:,code:,destination:,replication,server-number,replicator-password,docker" -- "$@")
 
 eval set -- "$ARGS"
 
@@ -87,6 +87,10 @@ while true; do
       ;;
     -N|--server-number)
       CURRENT_SERVER_NUMBER=$2
+      shift 2
+      ;;
+    -P|--replicator-password)
+      REPLICATOR_PASSWORD=$2
       shift 2
       ;;
     --docker)
@@ -188,9 +192,9 @@ else
  import_empty_db "root" "$P_ROOT" "$DB" "$CTF_PATH" "$MODE"
 
  #Create the replication user
- create_replication_user "root" "$P_ROOT"
+ create_replication_user "root" "$P_ROOT" "$DB" "$REPLICATOR_PASSWORD"
 
- setup_db_replication "$NUMBER_OF_SERVERS" "$CURRENT_SERVER_NUMBER"
+ setup_db_replication "$NUMBER_OF_SERVERS" "$CURRENT_SERVER_NUMBER" "$REPLICATOR_PASSWORD"
 
   log "Restarting mysql to enable bin_log and the replication..."
   sudo service mysql restart

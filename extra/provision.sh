@@ -85,8 +85,9 @@ function usage() {
   printf "  -e EMAIL, --email EMAIL \tDomain for the SSL certificate to be generated using letsencrypt.\n"
   printf "  -s PATH, --code PATH \t\tPath to fbctf code. Default is /vagrant\n"
   printf "  -d PATH, --destination PATH \tDestination path to place the fbctf folder. Default is /var/www/fbctf\n"
-  printf "  -r NUMBER NUMBER, --replication NUMBER \tExtra number of databases"
-  printf "  -N NUMBER NUMBER, --server-number NUMBER \tCurrent server number"
+  printf "  -r NUMBER, --replication NUMBER \tExtra number of databases"
+  printf "  -N NUMBER, --server-number NUMBER \tCurrent server number"
+  printf "  -P PASSWORD, --replicator-password PASSWORD \tReplicator user password"
   printf "\nExamples:\n"
   printf "  Provision fbctf in development mode:\n"
   printf "\t%s -m dev -s /home/foobar/fbctf -d /var/fbctf\n" "${0}"
@@ -96,7 +97,7 @@ function usage() {
   printf "\t%s -m dev -U -s /home/foobar/fbctf -d /var/fbctf\n" "${0}"
 }
 
-ARGS=$(getopt -n "$0" -o hm:c:URk:C:D:e:s:d:r:N: -l "help,mode:,cert:,update,repo-mode,keyfile:,certfile:,domain:,email:,code:,destination:,replication,server-number,docker" -- "$@")
+ARGS=$(getopt -n "$0" -o hm:c:URk:C:D:e:s:d:r:N:P: -l "help,mode:,cert:,update,repo-mode,keyfile:,certfile:,domain:,email:,code:,destination:,replication,server-number,replicator-password,docker" -- "$@")
 
 eval set -- "$ARGS"
 
@@ -164,6 +165,10 @@ while true; do
       ;;
     -N|--server-number)
       CURRENT_SERVER_NUMBER=$2
+      shift 2
+      ;;
+    -P|--replicator-password)
+      REPLICATOR_PASSWORD=$2
       shift 2
       ;;
     --docker)
@@ -296,9 +301,8 @@ log "Remember install the same version of unison (2.48.3) in your host machine"
 import_empty_db "root" "$P_ROOT" "$DB" "$CTF_PATH" "$MODE"
 
 if [[ "$NUMBER_OF_SERVERS"  ||  "$CURRENT_SERVER_NUMBER" ]]; then
-  # Database replication
-  create_replication_user "root" "$P_ROOT"
-  setup_db_replication "$NUMBER_OF_SERVERS" "$CURRENT_SERVER_NUMBER"
+  create_replication_user "root" "$P_ROOT" "$DB" "$REPLICATOR_PASSWORD"
+  setup_db_replication "$NUMBER_OF_SERVERS" "$CURRENT_SERVER_NUMBER" "$REPLICATOR_PASSWORD"
 fi
 
 # Make attachments folder world writable
