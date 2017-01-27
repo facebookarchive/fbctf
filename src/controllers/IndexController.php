@@ -322,6 +322,7 @@ class IndexController extends Controller {
                   name="teamname"
                   type="text"
                   maxlength={20}
+                  autofocus
                 />
                 {$ldap_domain_suffix}
               </div>
