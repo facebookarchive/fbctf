@@ -226,7 +226,7 @@ class IndexAjaxController extends AjaxController {
     // Check if login is disabled and this isn't an admin
     $login = await Configuration::gen('login');
     if (($login->getValue() === '0') &&
-        (!$team || (($team) && ($team->getAdmin() === false)))) {
+        ($team === null || $team->getAdmin() === false)) {
       return Utils::error_response('Login failed', 'login');
     }
 
