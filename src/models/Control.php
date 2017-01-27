@@ -354,4 +354,45 @@ class Control extends Model {
     $db = await self::genDb();
     await $db->queryf('DELETE FROM bases_log WHERE id > 0');
   }
+
+  public static async function genFlushMemcached(): Awaitable<bool> {
+    $mc = self::getMc();
+    return $mc->flush(0);
+  }
+
+  private static async function genLoadDatabaseFile(
+    string $file,
+  ): Awaitable<bool> {
+    $contents = file_get_contents($file);
+    if ($contents) {
+      $schema = explode(";", $contents);
+      $db = await self::genDb();
+      $result = await $db->multiQuery($schema);
+      return $result ? true : false;
+    }
+    return false;
+  }
+
+  public static async function genResetDatabase(): Awaitable<bool> {
+    $admins = await MultiTeam::genAllAdmins();
+    $schema = await self::genLoadDatabaseFile('../database/schema.sql');
+    $countries = await self::genLoadDatabaseFile('../database/countries.sql');
+    $logos = await self::genLoadDatabaseFile('../database/logos.sql');
+    if ($schema && $countries && $logos) {
+      foreach ($admins as $admin) {
+        await Team::genCreate(
+          $admin->getName(),
+          $admin->getPasswordHash(),
+          $admin->getLogo(),
+        );
+      }
+      $teams = await MultiTeam::genAllTeamsCache();
+      foreach ($teams as $team) {
+        await Team::genSetAdmin($team->getId(), true);
+      }
+      await self::genFlushMemcached();
+      return true;
+    }
+    return false;
+  }
 }

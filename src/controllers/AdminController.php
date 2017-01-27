@@ -913,6 +913,33 @@ class AdminController extends Controller {
           </section>
           <section class="admin-box">
             <header class="admin-box-header">
+              <h3>{tr('Utilities')}</h3>
+            </header>
+            <div class="fb-column-container">
+              <div class="col col-pad col-1-4">
+                <div class="form-el el--block-label el--full-text">
+                  <div class="admin-buttons">
+                    <button
+                      class="fb-cta cta--yellow"
+                      data-action="flush-memcached">
+                      {tr('Flush Memcached')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="col col-pad col-1-4">
+                <div class="form-el el--block-label el--full-text">
+                  <div class="admin-buttons">
+                    <button class="fb-cta cta--red js-reset-database">
+                      {tr('Reset Database')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section class="admin-box">
+            <header class="admin-box-header">
               <h3>{tr('Teams')}</h3>
             </header>
             <div class="fb-column-container">
@@ -2699,9 +2726,9 @@ class AdminController extends Controller {
     if (count($failures) > 0) {
       $failures_tbody = <tbody></tbody>;
       foreach ($failures as $failure) {
-		if(!Level::genCheckStatus($failure->getLevelId())){
-			continue;
-		}
+        if (!Level::genCheckStatus($failure->getLevelId())) {
+          continue;
+        }
         $level = await Level::gen($failure->getLevelId());
         $country = await Country::gen($level->getEntityId());
         $level_str = $country->getName().' - '.$level->getTitle();
