@@ -220,15 +220,17 @@ class IndexAjaxController extends AjaxController {
     int $team_id,
     string $password,
   ): Awaitable<string> {
-    // Check if login is enabled
+    // Verify credentials first so we can allow admins to login regardless of the login setting
+    $team = await Team::genVerifyCredentials($team_id, $password);
+
+    // Check if login is disabled and this isn't an admin
     $login = await Configuration::gen('login');
-    if ($login->getValue() === '0') {
+    if (($login->getValue() === '0') &&
+        ($team === null || $team->getAdmin() === false)) {
       return Utils::error_response('Login failed', 'login');
     }
 
-    // Verify credentials
-    $team = await Team::genVerifyCredentials($team_id, $password);
-
+    // Otherwise let's login any valid attempt
     if ($team) {
       SessionUtils::sessionRefresh();
       if (!SessionUtils::sessionActive()) {

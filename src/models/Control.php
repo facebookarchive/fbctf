@@ -73,24 +73,36 @@ class Control extends Model {
     $start_ts = time();
     await Configuration::genUpdate('start_ts', strval($start_ts));
 
-    // Calculate timestamp of the end
-    $config = await Configuration::gen('game_duration_value');
-    $duration_value = intval($config->getValue());
-    $config = await Configuration::gen('game_duration_unit');
-    $duration_unit = $config->getValue();
-    switch ($duration_unit) {
-      case 'd':
-        $duration = $duration_value * 60 * 60 * 24;
-        break;
-      case 'h':
-        $duration = $duration_value * 60 * 60;
-        break;
-      case 'm':
-        $duration = $duration_value * 60;
-        break;
+    // Calculate timestamp of the end or game duration
+    $config = await Configuration::gen('end_ts');
+    $end_ts = intval($config->getValue());
+
+    if ($end_ts === 0) {
+      $config = await Configuration::gen('game_duration_value');
+      $duration_value = intval($config->getValue());
+      $config = await Configuration::gen('game_duration_unit');
+      $duration_unit = $config->getValue();
+      switch ($duration_unit) {
+        case 'd':
+          $duration = $duration_value * 60 * 60 * 24;
+          break;
+        case 'h':
+          $duration = $duration_value * 60 * 60;
+          break;
+        case 'm':
+          $duration = $duration_value * 60;
+          break;
+      }
+      $end_ts = $start_ts + $duration;
+      await Configuration::genUpdate('end_ts', strval($end_ts));
+    } else {
+      $duration_length = ($end_ts - $start_ts) / 60;
+      await Configuration::genUpdate(
+        'game_duration_value',
+        strval($duration_length),
+      );
+      await Configuration::genUpdate('game_duration_unit', 'm');
     }
-    $end_ts = $start_ts + $duration;
-    await Configuration::genUpdate('end_ts', strval($end_ts));
 
     // Set pause to zero
     await Configuration::genUpdate('pause_ts', '0');
@@ -119,6 +131,7 @@ class Control extends Model {
     // Put timestampts to zero
     await Configuration::genUpdate('start_ts', '0');
     await Configuration::genUpdate('end_ts', '0');
+    await Configuration::genUpdate('next_game', '0');
 
     // Set pause to zero
     await Configuration::genUpdate('pause_ts', '0');
@@ -353,5 +366,46 @@ class Control extends Model {
   public static async function genResetBases(): Awaitable<void> {
     $db = await self::genDb();
     await $db->queryf('DELETE FROM bases_log WHERE id > 0');
+  }
+
+  public static async function genFlushMemcached(): Awaitable<bool> {
+    $mc = self::getMc();
+    return $mc->flush(0);
+  }
+
+  private static async function genLoadDatabaseFile(
+    string $file,
+  ): Awaitable<bool> {
+    $contents = file_get_contents($file);
+    if ($contents) {
+      $schema = explode(";", $contents);
+      $db = await self::genDb();
+      $result = await $db->multiQuery($schema);
+      return $result ? true : false;
+    }
+    return false;
+  }
+
+  public static async function genResetDatabase(): Awaitable<bool> {
+    $admins = await MultiTeam::genAllAdmins();
+    $schema = await self::genLoadDatabaseFile('../database/schema.sql');
+    $countries = await self::genLoadDatabaseFile('../database/countries.sql');
+    $logos = await self::genLoadDatabaseFile('../database/logos.sql');
+    if ($schema && $countries && $logos) {
+      foreach ($admins as $admin) {
+        await Team::genCreate(
+          $admin->getName(),
+          $admin->getPasswordHash(),
+          $admin->getLogo(),
+        );
+      }
+      $teams = await MultiTeam::genAllTeamsCache();
+      foreach ($teams as $team) {
+        await Team::genSetAdmin($team->getId(), true);
+      }
+      await self::genFlushMemcached();
+      return true;
+    }
+    return false;
   }
 }

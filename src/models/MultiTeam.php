@@ -25,6 +25,17 @@ class MultiTeam extends Team {
     return $result->mapRows();
   }
 
+  public static async function genAllAdmins(): Awaitable<array<Team>> {
+    $admins = await MultiTeam::genTeamArrayFromDB(
+      'SELECT * FROM teams WHERE admin = 1',
+    );
+    $admin_teams = array();
+    foreach ($admins->items() as $admin) {
+      $admin_teams[] = Team::teamFromRow($admin);
+    }
+    return $admin_teams;
+  }
+
   // All teams.
   public static async function genAllTeamsCache(
     bool $refresh = false,

@@ -46,6 +46,14 @@ function deleteTeamPopup(team_id) {
   sendAdminRequest(delete_team, true);
 }
 
+// Reset the database
+function resetDatabase() {
+  var reset_database = {
+    action: 'reset_database'
+  };
+  sendAdminRequest(reset_database, true);
+}
+
 /**
  * submits an ajax request to the admin endpoint
  *
@@ -516,6 +524,14 @@ function exportCurrentCategories() {
   var action = 'export_categories';
   var url = 'index.php?p=admin&ajax=true&action=' + action + '&csrf_token=' + csrf_token;
   window.location.href = url;
+}
+
+// Flush Memcached
+function flushMemcached() {
+  var flush_memcached = {
+    action: 'flush_memcached'
+  };
+  sendAdminRequest(flush_memcached, true);
 }
 
 // Create tokens
@@ -1033,6 +1049,8 @@ module.exports = {
         importCategories();
       } else if (action === 'export-categories') {
         exportCurrentCategories();
+      } else if (action === 'flush-memcached') {
+        flushMemcached();
       } else if (action === 'create-tokens') {
         createTokens();
       } else if (action === 'export-tokens') {
@@ -1136,6 +1154,29 @@ module.exports = {
       }
       if (!$(this).hasClass('not_configuration')) {
         changeConfiguration(field, value);
+      }
+    });
+
+    // game schedule fields
+    $('input[type="number"][name^="fb--schedule"]').on('change', function() {
+      var start_year = $('input[type="number"][name="fb--schedule--start_year"]')[0].value;
+      var start_month = $('input[type="number"][name="fb--schedule--start_month"]')[0].value;
+      var start_day = $('input[type="number"][name="fb--schedule--start_day"]')[0].value;
+      var start_hour = $('input[type="number"][name="fb--schedule--start_hour"]')[0].value;
+      var start_min = $('input[type="number"][name="fb--schedule--start_min"]')[0].value;
+      var start_ts = new Date(start_month + "/" + start_day + "/" + start_year + " " + start_hour + ":" + start_min).getTime() / 1000;
+      if ($.isNumeric(start_ts)) {
+        changeConfiguration("start_ts", start_ts);
+        changeConfiguration("next_game", start_ts);
+      }
+      var end_year = $('input[type="number"][name="fb--schedule--end_year"]')[0].value;
+      var end_month = $('input[type="number"][name="fb--schedule--end_month"]')[0].value;
+      var end_day = $('input[type="number"][name="fb--schedule--end_day"]')[0].value;
+      var end_hour = $('input[type="number"][name="fb--schedule--end_hour"]')[0].value;
+      var end_min = $('input[type="number"][name="fb--schedule--end_min"]')[0].value;
+      var end_ts = new Date(end_month + "/" + end_day + "/" + end_year + " " + end_hour + ":" + end_min).getTime() / 1000;
+      if ($.isNumeric(end_ts)) {
+        changeConfiguration("end_ts", end_ts);
       }
     });
 
@@ -1338,6 +1379,14 @@ module.exports = {
         $(this).text('Hide Answer');
         $(this).prev('input').attr('type', 'text');
       }
+    });
+
+    // prompt reset database
+    $('.js-reset-database').on('click', function(event) {
+      event.preventDefault();
+      Modal.loadPopup('p=action&modal=reset-database', 'action-reset-database', function() {
+        $('#reset_database').click(resetDatabase);
+      });
     });
 
   }

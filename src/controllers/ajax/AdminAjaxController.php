@@ -135,6 +135,8 @@ class AdminAjaxController extends AjaxController {
       'import_logos',
       'import_levels',
       'import_categories',
+      'flush_memcached',
+      'reset_database',
     );
   }
 
@@ -478,6 +480,18 @@ class AdminAjaxController extends AjaxController {
           return Utils::ok_response('Success', 'admin');
         }
         return Utils::error_response('Error importing', 'admin');
+      case 'flush_memcached':
+        $result = await Control::genFlushMemcached();
+        if ($result) {
+          return Utils::ok_response('Success', 'admin');
+        }
+        return Utils::error_response('Error flushing memcached', 'admin');
+      case 'reset_database':
+        $result = await Control::genResetDatabase();
+        if ($result) {
+          return Utils::ok_response('Success', 'admin');
+        }
+        return Utils::error_response('Error resetting database', 'admin');
       default:
         return Utils::error_response('Invalid action', 'admin');
     }

@@ -109,10 +109,21 @@ class IndexController extends Controller {
     }
     $next_game = await Configuration::gen('next_game');
     $next_game = $next_game->getValue();
-    if ($next_game === "0") {
+    $game = await Configuration::gen('game');
+    $game = $game->getValue();
+    if ($game === '1') {
+      $next_game_text = tr('In Progress');
+      $countdown = array('--', '--', '--', '--');
+    } else if ($next_game === '0' || intval($next_game) < time()) {
       $next_game_text = tr('Soon');
+      $countdown = array('--', '--', '--', '--');
     } else {
-      $next_game_text = $next_game;
+      $next_game_text = date(tr('date and time format'), $next_game);
+      $game_start = new DateTime();
+      $game_start->setTimestamp(intval($next_game));
+      $now = new DateTime('now');
+      $countdown_diff = $now->diff($game_start);
+      $countdown = explode('-', $countdown_diff->format('%d-%h-%i-%s'));
     }
     return
       <div class="fb-row-container full-height fb-scroll">
@@ -126,10 +137,22 @@ class IndexController extends Controller {
               {$next_game_text}
             </h1>
             <ul class="upcoming-game-countdown">
-              <li><span class="count-number">--</span>{tr('_days')}</li>
-              <li><span class="count-number">--</span>{tr('_hours')}</li>
-              <li><span class="count-number">--</span>{tr('_minutes')}</li>
-              <li><span class="count-number">--</span>{tr('_seconds')}</li>
+              <li>
+                <span class="count-number">{$countdown[0]}</span>
+                {tr('_days')}
+              </li>
+              <li>
+                <span class="count-number">{$countdown[1]}</span>
+                {tr('_hours')}
+              </li>
+              <li>
+                <span class="count-number">{$countdown[2]}</span>
+                {tr('_minutes')}
+              </li>
+              <li>
+                <span class="count-number">{$countdown[3]}</span>
+                {tr('_seconds')}
+              </li>
             </ul>
             {$play_nav}
           </div>
@@ -334,7 +357,9 @@ class IndexController extends Controller {
             <div class="fb-choose-emblem">
               <h6>{tr('Choose an Emblem')}</h6>
               <h6>
-                <a href="#" id="custom-emblem-link">{tr('or upload your own')}</a>
+                <a href="#" id="custom-emblem-link">
+                  {tr('or upload your own')}
+                </a>
               </h6>
               <div class="custom-emblem">
                 <input
@@ -541,6 +566,7 @@ class IndexController extends Controller {
           name="team_name"
           type="text"
           maxlength={20}
+          autofocus
         />;
       $login_select = "off";
       $login_select_config = await Configuration::gen('login_select');
@@ -607,6 +633,53 @@ class IndexController extends Controller {
             </form>
           </div>
         </main>;
+    } else if (Utils::getGET()->get('admin') === 'true') {
+      return
+        <main role="main" class="fb-main page--login full-height fb-scroll">
+          <header class="fb-section-header fb-container">
+            <h1 class="fb-glitch" data-text={tr('Admin Login')}>
+              {tr('Admin Login')}
+            </h1>
+            <p class="inner-container">
+              {tr(
+                'Team login is disabled. Only admins can login at this time. ',
+              )}
+            </p>
+          </header>
+          <div class="fb-login">
+            <form class="fb-form">
+              <input type="hidden" name="action" value="login_team" />
+              <input type="hidden" name="login_select" value={"off"} />
+              <fieldset class="form-set fb-container container--small">
+                <div class="form-el el--text">
+                  <label for="">{tr('Team Name')}</label>
+                  <input
+                    autocomplete="off"
+                    name="team_name"
+                    type="text"
+                    maxlength={20}
+                  />
+                </div>
+                <div class="form-el el--text">
+                  <label for="">{tr('Password')}</label>
+                  <input
+                    autocomplete="off"
+                    name="password"
+                    type="password"
+                  />
+                </div>
+              </fieldset>
+              <div class="form-el--actions">
+                <button
+                  id="login_button"
+                  class="fb-cta cta--yellow"
+                  type="button">
+                  {tr('Login')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </main>;
     } else {
       return
         <div class="fb-row-container full-height fb-scroll">
@@ -624,6 +697,11 @@ class IndexController extends Controller {
                 <div class="form-el--actions">
                   <a href="/index.php?page=login" class="fb-cta cta--yellow">
                     {tr('Try Again')}
+                  </a>
+                </div>
+                <div class="form-el--actions">
+                  <a href="/index.php?page=login&admin=true" class="fb-cta">
+                    {tr('Admin Login')}
                   </a>
                 </div>
               </form>
