@@ -566,6 +566,7 @@ class IndexController extends Controller {
           name="team_name"
           type="text"
           maxlength={20}
+          autofocus={true}
         />;
       $login_select = "off";
       $login_select_config = await Configuration::gen('login_select');
