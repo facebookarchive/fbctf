@@ -909,7 +909,10 @@ function toggleConfiguration(radio_id) {
     field: radio_action,
     value: action_value
   };
-  if (radio_action) {
+  var refresh_fields = ['login_strongpasswords'];
+  if (refresh_fields.indexOf(radio_action) !== -1) {
+    sendAdminRequest(toggle_data, true);
+  } else {
     sendAdminRequest(toggle_data, false);
   }
 }
@@ -920,9 +923,10 @@ function changeConfiguration(field, value) {
     field: field,
     value: value
   };
-  if (field === 'registration_type' || field === 'language') {
+  var refresh_fields = ['registration_type', 'language'];
+  if (refresh_fields.indexOf(field) !== -1) {
     sendAdminRequest(conf_data, true);
-  }else {
+  } else {
     sendAdminRequest(conf_data, false);
   }
 }

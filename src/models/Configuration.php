@@ -78,6 +78,20 @@ class Configuration extends Model {
     return intval(idx(firstx($result->mapRows()), 'COUNT(*)')) > 0;
   }
 
+  // All the password types.
+  public static async function genPasswordTypes(
+  ): Awaitable<array<Configuration>> {
+    $db = await self::genDb();
+    $result = await $db->queryf('SELECT * FROM password_types');
+
+    $types = array();
+    foreach ($result->mapRows() as $row) {
+      $types[] = self::configurationFromRow($row->toArray());
+    }
+
+    return $types;
+  }
+
   // All the configuration.
   public static async function genAllConfiguration(
   ): Awaitable<array<Configuration>> {

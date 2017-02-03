@@ -149,6 +149,24 @@ class AdminController extends Controller {
     return $select;
   }
 
+  // TODO: Translate password types
+  private async function genStrongPasswordsSelect(): Awaitable<:xhp> {
+    $types = await Configuration::genPasswordTypes();
+    $select = <select name="fb--conf--password_type"></select>;
+    foreach ($types as $type) {
+      $select->appendChild(
+        <option 
+          class="fb--conf--password_type" 
+          value={strval($type->getField())}
+          selected={($type->getField() === $config)}>
+          {$type->getDescription()}
+        </option>
+      );
+    }
+
+    return $select;
+  }
+
   private async function genConfigurationDurationSelect(): Awaitable<:xhp> {
     $config = await Configuration::gen('game_duration_unit');
     $duration_unit = $config->getValue();
@@ -408,6 +426,7 @@ class AdminController extends Controller {
       'configuration_duration_select' =>
         $this->genConfigurationDurationSelect(),
       'language_select' => $this->genLanguageSelect(),
+      'password_types_select' => $this->genStrongPasswordsSelect(),
     };
     $results = await \HH\Asio\m($awaitables);
 
@@ -415,6 +434,18 @@ class AdminController extends Controller {
     $configuration_duration_select =
       $results['configuration_duration_select'];
     $language_select = $results['language_select'];
+    $password_types_select = $results['password_types_select'];
+
+    $login_strongpasswords = await Configuration::gen('login_strongpasswords');
+    if ($login_strongpasswords->getValue() === '0') { // Strong passwords are not enforced
+      $strong_passwords = <div></div>;
+    } else {
+      $strong_passwords =
+        <div class="form-el el--block-label">
+          <label>{tr('Password Types')}</label>
+          {$password_types_select}
+        </div>;
+    }
 
     return
       <div>
@@ -519,7 +550,32 @@ class AdminController extends Controller {
                   </div>
                 </header>
                 <div class="fb-column-container">
-                  <div class="col col-pad col-1-2">
+                  <div class="col col-pad col-1-3">
+                    <div class="form-el el--block-label">
+                      <label>{tr('Team Selection')}</label>
+                      <div class="admin-section-toggle radio-inline">
+                        <input
+                          type="radio"
+                          name="fb--conf--login_select"
+                          id="fb--conf--login_select--on"
+                          checked={$login_select_on}
+                        />
+                        <label for="fb--conf--login_select--on">
+                          {tr('On')}
+                        </label>
+                        <input
+                          type="radio"
+                          name="fb--conf--login_select"
+                          id="fb--conf--login_select--off"
+                          checked={$login_select_off}
+                        />
+                        <label for="fb--conf--login_select--off">
+                          {tr('Off')}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col col-pad col-1-3">
                     <div class="form-el el--block-label">
                       <label>{tr('Strong Passwords')}</label>
                       <div class="admin-section-toggle radio-inline">
@@ -544,30 +600,8 @@ class AdminController extends Controller {
                       </div>
                     </div>
                   </div>
-                  <div class="col col-pad col-2-2">
-                    <div class="form-el el--block-label">
-                      <label>{tr('Team Selection')}</label>
-                      <div class="admin-section-toggle radio-inline">
-                        <input
-                          type="radio"
-                          name="fb--conf--login_select"
-                          id="fb--conf--login_select--on"
-                          checked={$login_select_on}
-                        />
-                        <label for="fb--conf--login_select--on">
-                          {tr('On')}
-                        </label>
-                        <input
-                          type="radio"
-                          name="fb--conf--login_select"
-                          id="fb--conf--login_select--off"
-                          checked={$login_select_off}
-                        />
-                        <label for="fb--conf--login_select--off">
-                          {tr('Off')}
-                        </label>
-                      </div>
-                    </div>
+                  <div class="col col-pad col-2-3">
+                    {$strong_passwords}
                   </div>
                 </div>
               </section>
