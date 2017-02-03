@@ -207,7 +207,7 @@ INSERT INTO `configuration` (field, value, description) VALUES("ldap_domain_suff
 INSERT INTO `configuration` (field, value, description) VALUES("login", "1", "(Boolean) Ability to login");
 INSERT INTO `configuration` (field, value, description) VALUES("login_select", "0", "(Boolean) Login selecting the team");
 INSERT INTO `configuration` (field, value, description) VALUES("login_strongpasswords", "0", "(Boolean) Enforce using strong passwords");
-INSERT INTO `configuration` (field, value, description) VALUES("password_type", "0", "(Integer) Type of passwords: See table password_types");
+INSERT INTO `configuration` (field, value, description) VALUES("password_type", "1", "(Integer) Type of passwords: See table password_types");
 INSERT INTO `configuration` (field, value, description) VALUES("default_bonus", "30", "(Integer) Default value for bonus in levels");
 INSERT INTO `configuration` (field, value, description) VALUES("default_bonusdec", "10", "(Integer) Default bonus decrement in levels");
 INSERT INTO `configuration` (field, value, description) VALUES("language", "en", "(String) Language of the system");

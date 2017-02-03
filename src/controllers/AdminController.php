@@ -151,14 +151,15 @@ class AdminController extends Controller {
 
   // TODO: Translate password types
   private async function genStrongPasswordsSelect(): Awaitable<:xhp> {
-    $types = await Configuration::genPasswordTypes();
+    $types = await Configuration::genAllPasswordTypes();
+    $config = await Configuration::genCurrentPasswordType();
     $select = <select name="fb--conf--password_type"></select>;
     foreach ($types as $type) {
       $select->appendChild(
         <option 
           class="fb--conf--password_type" 
           value={strval($type->getField())}
-          selected={($type->getField() === $config)}>
+          selected={($type->getField() === $config->getField())}>
           {$type->getDescription()}
         </option>
       );
