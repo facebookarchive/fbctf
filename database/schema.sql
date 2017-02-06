@@ -234,7 +234,7 @@ LOCK TABLES `password_types` WRITE;
 INSERT INTO `password_types` (field, value, description) VALUES("1", "/.+/", "Length > 0");
 INSERT INTO `password_types` (field, value, description) VALUES("2", "/.*^(?=.{8,})(?=.*[a-z])(?=.*[0-9]).*$/", "Length > 8, [a-z] and [0-9]");
 INSERT INTO `password_types` (field, value, description) VALUES("3", "/.*^(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$/", "Length > 8, [a-z], [A-Z] and [0-9]");
-INSERT INTO `password_types` (field, value, description) VALUES("4", "/.*^(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*\W).*$/", "Length > 8, [a-z], [A-Z], [0-9] and Special chars");
+INSERT INTO `password_types` (field, value, description) VALUES("4", "/.*^(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[\\W]+).*$/", "Length > 8, [a-z], [A-Z], [0-9] and Special chars");
 
 UNLOCK TABLES;
 

@@ -2887,7 +2887,8 @@ class AdminController extends Controller {
     if (count($failures) > 0) {
       $failures_tbody = <tbody></tbody>;
       foreach ($failures as $failure) {
-        if (!Level::genCheckStatus($failure->getLevelId())) {
+        $level_genCheckStatus = await Level::genCheckStatus($failure->getLevelId());
+        if (!$level_genCheckStatus) {
           continue;
         }
         $level = await Level::gen($failure->getLevelId());
