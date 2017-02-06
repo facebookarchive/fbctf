@@ -118,11 +118,11 @@ CREATE TABLE `teams` (
   `active` tinyint(1) NOT NULL DEFAULT 1,
   `name` text NOT NULL,
   `password_hash` text NOT NULL,
-  `points` int(11) NOT NULL,
+  `points` int(11) NOT NULL DEFAULT 0,
   `last_score` timestamp NOT NULL,
   `logo` text NOT NULL,
-  `admin` tinyint(1) NOT NULL,
-  `protected` tinyint(1) NOT NULL,
+  `admin` tinyint(1) NOT NULL DEFAULT 0,
+  `protected` tinyint(1) NOT NULL DEFAULT 0,
   `visible` tinyint(1) NOT NULL DEFAULT 1,
   `created_ts` timestamp NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
@@ -225,7 +225,7 @@ INSERT INTO `configuration` (field, value, description) VALUES("ldap_domain_suff
 INSERT INTO `configuration` (field, value, description) VALUES("login", "1", "(Boolean) Ability to login");
 INSERT INTO `configuration` (field, value, description) VALUES("login_select", "0", "(Boolean) Login selecting the team");
 INSERT INTO `configuration` (field, value, description) VALUES("login_strongpasswords", "0", "(Boolean) Enforce using strong passwords");
-INSERT INTO `configuration` (field, value, description) VALUES("password_type", "1", "(Integer) Type of passwords: See password_types");
+INSERT INTO `configuration` (field, value, description) VALUES("password_type", "1", "(Integer) Type of passwords: See table password_types");
 INSERT INTO `configuration` (field, value, description) VALUES("default_bonus", "30", "(Integer) Default value for bonus in levels");
 INSERT INTO `configuration` (field, value, description) VALUES("default_bonusdec", "10", "(Integer) Default bonus decrement in levels");
 INSERT INTO `configuration` (field, value, description) VALUES("language", "en", "(String) Language of the system");
@@ -243,17 +243,18 @@ DROP TABLE IF EXISTS `password_types`;
 CREATE TABLE `password_types` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `field` varchar(100) NOT NULL,
+  `value` text NOT NULL,
   `description` text NOT NULL,
-  `regex` text NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `field` (`field`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 LOCK TABLES `password_types` WRITE;
-INSERT INTO `password_types` (field, regex, description) VALUES("1", "/.*^(?=.{8,})(?=.*[a-z])(?=.*[0-9]).*$/", "Length > 8, [a-z] and [0-9]");
-INSERT INTO `password_types` (field, regex, description) VALUES("2", "/.*^(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$/", "Length > 8, [a-z], [A-Z] and [0-9]");
-INSERT INTO `password_types` (field, regex, description) VALUES("3", "/.*^(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*\W).*$/", "Length > 8, [a-z], [A-Z], [0-9] and Special chars");
+INSERT INTO `password_types` (field, value, description) VALUES("1", "/.+/", "Length > 0");
+INSERT INTO `password_types` (field, value, description) VALUES("2", "/.*^(?=.{8,})(?=.*[a-z])(?=.*[0-9]).*$/", "Length > 8, [a-z] and [0-9]");
+INSERT INTO `password_types` (field, value, description) VALUES("3", "/.*^(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$/", "Length > 8, [a-z], [A-Z] and [0-9]");
+INSERT INTO `password_types` (field, value, description) VALUES("4", "/.*^(?=.{8,})(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[\\W]+).*$/", "Length > 8, [a-z], [A-Z], [0-9] and Special chars");
 
 UNLOCK TABLES;
 

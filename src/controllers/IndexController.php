@@ -345,6 +345,7 @@ class IndexController extends Controller {
                   name="teamname"
                   type="text"
                   maxlength={20}
+                  autofocus={true}
                 />
                 {$ldap_domain_suffix}
               </div>
@@ -451,12 +452,17 @@ class IndexController extends Controller {
                   name="teamname"
                   type="text"
                   maxlength={20}
+                  autofocus={true}
                 />
                 {$ldap_domain_suffix}
               </div>
               <div class="form-el el--text">
                 <label for="">{tr('Password')}</label>
                 <input autocomplete="off" name="password" type="password" />
+              </div>
+              <div id="password_error" class="el--text completely-hidden">
+                <label for=""></label>
+                <h6 style="color:red;">{tr('Password is too simple')}</h6>
               </div>
               {$token_field}
             </fieldset>
