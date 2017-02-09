@@ -1,0 +1,7 @@
+Please include the following information when filing an issue 
+• Current version of FBCTF installed (commit head)
+• System and Installation details, such as the Linux distribution used, and installation method you chose.
+• Detailed description of the problem. Include steps to reproduce the problem when possible.
+• Screenshots to help describe the problem when appropriate.
+• Relevant output from any logs examined.
+• Any steps you have taken to resolve the issue.
