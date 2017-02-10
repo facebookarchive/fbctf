@@ -22,6 +22,6 @@ class SessionTest extends FBCTFTest {
     $this->assertEquals(2, $a->getId());
     $this->assertEquals('cookie2', $a->getCookie());
     $this->assertEquals('data2', $a->getData());
-    $this->assertEquals(1, $a->getTeamId());
+    $this->assertEquals(0, $a->getTeamId());
   }
 }
