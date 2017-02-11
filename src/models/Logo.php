@@ -252,6 +252,7 @@ class Logo extends Model implements Importable, Exportable {
   // Create custom logo
   public static async function genCreateCustom(
     string $base64_data,
+    bool $branding = false,
   ): Awaitable<?Logo> {
     // Check image size
     $image_size_bytes = strlen($base64_data) * self::BASE64_BYTES_PER_CHAR;
@@ -297,8 +298,6 @@ class Logo extends Model implements Importable, Exportable {
       );
     }
 
-    $db = await self::genDb();
-
     $used = true;
     $enabled = true;
     $protected = false;
@@ -311,6 +310,11 @@ class Logo extends Model implements Importable, Exportable {
       $filename,
       $filepath,
     );
+
+    // If created logo is for branding, set configuration value
+    if ($branding) {
+      await Configuration::genUpdate('custom_logo_image', $logo->getLogo());
+    }
 
     // Return newly created logo_id
     return $logo;

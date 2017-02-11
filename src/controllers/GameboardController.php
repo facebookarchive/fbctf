@@ -23,12 +23,24 @@ class GameboardController extends Controller {
     return array('main', 'viewmode');
   }
 
-  public function renderMainContent(): :xhp {
+  public async function genRenderBranding(): Awaitable<:xhp> {
+    $branding = await Configuration::gen('custom_logo');
+    $branding_fb = $branding->getValue() === '0';
+    if ($branding_fb) {
+      $branding_xhp = <fbbranding />;
+    } else {
+      $branding_xhp = <custombranding />;
+    }
+    return $branding_xhp;
+  }
+
+  public async function genRenderMainContent(): Awaitable<:xhp> {
     if (SessionUtils::sessionAdmin()) {
       $admin_link = <li><a href="index.php?p=admin">{tr('Admin')}</a></li>;
     } else {
       $admin_link = null;
     }
+    $branding_gen = await $this->genRenderBranding();
     return
       <div id="fb-gameboard" class="fb-gameboard">
         <div class="gameboard-header">
@@ -58,7 +70,7 @@ class GameboardController extends Controller {
             <div class="branding">
               <a href="index.php?p=game">
                 <div class="branding-rules">
-                  <fbbranding />
+                  {$branding_gen}
                 </div>
               </a>
             </div>
@@ -137,19 +149,20 @@ class GameboardController extends Controller {
       </div>;
   }
 
-  public function renderPage(string $page): :xhp {
+  public async function genRenderPage(string $page): Awaitable<:xhp> {
     switch ($page) {
       case 'main':
-        return $this->renderMainContent();
+        return await $this->genRenderMainContent();
         break;
       default:
-        return $this->renderMainContent();
+        return await $this->genRenderMainContent();
         break;
     }
   }
 
   <<__Override>>
   public async function genRenderBody(string $page): Awaitable<:xhp> {
+    $rendered_page = await $this->genRenderPage($page);
     return
       <body data-section="gameboard">
         <input
@@ -159,7 +172,7 @@ class GameboardController extends Controller {
         />
         <div class="fb-sprite" id="fb-svg-sprite"></div>
         <div id="fb-main-content" class="fb-page">
-          {$this->renderPage($page)}
+          {$rendered_page}
         </div>
         <script type="text/javascript" src="static/dist/js/app.js"></script>
       </body>;

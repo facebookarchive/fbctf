@@ -6,12 +6,13 @@ class :fbbranding extends :x:element {
   protected string $tagName = 'fbbranding';
 
   protected function render(): XHPRoot {
+    $custom_text = \HH\Asio\join(Configuration::gen('custom_text'));
     return
       <span class="branding-el">
         <svg class="icon icon--social-facebook">
           <use href="#icon--social-facebook" />
         </svg>
-        <span class="has-icon">{' '}{tr('Powered By Facebook')}</span>
+        <span class="has-icon">{' '}{tr(strval($custom_text->getValue()))}</span>
       </span>;
   }
 }

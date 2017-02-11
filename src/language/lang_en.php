@@ -85,8 +85,8 @@ $translations = array(
     'Password',
   'Choose an Emblem' =>
     'Choose an Emblem',
-  'or Upload your own' =>
-    'or Upload your own',
+  'or upload your own' =>
+    'or upload your own',
   'Clear your custom emblem to use a default emblem.' =>
     'Clear your custom emblem to use a default emblem.',
   'Password is too simple' =>
@@ -235,8 +235,18 @@ $translations = array(
     'Begin Time',
   'Expected End Time' =>
     'Expected End Time',
+  'Internationalization' =>
+    'Internationalization',
   'Language' =>
     'Language',
+  'Branding' =>
+    'Branding',
+  'Custom Logo' =>
+    'Custom Logo',
+  'Logo' =>
+    'Logo',
+  'Custom Text' =>
+    'Custom Text',
   'DELETE' =>
     'DELETE',
   'Delete' =>

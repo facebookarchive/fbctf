@@ -139,6 +139,10 @@ General Admin
     }
   }
 
+  #custom-logo-input {
+    display: none;
+  }
+
   input:not(:checked) + label {
     color: $teal-blue;
   }

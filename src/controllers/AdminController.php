@@ -311,6 +311,9 @@ class AdminController extends Controller {
       'bases_cycle' => Configuration::gen('bases_cycle'),
       'start_ts' => Configuration::gen('start_ts'),
       'end_ts' => Configuration::gen('end_ts'),
+      'custom_logo' => Configuration::gen('custom_logo'),
+      'custom_text' => Configuration::gen('custom_text'),
+      'custom_logo_image' => Configuration::gen('custom_logo_image'),
     };
 
     $results = await \HH\Asio\m($awaitables);
@@ -335,6 +338,9 @@ class AdminController extends Controller {
     $bases_cycle = $results['bases_cycle'];
     $start_ts = $results['start_ts'];
     $end_ts = $results['end_ts'];
+    $custom_logo = $results['custom_logo'];
+    $custom_text = $results['custom_text'];
+    $custom_logo_image = $results['custom_logo_image'];
 
     $registration_on = $registration->getValue() === '1';
     $registration_off = $registration->getValue() === '0';
@@ -354,6 +360,8 @@ class AdminController extends Controller {
     $gameboard_off = $gameboard->getValue() === '0';
     $timer_on = $timer->getValue() === '1';
     $timer_off = $timer->getValue() === '0';
+    $custom_logo_on = $custom_logo->getValue() === '1';
+    $custom_logo_off = $custom_logo->getValue() === '0';
 
     $game_start_array = array();
     if ($start_ts->getValue() !== '0' && $start_ts->getValue() !== 'NaN') {
@@ -437,7 +445,6 @@ class AdminController extends Controller {
     $language_select = $results['language_select'];
     $password_types_select = $results['password_types_select'];
 
-    $login_strongpasswords = await Configuration::gen('login_strongpasswords');
     if ($login_strongpasswords->getValue() === '0') { // Strong passwords are not enforced
       $strong_passwords = <div></div>;
     } else {
@@ -445,6 +452,33 @@ class AdminController extends Controller {
         <div class="form-el el--block-label">
           <label>{tr('Password Types')}</label>
           {$password_types_select}
+        </div>;
+    }
+
+    if ($custom_logo->getValue() === '0') { // Custom branding is not enabled
+      $custom_logo_xhp = <div></div>;
+    } else {
+      $custom_logo_xhp =
+        <div class="form-el el--block-label el--full-text">
+          <label for="">{tr('Logo')}</label>
+          <img 
+            id="custom-logo-image" 
+            class="icon--badge" 
+            src={$custom_logo_image->getValue()}
+          />
+          <br/>
+           <h6>
+            <a class="icon-text" href="#" id="custom-logo-link">
+            {tr('Change')}
+            </a>
+          </h6>
+          <input
+            autocomplete="off"
+            name="custom-logo-input"
+            id="custom-logo-input"
+            type="file"
+            accept="image/*"
+          />
         </div>;
     }
 
@@ -914,11 +948,59 @@ class AdminController extends Controller {
               </section>
               <section class="admin-box">
                 <header class="admin-box-header">
-                  <h3>{tr('Language')}</h3>
+                  <h3>{tr('Internationalization')}</h3>
                 </header>
-                <div class="col col-pad col-1-2">
-                  <div class="form-el el--block-label el--full-text">
-                    {$language_select}
+                <div class="fb-column-container">
+                  <div class="col col-pad col-2-4">
+                    <div class="form-el el--block-label">
+                      <label for="">{tr('Language')}</label>
+                      {$language_select}
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <section class="admin-box">
+                <header class="admin-box-header">
+                  <h3>{tr('Branding')}</h3>
+                </header>
+                <div class="fb-column-container">
+                  <div class="col col-pad col-1-3">
+                    <div class="form-el el--block-label">
+                      <label>{tr('Custom Logo')}</label>
+                      <div class="admin-section-toggle radio-inline">
+                        <input
+                          type="radio"
+                          name="fb--conf--custom_logo"
+                          id="fb--conf--custom_logo--on"
+                          checked={$custom_logo_on}
+                        />
+                        <label for="fb--conf--custom_logo--on">
+                          {tr('On')}
+                        </label>
+                        <input
+                          type="radio"
+                          name="fb--conf--custom_logo"
+                          id="fb--conf--custom_logo--off"
+                          checked={$custom_logo_off}
+                        />
+                        <label for="fb--conf--custom_logo--off">
+                          {tr('Off')}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col col-pad col-1-3">
+                    {$custom_logo_xhp}
+                  </div>
+                  <div class="col col-pad col-1-3">
+                    <div class="form-el el--block-label el--full-text">
+                      <label for="">{tr('Custom Text')}</label>
+                      <input
+                        type="text"
+                        name="fb--conf--custom_text"
+                        value={$custom_text->getValue()}
+                      />
+                    </div>
                   </div>
                 </div>
               </section>
@@ -3718,6 +3800,13 @@ class AdminController extends Controller {
           {tr('Begin Game')}
         </a>;
     }
+    $custom_logo = await Configuration::gen('custom_logo');
+    $branding_fb = $custom_logo->getValue() === '0';
+    if ($branding_fb) {
+      $branding_xhp = <fbbranding />;
+    } else {
+      $branding_xhp = <custombranding />;
+    }
     return
       <div id="fb-admin-nav" class="admin-nav-bar fb-row-container">
         <header class="admin-nav-header row-fixed">
@@ -3790,7 +3879,7 @@ class AdminController extends Controller {
           <a href="/index.php?p=game">{tr('Gameboard')}</a>
           <a href="" class="js-prompt-logout">{tr('Logout')}</a>
           <a></a>
-          <fbbranding />
+          {$branding_xhp}
         </div>
       </div>;
   }
