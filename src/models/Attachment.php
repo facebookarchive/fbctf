@@ -17,6 +17,7 @@ class Attachment extends Model {
     private int $id,
     private int $levelId,
     private string $filename,
+    private string $type,
   ) {}
 
   public function getId(): int {
@@ -27,8 +28,16 @@ class Attachment extends Model {
     return $this->filename;
   }
 
+  public function getType(): string {
+    return $this->type;
+  }
+
   public function getLevelId(): int {
     return $this->levelId;
+  }
+
+  public static function getAttachmentDir(): string {
+    return strval(self::attachmentsDir);
   }
 
   // Create attachment for a given level.
@@ -265,6 +274,22 @@ class Attachment extends Model {
     }
   }
 
+  public static async function genImportAttachments(
+    int $level_id,
+    string $filename,
+    string $type,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+    await $db->queryf(
+      'INSERT INTO attachments (filename, type, level_id, created_ts) VALUES (%s, %s, %d, NOW())',
+      $filename,
+      (string) $type,
+      $level_id,
+    );
+
+    return true;
+  }
+
   private static function attachmentFromRow(
     Map<string, string> $row,
   ): Attachment {
@@ -272,6 +297,7 @@ class Attachment extends Model {
       intval(must_have_idx($row, 'id')),
       intval(must_have_idx($row, 'level_id')),
       must_have_idx($row, 'filename'),
+      must_have_idx($row, 'type'),
     );
   }
 }

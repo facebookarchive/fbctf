@@ -158,7 +158,7 @@ class Level extends Model implements Importable, Exportable {
       if (!$exist && $entity_exist && $category_exist) {
         $entity = await Country::genCountry($entity_iso_code);
         $category = await Category::genSingleCategoryByName($c);
-        await self::genCreate(
+        $level_id = await self::genCreate(
           $type,
           $title,
           must_have_string($level, 'description'),
@@ -172,6 +172,23 @@ class Level extends Model implements Importable, Exportable {
           must_have_string($level, 'hint'),
           must_have_int($level, 'penalty'),
         );
+        $links = must_have_idx($level, 'links');
+        invariant(is_array($links), 'links must be of type array');
+        foreach ($links as $link) {
+          await Link::genCreate($link, $level_id);
+        }
+        $attachments = must_have_idx($level, 'attachments');
+        invariant(
+          is_array($attachments),
+          'attachments must be of type array',
+        );
+        foreach ($attachments as $attachment) {
+          await Attachment::genImportAttachments(
+            $level_id,
+            $attachment['filename'],
+            $attachment['type'],
+          );
+        }
       }
     }
     return true;
@@ -186,6 +203,19 @@ class Level extends Model implements Importable, Exportable {
     foreach ($all_levels as $level) {
       $entity = await Country::gen($level->getEntityId());
       $category = await Category::genSingleCategory($level->getCategoryId());
+      $links = await Link::genAllLinks($level->getId());
+      $link_array = array();
+      foreach ($links as $link) {
+        $link_array[] = $link->getLink();
+      }
+      $attachments = await Attachment::genAllAttachments($level->getId());
+      $attachment_array = array();
+      foreach ($attachments as $attachment) {
+        $attachment_array[] = [
+          "filename" => $attachment->getFilename(),
+          "type" => $attachment->getType(),
+        ];
+      }
       $one_level = array(
         'type' => $level->getType(),
         'title' => $level->getTitle(),
@@ -200,6 +230,8 @@ class Level extends Model implements Importable, Exportable {
         'flag' => $level->getFlag(),
         'hint' => $level->getHint(),
         'penalty' => $level->getPenalty(),
+        'links' => $link_array,
+        'attachments' => $attachment_array,
       );
       array_push($all_levels_data, $one_level);
     }
