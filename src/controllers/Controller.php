@@ -18,8 +18,10 @@ abstract class Controller {
     // TODO: Potential LFI - Review how to do internationalization better
     $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
     $language_style = '';
-    if (file_exists($document_root. '/static/css/locals/' .$language. '/style.css')) {
-      $language_style = 'static/css/locals/' .$language. '/style.css';
+    if (file_exists(
+          $document_root.'/static/css/locals/'.$language.'/style.css',
+        )) {
+      $language_style = 'static/css/locals/'.$language.'/style.css';
     }
     return
       <x:doctype>
