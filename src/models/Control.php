@@ -216,6 +216,92 @@ class Control extends Model {
     await Level::genBaseScoring();
   }
 
+  public static async function genAutoBegin(): Awaitable<void> {
+    // Get start time
+    $config_start_ts = await Configuration::gen('start_ts');
+    $start_ts = intval($config_start_ts->getValue());
+
+    // Get end time
+    $config_end_ts = await Configuration::gen('end_ts');
+    $end_ts = intval($config_end_ts->getValue());
+
+    // Get paused status
+    $config_game_paused = await Configuration::gen('game_paused');
+    $game_paused = intval($config_game_paused->getValue());
+
+    if (($game_paused === 0) && ($start_ts <= time()) && ($end_ts > time())) {
+      // Start the game
+      await Control::genBegin();
+    }
+  }
+
+  public static async function genAutoEnd(): Awaitable<void> {
+    // Get start time
+    $config_start_ts = await Configuration::gen('start_ts');
+    $start_ts = intval($config_start_ts->getValue());
+
+    // Get end time
+    $config_end_ts = await Configuration::gen('end_ts');
+    $end_ts = intval($config_end_ts->getValue());
+
+    // Get paused status
+    $config_game_paused = await Configuration::gen('game_paused');
+    $game_paused = intval($config_game_paused->getValue());
+
+    if (($game_paused === 0) && ($end_ts <= time())) {
+      // Start the game
+      await Control::genEnd();
+    }
+  }
+
+  public static async function genAutoRun(): Awaitable<void> {
+    // Get start time
+    $config_game = await Configuration::gen('game');
+    $game = intval($config_game->getValue());
+
+    if ($game === 0) {
+      // Check and start the game
+      await Control::genAutoBegin();
+    } else {
+      // Check and stop the game
+      await Control::genAutoEnd();
+    }
+  }
+
+  public static async function genRunAutoRunScript(): Awaitable<void> {
+    $autorun_status = await Control::checkScriptRunning('autorun');
+    if ($autorun_status === false) {
+      $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
+      $cmd =
+        'hhvm -vRepo.Central.Path=/var/run/hhvm/.hhvm.hhbc_autorun '.
+        $document_root.
+        '/scripts/autorun.php > /dev/null 2>&1 & echo $!';
+      $pid = shell_exec($cmd);
+      await Control::genStartScriptLog(intval($pid), 'autorun', $cmd);
+    }
+  }
+
+  public static async function checkScriptRunning(
+    string $name,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+    $result = await $db->queryf(
+      'SELECT pid FROM scripts WHERE name = %s AND status = 1 LIMIT 1',
+      $name,
+    );
+    if ($result->numRows() >= 1) {
+      $pid = intval(must_have_idx($result->mapRows()[0], 'pid'));
+      $status = file_exists("/proc/$pid");
+      if ($status === false) {
+        await Control::genStopScriptLog($pid);
+        await Control::genClearScriptLog();
+      }
+      return $status;
+    } else {
+      return false;
+    }
+  }
+
   public static async function importGame(): Awaitable<bool> {
     $data_game = JSONImporterController::readJSON('game_file');
     if (is_array($data_game)) {
