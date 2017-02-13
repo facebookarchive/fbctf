@@ -732,24 +732,21 @@ class IndexController extends Controller {
       </main>;
   }
 
-  public async function genRenderBranding(): Awaitable<:xhp> {
-    $branding = await Configuration::gen('custom_logo');
-    $branding_fb = $branding->getValue() === '0';
-    if ($branding_fb) {
-      $branding_xhp = <fbbranding />;
-    } else {
-      $branding_xhp = <custombranding />;
-    }
-    return $branding_xhp;
-  }
-
   public async function genRenderMobilePage(): Awaitable<:xhp> {
     $branding = await Configuration::gen('custom_logo');
-    $branding_fb = $branding->getValue() === '0';
-    if ($branding_fb) {
-      $branding_xhp = <fbbranding />;
+    $custom_text = await Configuration::gen('custom_text');
+    if ($branding->getValue() === '0') {
+      $branding_xhp = 
+        <fbbranding
+          brandingText={tr(strval($custom_text->getValue()))}
+        />;
     } else {
-      $branding_xhp = <custombranding />;
+      $custom_logo_image = await Configuration::gen('custom_logo_image');
+      $branding_xhp = 
+        <custombranding
+          brandingText={strval($custom_text->getValue())}
+          brandingLogo={strval($custom_logo_image->getValue())}
+        />;
     }
     return
       <div class="fb-row-container full-height page--mobile">

@@ -7,6 +7,25 @@ abstract class Controller {
 
   abstract protected function genRenderBody(string $page): Awaitable<:xhp>;
 
+  public async function genRenderBranding(): Awaitable<:xhp> {
+    $branding = await Configuration::gen('custom_logo');
+    $custom_text = await Configuration::gen('custom_text');
+    if ($branding->getValue() === '0') {
+      $branding_xhp = 
+        <fbbranding
+          brandingText={tr(strval($custom_text->getValue()))}
+        />;
+    } else {
+      $custom_logo_image = await Configuration::gen('custom_logo_image');
+      $branding_xhp = 
+        <custombranding
+          brandingText={strval($custom_text->getValue())}
+          brandingLogo={strval($custom_logo_image->getValue())}
+        />;
+    }
+    return $branding_xhp;
+  }
+
   public async function genRender(): Awaitable<:xhp> {
     $page = $this->processRequest();
     $body = await $this->genRenderBody($page);

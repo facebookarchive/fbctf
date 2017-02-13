@@ -23,17 +23,6 @@ class GameboardController extends Controller {
     return array('main', 'viewmode');
   }
 
-  public async function genRenderBranding(): Awaitable<:xhp> {
-    $branding = await Configuration::gen('custom_logo');
-    $branding_fb = $branding->getValue() === '0';
-    if ($branding_fb) {
-      $branding_xhp = <fbbranding />;
-    } else {
-      $branding_xhp = <custombranding />;
-    }
-    return $branding_xhp;
-  }
-
   public async function genRenderMainContent(): Awaitable<:xhp> {
     if (SessionUtils::sessionAdmin()) {
       $admin_link = <li><a href="index.php?p=admin">{tr('Admin')}</a></li>;

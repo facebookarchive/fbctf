@@ -3800,13 +3800,7 @@ class AdminController extends Controller {
           {tr('Begin Game')}
         </a>;
     }
-    $custom_logo = await Configuration::gen('custom_logo');
-    $branding_fb = $custom_logo->getValue() === '0';
-    if ($branding_fb) {
-      $branding_xhp = <fbbranding />;
-    } else {
-      $branding_xhp = <custombranding />;
-    }
+    $branding_xhp = await $this->genRenderBranding();
     return
       <div id="fb-admin-nav" class="admin-nav-bar fb-row-container">
         <header class="admin-nav-header row-fixed">

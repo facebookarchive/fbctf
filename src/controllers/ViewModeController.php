@@ -23,17 +23,6 @@ class ViewModeController extends Controller {
     return array('main');
   }
 
-  public async function genRenderBranding(): Awaitable<:xhp> {
-    $branding = await Configuration::gen('custom_logo');
-    $branding_fb = $branding->getValue() === '0';
-    if ($branding_fb) {
-      $branding_xhp = <fbbranding />;
-    } else {
-      $branding_xhp = <custombranding />;
-    }
-    return $branding_xhp;
-  }
-
   public async function genRenderMainContent(): Awaitable<:xhp> {
     $branding_gen = await $this->genRenderBranding();
     return
