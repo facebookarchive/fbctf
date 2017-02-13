@@ -23,7 +23,8 @@ class ViewModeController extends Controller {
     return array('main');
   }
 
-  public function renderMainContent(): :xhp {
+  public async function genRenderMainContent(): Awaitable<:xhp> {
+    $branding_gen = await $this->genRenderBranding();
     return
       <div id="fb-gameboard" class="fb-gameboard gameboard--viewmode">
         <div class="gameboard-header">
@@ -31,7 +32,7 @@ class ViewModeController extends Controller {
             <div class="branding">
               <a href="/">
                 <div class="branding-rules">
-                  <fbbranding />
+                  {$branding_gen}
                 </div>
               </a>
             </div>
@@ -58,24 +59,25 @@ class ViewModeController extends Controller {
       </div>;
   }
 
-  public function renderPage(string $page): :xhp {
+  public async function genRenderPage(string $page): Awaitable<:xhp> {
     switch ($page) {
       case 'main':
-        return $this->renderMainContent();
+        return await $this->genRenderMainContent();
         break;
       default:
-        return $this->renderMainContent();
+        return await $this->genRenderMainContent();
         break;
     }
   }
 
   <<__Override>>
   public async function genRenderBody(string $page): Awaitable<:xhp> {
+    $rendered_page = await $this->genRenderPage($page);
     return
       <body data-section="viewer-mode">
         <div class="fb-sprite" id="fb-svg-sprite"></div>
         <div id="fb-main-content" class="fb-page">
-          {$this->renderPage($page)}
+          {$rendered_page}
         </div>
         <script type="text/javascript" src="static/dist/js/app.js"></script>
       </body>;

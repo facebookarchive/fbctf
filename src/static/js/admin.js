@@ -940,7 +940,7 @@ function toggleConfiguration(radio_id) {
     field: radio_action,
     value: action_value
   };
-  var refresh_fields = ['login_strongpasswords'];
+  var refresh_fields = ['login_strongpasswords', 'custom_logo'];
   if (refresh_fields.indexOf(radio_action) !== -1) {
     sendAdminRequest(toggle_data, true);
   } else {
@@ -1434,6 +1434,43 @@ module.exports = {
       Modal.loadPopup('p=action&modal=restore-database', 'action-restore-database', function() {
         $('#restore_database').click(databaseRestore);
       });
+    });
+
+    // custom logo file selector
+    var $customLogoInput = $('#custom-logo-input');
+    var $customLogoImage = $('#custom-logo-image');
+    $('#custom-logo-link').on('click', function() {
+      $customLogoInput.trigger('click');
+    });
+    // on file input change, set image
+    $customLogoInput.change(function() {
+      var input = this;
+      if (input.files && input.files[0]) {
+        if (input.files[0].size > (1000*1024)) {
+          alert('Please upload an image less than 1000KB!');
+          return;
+        }
+
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+          $customLogoImage.attr('src', e.target.result);
+          var rawImageData = e.target.result;
+          var filetypeBeginIdx = rawImageData.indexOf('/') + 1;
+          var filetypeEndIdx = rawImageData.indexOf(';');
+          var filetype = rawImageData.substring(filetypeBeginIdx, filetypeEndIdx);
+          var base64 = rawImageData.substring(rawImageData.indexOf(',') + 1);
+          var logo_data = {
+            action: 'change_custom_logo',
+            logoType: filetype,
+            logo_b64: base64
+          };
+          sendAdminRequest(logo_data, true);
+        };
+
+        reader.readAsDataURL(input.files[0]);
+
+      }
     });
   }
 };

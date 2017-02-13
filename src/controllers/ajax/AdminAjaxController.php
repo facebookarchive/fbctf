@@ -29,6 +29,10 @@ class AdminAjaxController extends AjaxController {
           'filter' => FILTER_VALIDATE_REGEXP,
           'options' => array('regexp' => '/^[\w-]+$/'),
         ),
+        'logo_b64' => array(
+          'filter' => FILTER_VALIDATE_REGEXP,
+          'options' => array('regexp' => '/^[\w+-\/]+={0,2}$/'),
+        ),
         'entity_id' => FILTER_VALIDATE_INT,
         'attachment_id' => FILTER_VALIDATE_INT,
         'filename' => array(
@@ -117,6 +121,7 @@ class AdminAjaxController extends AjaxController {
       'delete_link',
       'begin_game',
       'change_configuration',
+      'change_custom_logo',
       'create_announcement',
       'delete_announcement',
       'create_tokens',
@@ -406,6 +411,14 @@ class AdminAjaxController extends AjaxController {
           return Utils::ok_response('Success', 'admin');
         } else {
           return Utils::error_response('Invalid configuration', 'admin');
+        }
+      case 'change_custom_logo':
+        $logo = must_have_string($params, 'logo_b64');
+        $custom_logo = await Logo::genCreateCustom($logo, true);
+        if ($custom_logo) {
+          return Utils::ok_response('Success', 'admin');
+        } else {
+          return Utils::error_response('Error changing logo', 'admin');
         }
       case 'create_announcement':
         await Announcement::genCreate(

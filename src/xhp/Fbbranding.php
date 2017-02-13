@@ -2,6 +2,8 @@
 
 class :fbbranding extends :x:element {
   category %flow;
+  attribute
+    string brandingText;
 
   protected string $tagName = 'fbbranding';
 
@@ -11,7 +13,7 @@ class :fbbranding extends :x:element {
         <svg class="icon icon--social-facebook">
           <use href="#icon--social-facebook" />
         </svg>
-        <span class="has-icon">{' '}{tr('Powered By Facebook')}</span>
+        <span class="has-icon">{' '}{$this->:brandingText}</span>
       </span>;
   }
 }

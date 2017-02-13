@@ -229,8 +229,18 @@ $translations = array(
     'Tiempo de Inicio',
   'Expected End Time' =>
     'Tiempo de Finalización Esperada',
+  'Internationalization' =>
+    'Internacionalización',
   'Language' =>
-    'Lenguaje',
+    'Idioma',
+  'Branding' =>
+    'Personalización',
+  'Custom Logo' =>
+    'Logo Personalizado',
+  'Logo' =>
+    'Logo',
+  'Custom Text' =>
+    'Texto Personalizado',
   'DELETE' =>
     'BORRAR',
   'Delete' =>
