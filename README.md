@@ -33,7 +33,7 @@ cd fbctf
 vagrant up
 ```
 
-This will create a local virtual machine with Ubuntu 14.04 using Vagrant and VirtualBox as the provider. The provisioning script will install all necessary software to the platform locally, using self-signed certificates. The platform will be available on [https://10.10.10.5](https://10.10.10.5) by default. You can find any error logs in `/var/log/hhvm/error.log`. If you would like to change this IP address, you can find the configuration for it in the `Vagrantfile`.
+This will create a local virtual machine with Ubuntu 14.04 using Vagrant and VirtualBox as the provider. The provisioning script will install all necessary software to the platform locally, using self-signed certificates. The platform will be available on [https://10.10.10.5](https://10.10.10.5) by default. You can find any error logs in `/var/log/hhvm/error.log`. If you would like to change this IP address, you can find the configuration for it in the `Vagrantfile`. To login to the virtual machine, the username is vagrant and the password is vagrant.
 
 Once the VM has started, go to the URL/IP of the server (10.10.10.5 in the default case). Click the "Login" link at the top right, enter the 'admin' as the team name and 'password' as the password (without quotes). You will be redirected to the administration page. At the bottom of the navigation bar on the left, there will be a link to go to the gameboard.
 
