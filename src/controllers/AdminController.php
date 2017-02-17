@@ -290,6 +290,7 @@ class AdminController extends Controller {
       'default_bonus' => Configuration::gen('default_bonus'),
       'default_bonusdec' => Configuration::gen('default_bonusdec'),
       'bases_cycle' => Configuration::gen('bases_cycle'),
+      'autorun_cycle' => Configuration::gen('autorun_cycle'),
       'start_ts' => Configuration::gen('start_ts'),
       'end_ts' => Configuration::gen('end_ts'),
     };
@@ -314,6 +315,7 @@ class AdminController extends Controller {
     $default_bonus = $results['default_bonus'];
     $default_bonusdec = $results['default_bonusdec'];
     $bases_cycle = $results['bases_cycle'];
+    $autorun_cycle = $results['autorun_cycle'];
     $start_ts = $results['start_ts'];
     $end_ts = $results['end_ts'];
 
@@ -714,6 +716,14 @@ class AdminController extends Controller {
                     </div>
                   </div>
                   <div class="col col-pad col-4-4">
+                    <div class="form-el el--block-label">
+                      <label>{tr('Autorun Cycle (s)')}</label>
+                      <input
+                        type="number"
+                        value={$autorun_cycle->getValue()}
+                        name="fb--conf--autorun_cycle"
+                      />
+                    </div>
                     <div class="form-el el--block-label"></div>
                   </div>
                 </div>

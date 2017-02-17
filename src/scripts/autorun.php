@@ -23,23 +23,25 @@ require_once (__DIR__.'/../models/FailureLog.php');
 while (1) {
   \HH\Asio\join(Control::genAutoRun());
 
-  $sleep = 30;
-
+  $conf_sleep = \HH\Asio\join(Configuration::gen('autorun_cycle'));
+  $conf_sleep_secs = intval($conf_sleep->getValue());
+  $sleep = $conf_sleep_secs;
   $conf_game = \HH\Asio\join(Configuration::gen('game'));
   $config_start_ts = \HH\Asio\join(Configuration::gen('start_ts'));
   $start_ts = intval($config_start_ts->getValue());
   $config_end_ts = \HH\Asio\join(Configuration::gen('end_ts'));
   $end_ts = intval($config_end_ts->getValue());
 
-  if (($conf_game->getValue() === '1') && (($end_ts - time()) < 30)) {
+  if (($conf_game->getValue() === '1') &&
+      (($end_ts - time()) < $conf_sleep_secs)) {
     $sleep = $end_ts - time();
   } else if (($conf_game->getValue() === '0') &&
-             (($start_ts - time()) < 30)) {
+             (($start_ts - time()) < $conf_sleep_secs)) {
     $sleep = $start_ts - time();
   }
 
   if ($sleep < 0) {
-    $sleep = 30;
+    $sleep = $conf_sleep_secs;
   }
 
   sleep($sleep);
