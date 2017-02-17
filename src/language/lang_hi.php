@@ -15,7 +15,7 @@ $translations = array(
   'Get ready for the CTF to start and access the board now!' =>
     'अब CTF के शुरू होने और गेमबोर्ड एक्सेस करने के लिए तैयार रहें!!',
   'Gameboard' =>
-    ‘गेमबोर्ड',
+    'गेमबोर्ड',
   'Register Team' =>
     'टीम पंजीकृत करें',
   'Get ready for the CTF to start and register your team now!' =>
@@ -481,7 +481,7 @@ $translations = array(
   'Countries' =>
     'देश',
   'Logos' =>
-     'लोगो',
+    'लोगो',
   //Translations for inc/* and inc/gameboard/*
   'captured' =>
     'कैप्चर किया गया',
