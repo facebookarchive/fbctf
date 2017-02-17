@@ -17,13 +17,13 @@ The Facebook CTF is a platform to host Jeopardy and “King of the Hill” style
     * If running an open competition:
         * Point participants towards the registration page
 * Enjoy!
-* Note: We're hiring! If you're interested in the remote eng lead position, apply [here](http://pro.applytojob.com/apply/Qe1YmW/CTF-Engineering-Lead)!
+* NOTE: We're hiring! If you're interested in the remote eng lead position, apply [here](http://pro.applytojob.com/apply/Qe1YmW/CTF-Engineering-Lead)!
 
-# Installation
+## Installation
 
 The Facebook CTF platform can be provisioned in development or production environments. Note that the *only* supported system is 64 bit Ubuntu 14.04. Ubuntu 16.04 is not supported at this time, nor is 32 bit. We will accept PRs to support other platforms, but we will not officially support those platforms if there are any issues.
 
-### Development
+## Development
 
 While it is possible to do development on a physical Ubuntu machine (and possibly other Linux distros as well), we highly recommend doing all development on a Vagrant VM. First, install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](https://www.vagrantup.com/downloads.html). Then run:
 
@@ -33,7 +33,7 @@ cd fbctf
 vagrant up
 ```
 
-This will create a local virtual machine with Ubuntu 14.04 using Vagrant and VirtualBox as the provider. The provisioning script will install all necessary software to the platform locally, using self-signed certificates. The platform will be available on [https://10.10.10.5](https://10.10.10.5) by default. You can find any error logs in `/var/log/hhvm/error.log`. If you would like to change this IP address, you can find the configuration for it in the `Vagrantfile`.
+This will create a local virtual machine with Ubuntu 14.04 using Vagrant and VirtualBox as the provider. The provisioning script will install all necessary software to the platform locally, using self-signed certificates. The platform will be available [here](https://10.10.10.5) by default. You can find any error logs in `/var/log/hhvm/error.log`. If you would like to change this IP address, you can find the configuration for it in the `Vagrantfile`.
 
 Once the VM has started, go to the URL/IP of the server (10.10.10.5 in the default case). Click the "Login" link at the top right, enter the 'admin' as the team name and 'password' as the password (without quotes). You will be redirected to the administration page. At the bottom of the navigation bar on the left, there will be a link to go to the gameboard.
 
@@ -59,7 +59,7 @@ cd fbctf
 ./extra/provision.sh -m dev -s $PWD
 ```
 
-### Production
+## Production
 Please note that your machine needs to have at least 2GB of RAM, otherwise the composer part of the installation will fail.
 The target system needs to be 64 bit Ubuntu 14.04. Run the following commands:
 
@@ -82,7 +82,7 @@ This will set the password to 'new_password', assuming the database user/passwor
 
 By default, the provision script will place the code in the `/var/www/fbctf` directory, install all dependencies, and start the server. In order to run in production mode, we require that you use SSL. You can choose between generating new self-signed, using your own or generate valid SSL certificates using [Let's Encrypt](https://letsencrypt.org/). The provisioning script uses [certbot](https://certbot.eff.org/) to assist with the generation of valid SSL certificates.
 
-#### Production Certificates
+### Production Certificates
 
 As mentioned above, there are three different type of certificates that the provision script will use:
 
@@ -111,7 +111,7 @@ As mentioned above, there are three different type of certificates that the prov
 Once you've provisioned the VM, go to the URL/IP of the server. Click the "Login" link at the top right, enter the admin credentials, and you'll be redirected to the admin page. Enter the credentials you received at the end of the provision script to log in.
 
 
-#### Optional installation
+### Optional installation
 
 If you are going to be modifying files outside of the Vagrant VM, you will need to synchronize the files using [Unison](https://www.cis.upenn.edu/~bcpierce/unison/download.html) (bi-directional file sync over SSH). Once Unison is installed, you can sync your local repo with the VM with the following command from the root of the repository (outside the VM):
 
@@ -122,7 +122,7 @@ Note that the unison script will not sync NPM dependencies, so if you ever need 
 This step is not necessary if all development is done on the VM.
 
 
-#### Keep code updated
+### Keep code updated
 
 If you are already running the fbctf platform and want to keep the code updated, there is an easy way to do that with the provision script.
 For example, the following command will run in a production environment and it will pull master from Github and get it ready to run, from the folder ```/var/www/fbctf```:
