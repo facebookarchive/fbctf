@@ -239,6 +239,54 @@ class ActionModalController extends ModalController {
             </div>
           </div>;
         return tuple($title, $content);
+      case 'account':
+        $title =
+          <h4>
+            {tr('account_')}<span class="highlighted">{tr('Settings')}</span>
+          </h4>;
+        $content =
+          <div class="action-main">
+            <p>
+              {tr(
+                'Setup your FBCTF Live Sync credentials.  These credentials must be the SAME on all other FBCTF instances that you are linking.  DO NOT use your account password.',
+              )}
+            </p>
+            <form class="fb-form account-link-form">
+              <input name="set_livesync_password" type="hidden" value="" />
+              <div class="form-el el--text">
+                <input
+                  placeholder={tr('Set your live sync username')}
+                  name="livesync_username"
+                  type="text"
+                  autocomplete="off"
+                />
+                <input
+                  placeholder={tr('Set your live sync password')}
+                  name="livesync_password"
+                  type="password"
+                  autocomplete="off"
+                />
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value={SessionUtils::CSRFToken()}
+                />
+              </div>
+              <div class="action-actionable">
+                <a class="fb-cta cta--yellow js-trigger-account-save">
+                  {tr('Submit')}
+                </a>
+              </div>
+              <br />
+              <span class="account-link-form-error"></span>
+            </form>
+            <div class="action-actionable">
+              <a href="#" class="fb-cta cta--red js-close-modal">
+                {tr('Close')}
+              </a>
+            </div>
+          </div>;
+        return tuple($title, $content);
       default:
         invariant(false, "Invalid modal name $modal");
     }

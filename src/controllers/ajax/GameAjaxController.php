@@ -8,6 +8,8 @@ class GameAjaxController extends AjaxController {
         'level_id' => FILTER_VALIDATE_INT,
         'answer' => FILTER_UNSAFE_RAW,
         'csrf_token' => FILTER_UNSAFE_RAW,
+        'livesync_username' => FILTER_UNSAFE_RAW,
+        'livesync_password' => FILTER_UNSAFE_RAW,
         'action' => array(
           'filter' => FILTER_VALIDATE_REGEXP,
           'options' => array('regexp' => '/^[\w-]+$/'),
@@ -87,6 +89,18 @@ class GameAjaxController extends AjaxController {
         }
       case 'open_level':
         return Utils::ok_response('Success', 'admin');
+      case 'set_livesync_password':
+        $livesync_password_update = await Team::genSetLiveSyncPassword(
+          SessionUtils::sessionTeam(),
+          "fbctf",
+          must_have_string($params, 'livesync_username'),
+          must_have_string($params, 'livesync_password'),
+        );
+        if ($livesync_password_update === true) {
+          return Utils::ok_response('Success', 'game');
+        } else {
+          return Utils::error_response('Failed', 'game');
+        }
       default:
         return Utils::error_response('Invalid action', 'game');
     }

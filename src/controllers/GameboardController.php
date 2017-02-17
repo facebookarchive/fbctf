@@ -43,6 +43,9 @@ class GameboardController extends Controller {
                   <li>
                     <a href="#" class="fb-init-tutorial">{tr('Tutorial')}</a>
                   </li>
+                  <li>
+                    <a href="#" class="js-account-modal">{tr('Account')}</a>
+                  </li>
                   {$admin_link}
                   <li>
                     <a href="/index.php?page=rules" target="_blank">

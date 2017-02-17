@@ -130,6 +130,23 @@ CREATE TABLE `teams` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `livesync`
+--
+
+DROP TABLE IF EXISTS `livesync`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `livesync` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `type` text NOT NULL,
+  `team_id` int(11) NOT NULL,
+  `username` text NOT NULL,
+  `sync_key` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `teams_data`
 --
 
