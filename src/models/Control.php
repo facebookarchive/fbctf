@@ -303,7 +303,7 @@ class Control extends Model {
     $filename =
       strval(BinaryImporterController::getFilename('attachments_file'));
     $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
-    $directory = $document_root.Attachment::getAttachmentDir();
+    $directory = $document_root.Attachment::attachmentsDir;
     $cmd = "tar -zx -C $directory -f $filename";
     exec($cmd, $output, $status);
     if (intval($status) !== 0) {
@@ -388,7 +388,7 @@ class Control extends Model {
     header('Content-Type: application/x-tgz');
     header('Content-Disposition: attachment; filename="'.$filename.'"');
     $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
-    $directory = $document_root.Attachment::getAttachmentDir();
+    $directory = $document_root.Attachment::attachmentsDir;
     $cmd = "tar -cz -C $directory . ";
     passthru($cmd);
     exit();

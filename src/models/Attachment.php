@@ -36,10 +36,6 @@ class Attachment extends Model {
     return $this->levelId;
   }
 
-  public static function getAttachmentDir(): string {
-    return strval(self::attachmentsDir);
-  }
-
   // Create attachment for a given level.
   public static async function genCreate(
     string $file_param,

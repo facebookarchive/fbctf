@@ -212,8 +212,8 @@ class Level extends Model implements Importable, Exportable {
       $attachment_array = array();
       foreach ($attachments as $attachment) {
         $attachment_array[] = [
-          "filename" => $attachment->getFilename(),
-          "type" => $attachment->getType(),
+          'filename' => $attachment->getFilename(),
+          'type' => $attachment->getType(),
         ];
       }
       $one_level = array(
