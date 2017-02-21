@@ -22,7 +22,7 @@ class TeamTest extends FBCTFTest {
     // live sync tests
     $this->assertTrue(HH\Asio\join(Team::genSetLiveSyncPassword($t->getId(), 'fbctf', 'test', 'testing')));
     $this->assertTrue(HH\Asio\join(Team::genLiveSyncExists($t->getId(), 'fbctf')));
-    $t = HH\Asio\join(Team::genTeamFromLiveSyncKey('fbctf:test:' . Team::generateHash('testing')));
+    $t = HH\Asio\join(Team::genTeamFromLiveSyncKey(HH\Asio\join(Team::genGetLiveSyncKey($t->getId(), 'fbctf'))));
     $this->assertEquals(1, $t->getId());
     $this->assertTrue($t->getActive());
     $this->assertFalse($t->getAdmin());
