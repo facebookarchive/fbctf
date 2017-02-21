@@ -271,11 +271,14 @@ class Control extends Model {
   public static async function genRunAutoRunScript(): Awaitable<void> {
     $autorun_status = await Control::checkScriptRunning('autorun');
     if ($autorun_status === false) {
-      $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
+      $autorun_location = escapeshellarg(
+        must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT').
+        '/scripts/autorun.php',
+      );
       $cmd =
         'hhvm -vRepo.Central.Path=/var/run/hhvm/.hhvm.hhbc_autorun '.
-        $document_root.
-        '/scripts/autorun.php > /dev/null 2>&1 & echo $!';
+        $autorun_location.
+        ' > /dev/null 2>&1 & echo $!';
       $pid = shell_exec($cmd);
       await Control::genStartScriptLog(intval($pid), 'autorun', $cmd);
     }
