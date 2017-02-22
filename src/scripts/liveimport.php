@@ -42,6 +42,10 @@ class LiveSyncImport {
       $data = json_decode($json);
       if (!empty($data)) {
         foreach ($data as $level) {
+          $mandatories_set = await self::genMandatoriesSet($level);
+          if ($mandatories_set === false) {
+            continue;
+          }
           $level = await self::genDefaults($level);
           $level_id = await self::genLevel($url, $level, $debug);
           $teams =
@@ -56,6 +60,22 @@ class LiveSyncImport {
         }
       }
     }
+  }
+
+  public static async function genMandatoriesSet(
+    stdClass $level,
+  ): Awaitable<bool> {
+    if (!property_exists($level, 'title')) {
+      return false;
+    }
+    if (!property_exists($level, 'description')) {
+      return false;
+    }
+    if (!property_exists($level, 'points')) {
+      return false;
+    }
+
+    return true;
   }
 
   public static async function genDefaults(
