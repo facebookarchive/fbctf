@@ -103,6 +103,7 @@ CREATE TABLE `links` (
   `link` text NOT NULL,
   `created_ts` timestamp NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
+  FOREIGN KEY ('level_id')
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -162,6 +163,7 @@ CREATE TABLE `sessions` (
   `last_access_ts` timestamp NOT NULL,
   `last_page_access` text NOT NULL,
   PRIMARY KEY (`id`)
+  FOREIGN KEY ('team_id')
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
