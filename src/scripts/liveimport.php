@@ -42,6 +42,7 @@ class LiveSyncImport {
       $data = json_decode($json);
       if (!empty($data)) {
         foreach ($data as $level) {
+          $level = await self::genDefaults($level);
           $level_id = await self::genLevel($url, $level, $debug);
           $teams =
             await self::genTeamCaptures($url, $level, $level_id, $debug);
@@ -55,6 +56,40 @@ class LiveSyncImport {
         }
       }
     }
+  }
+
+  public static async function genDefaults(
+    stdClass $level,
+  ): Awaitable<stdClass> {
+    if (!property_exists($level, 'active')) {
+      $level->active = true;
+    }
+    if (!property_exists($level, 'type')) {
+      $level->type = 'flag';
+    }
+    if (!property_exists($level, 'entity_iso_code')) {
+      $countries = await Country::genAllAvailableCountries();
+      $country = $countries[array_rand($countries)];
+      $country_id = $country->getId();
+      $level->entity_iso_code = $country->getIsoCode();
+      $level->random_country = true;
+    }
+    if (!property_exists($level, 'category')) {
+      $level->category = 'None';
+    }
+    if (!property_exists($level, 'bonus')) {
+      $level->bonus = 0;
+    }
+    if (!property_exists($level, 'bonus_dec')) {
+      $level->bonus_dec = 0;
+    }
+    if (!property_exists($level, 'penalty')) {
+      $level->penalty = 0;
+    }
+    if (!property_exists($level, 'teams')) {
+      $level->teams = new stdClass();
+    }
+    return $level;
   }
 
   public static async function genDownloadData(
@@ -71,7 +106,7 @@ class LiveSyncImport {
     $json = curl_exec($curl);
     curl_close($curl);
     if ($json === false) {
-      self::debug(true, $url, '!!!', "Download Error: ".curl_error($curl));
+      self::debug(true, $url, '!!!', 'Download Error: '.curl_error($curl));
       return '';
     }
     return $json;
@@ -111,7 +146,7 @@ class LiveSyncImport {
         $debug,
         $url,
         '+++',
-        "Level Created: ".strval($level->title),
+        'Level Created: '.strval($level->title),
       );
     } else {
       $level_id = await Level::getLevelIdByTypeTitleCountry(
@@ -125,7 +160,7 @@ class LiveSyncImport {
         $debug,
         $url,
         '===',
-        "Level Exists: ".strval($level->title),
+        'Level Exists: '.strval($level->title),
       );
     }
     return intval($level_id);
@@ -149,7 +184,9 @@ class LiveSyncImport {
   ): Awaitable<string> {
     $country = await Country::genCountry(strval($level->entity_iso_code));
     $country_used = $country->getUsed();
-    if ($country_used === true) {
+    if (($country_used === true) ||
+        ((property_exists($level, 'random_country')) &&
+         ($level->random_country === true))) {
       $level_exists = await Level::genAlreadyExistUnknownCountry(
         strval($level->type),
         strval($level->title),
@@ -163,9 +200,9 @@ class LiveSyncImport {
           $debug,
           $url,
           '+++',
-          "Country Selected: ".
+          'Country Selected: '.
           strval($level->title).
-          " - ".
+          ' - '.
           strval($new_country->getIsoCode()),
         );
         return strval($new_country->getIsoCode());
@@ -182,9 +219,35 @@ class LiveSyncImport {
           $debug,
           $url,
           '===',
-          "Country Found: ".
+          'Country Found: '.
           strval($level->title).
-          " - ".
+          ' - '.
+          strval($new_country->getIsoCode()),
+        );
+        return strval($new_country->getIsoCode());
+      }
+    } else {
+      $level_exists = await Level::genAlreadyExistUnknownCountry(
+        strval($level->type),
+        strval($level->title),
+        strval($level->description),
+        intval($level->points),
+      );
+      if ($level_exists === true) {
+        $existing_level = await Level::genLevelUnknownCountry(
+          strval($level->type),
+          strval($level->title),
+          strval($level->description),
+          intval($level->points),
+        );
+        $new_country = await Country::gen($existing_level->getEntityId());
+        self::debug(
+          $debug,
+          $url,
+          '===',
+          'Country Found: '.
+          strval($level->title).
+          ' - '.
           strval($new_country->getIsoCode()),
         );
         return strval($new_country->getIsoCode());
@@ -207,7 +270,7 @@ class LiveSyncImport {
         $debug,
         $url,
         '+++',
-        "Category Created: ".strval($level->category),
+        'Category Created: '.strval($level->category),
       );
     } else {
       $category =
@@ -217,7 +280,7 @@ class LiveSyncImport {
         $debug,
         $url,
         '===',
-        "Category Exists: ".strval($level->category),
+        'Category Exists: '.strval($level->category),
       );
     }
     return intval($category_id);
@@ -237,6 +300,7 @@ class LiveSyncImport {
       },
     );
     $teams_array = array();
+    $teams = await self::genTeamDefaults($teams);
     foreach ($teams as $team_livesync_key => $team_data) {
       $team_exists =
         await Team::genLiveSyncKeyExists(strval($team_livesync_key));
@@ -275,14 +339,28 @@ class LiveSyncImport {
           $debug,
           $url,
           '!!!',
-          "Team Not Found: Key: (".
+          'Team Not Found: Key: ('.
           strval($team_livesync_key).
-          ") ".
+          ') '.
           strval($level->title),
         );
       }
     }
     return $teams_array;
+  }
+
+  public static async function genTeamDefaults(
+    array $teams,
+  ): Awaitable<array> {
+    foreach ($teams as $team_key => $team) {
+      if (!array_key_exists('capture', $team)) {
+        $teams[$team_key]['capture'] = false;
+      }
+      if (!array_key_exists('hint', $team)) {
+        $teams[$team_key]['hint'] = false;
+      }
+    }
+    return $teams;
   }
 
   public static async function genLogHint(
@@ -308,7 +386,7 @@ class LiveSyncImport {
           $debug,
           $url,
           '+++',
-          "Hint Used: ".strval($team_name)." - ".strval($level->title),
+          'Hint Used: '.strval($team_name).' - '.strval($level->title),
         );
         return true;
       } else {
@@ -316,9 +394,9 @@ class LiveSyncImport {
           $debug,
           $url,
           '===',
-          "Hint Already Used: ".
+          'Hint Already Used: '.
           strval($team_name).
-          " - ".
+          ' - '.
           strval($level->title),
         );
         return false;
@@ -355,16 +433,16 @@ class LiveSyncImport {
           $debug,
           $url,
           '+++',
-          "Level Captured: ".strval($team_name)." - ".strval($level->title),
+          'Level Captured: '.strval($team_name).' - '.strval($level->title),
         );
       } else {
         self::debug(
           $debug,
           $url,
           '===',
-          "Level Already Captured: ".
+          'Level Already Captured: '.
           strval($team_name).
-          " - ".
+          ' - '.
           strval($level->title),
         );
       }
@@ -425,14 +503,14 @@ class LiveSyncImport {
         $debug,
         $url,
         '+++',
-        "Level Bonuses Recalculated: ".strval($level->title),
+        'Level Bonuses Recalculated: '.strval($level->title),
       );
     } else {
       self::debug(
         $debug,
         $url,
         '===',
-        "Level Bonuses Correct: ".strval($level->title),
+        'Level Bonuses Correct: '.strval($level->title),
       );
     }
   }

@@ -102,4 +102,27 @@ class Configuration extends Model {
       must_have_idx($row, 'description'),
     );
   }
+
+  public static function genGoogleOAuthFileExists(): bool {
+    $settings_file = '../../settings.ini';
+    $config = parse_ini_file($settings_file);
+
+    if ((array_key_exists('GOOGLE_OAUTH_FILE', $config) === true) &&
+        (file_exists($config['GOOGLE_OAUTH_FILE']) === true)) {
+      return true;
+    }
+    return false;
+  }
+
+  public static function genGoogleOAuthFile(): string {
+    $settings_file = '../../settings.ini';
+    $config = parse_ini_file($settings_file);
+
+    if ((array_key_exists('GOOGLE_OAUTH_FILE', $config) === true) &&
+        (file_exists($config['GOOGLE_OAUTH_FILE']) === true)) {
+      return strval($config['GOOGLE_OAUTH_FILE']);
+    }
+
+    return '';
+  }
 }

@@ -750,11 +750,13 @@ class Team extends Model implements Importable, Exportable {
         break;
     }
 
-    $username_result = await $db->queryf(
-      'SELECT id FROM livesync WHERE username = %s AND team_id != %d',
-      $username,
-      $team_id,
-    );
+    $username_result =
+      await $db->queryf(
+        'SELECT id FROM livesync WHERE username = %s AND type = %s AND team_id != %d',
+        $username,
+        $type,
+        $team_id,
+      );
     if ($username_result->numRows() > 0) {
       return false;
     }
@@ -803,14 +805,24 @@ class Team extends Model implements Importable, Exportable {
     switch ($type) {
       case 'fbctf':
         $result = await $db->queryf(
-          'SELECT * FROM livesync WHERE username = %s',
+          'SELECT * FROM livesync WHERE username = %s AND type = %s',
           $username,
+          $type,
+        );
+        break;
+      case 'google_oauth':
+        $result = await $db->queryf(
+          'SELECT * FROM livesync WHERE sync_key = %s AND type = %s',
+          $key,
+          $type,
         );
         break;
         // FALLTHROUGH
       default:
-        $result =
-          await $db->queryf('SELECT * FROM livesync WHERE key = %s', $key);
+        $result = await $db->queryf(
+          'SELECT * FROM livesync WHERE sync_key = %s',
+          $key,
+        );
         break;
     }
 
@@ -850,15 +862,25 @@ class Team extends Model implements Importable, Exportable {
     switch ($type) {
       case 'fbctf':
         $result = await $db->queryf(
-          'SELECT * FROM livesync WHERE username = %s',
+          'SELECT * FROM livesync WHERE username = %s AND type = %s',
           $username,
+          $type,
         );
         invariant($result->numRows() > 0, 'Expected at least one result');
         break;
+      case 'google_oauth':
+        $result = await $db->queryf(
+          'SELECT * FROM livesync WHERE sync_key = %s AND type = %s',
+          $key,
+          $type,
+        );
+        break;
         // FALLTHROUGH
       default:
-        $result =
-          await $db->queryf('SELECT * FROM livesync WHERE key = %s', $key);
+        $result = await $db->queryf(
+          'SELECT * FROM livesync WHERE sync_key = %s',
+          $key,
+        );
         invariant($result->numRows() > 0, 'Expected at least one result');
         break;
     }

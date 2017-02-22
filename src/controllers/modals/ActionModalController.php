@@ -244,8 +244,32 @@ class ActionModalController extends ModalController {
           <h4>
             {tr('account_')}<span class="highlighted">{tr('Settings')}</span>
           </h4>;
+        if (Configuration::genGoogleOAuthFileExists() === true) {
+          $google_oauth_content =
+            <div class="google-link-form">
+              <p>
+                {tr(
+                  'Link your account with Google.  You may link your FBCTF account on this instance with your Google account.  Note that this will provide your email address to the administrators of this FBCTF instance.',
+                )}
+              </p>
+              <div class="action-actionable">
+                <a
+                  href="#"
+                  class="fb-cta cta--yellow js-trigger-google-oauth">
+                  {tr('Link Your Google Account')}
+                </a>
+              </div>
+              <br />
+              <span class="google-link-response highlighted--blue"></span>
+              <br />
+            </div>;
+        } else {
+          $google_oauth_content = '';
+        }
         $content =
           <div class="action-main">
+            {$google_oauth_content}
+            <br />
             <p>
               {tr(
                 'Setup your FBCTF Live Sync credentials.  These credentials must be the SAME on all other FBCTF instances that you are linking.  DO NOT use your account password.',
@@ -278,7 +302,9 @@ class ActionModalController extends ModalController {
                 </a>
               </div>
               <br />
-              <span class="account-link-form-error"></span>
+              <span class="account-link-form-response highlighted--blue">
+              </span>
+              <br />
             </form>
             <div class="action-actionable">
               <a href="#" class="fb-cta cta--red js-close-modal">

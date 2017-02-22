@@ -2501,6 +2501,17 @@ function setupInputListeners() {
         }
       });
 
+    // open Google OAuth popup
+    $body.on('click', '.js-trigger-google-oauth', function(event) {
+        event.preventDefault();
+
+            var popup = window.open('/data/google_oauth.php', 'Google OAuth', 'height=800,width=800,toolbar=no,scrollbars=1,status=no,location=no,directories=no');
+            if (window.focus)  {
+                popup.focus();
+            }
+        return false;
+      });
+
     // click events
     $body.on('click', '.click-effect', function() {
       var $self = $(this).addClass('clicked');
