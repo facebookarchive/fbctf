@@ -21,29 +21,49 @@ require_once (__DIR__.'/../models/Control.php');
 require_once (__DIR__.'/../models/MultiTeam.php');
 require_once (__DIR__.'/../models/Model.php');
 
-if ($argc < 2) {
+$long_opts = array('url:', 'sleep:', 'disable-ssl-verification', 'debug');
+$options = getopt('', $long_opts);
+
+if (array_key_exists('url', $options) === false) {
   print
-    'Usage:\n\thhvm -vRepo.Central.Path=/var/run/hhvm/.hhvm.hhbc_liveimport '.
+    "Usage:\n".
+    "  hhvm -vRepo.Central.Path=/var/run/hhvm/.hhvm.hhbc_liveimport ".
     $argv[0].
-    ' <Space Seperated Sync URLs> <Time to Sleep Between Cycles> [Disable SSL Certification] [Debug]\n'
+    " \n".
+    "    --url <Sync URL> [Switched allowed multiple times.  Optionally provide custom HTTP headers after URL, pipe delimited] \n".
+    "    --sleep <Time to Sleep Between Cycles> [Default: 300] \n".
+    "    --disable-ssl-verification [Optional: Disables SSL Certification Verification] \n".
+    "    --debug [Optional: Enables Debug Output]\n"
   ;
   exit;
 }
 
+if (is_array($options['url']) === false) {
+  $urls = array($options['url']);
+} else {
+  $urls = $options['url'];
+}
+
+$sleep =
+  (array_key_exists('sleep', $options)) ? intval($options['sleep']) : 300;
+$check_certificates =
+  (array_key_exists('disable-ssl-verification', $options)) ? false : true;
+$debug = (array_key_exists('debug', $options)) ? true : false;
+
 class LiveSyncImport {
   public static async function genProcess(
-    string $urls_string,
+    array $urls,
     bool $check_certificates,
     bool $debug,
   ): Awaitable<void> {
-    $urls = explode(' ', $urls_string);
     foreach ($urls as $url) {
       $json = await self::genDownloadData($url, $check_certificates);
       $data = json_decode($json);
-      if (!empty($data)) {
+      if (empty($data) === false) {
         foreach ($data as $level) {
           $mandatories_set = await self::genMandatoriesSet($level);
           if ($mandatories_set === false) {
+            self::debug(true, $url, '!!!', 'Mandatory Values Not Set');
             continue;
           }
           $level = await self::genDefaults($level);
@@ -58,6 +78,13 @@ class LiveSyncImport {
             $debug,
           );
         }
+      } else {
+        self::debug(
+          true,
+          $url,
+          '!!!',
+          'JSON Missing or Invalid: '.json_last_error_msg(),
+        );
       }
     }
   }
@@ -65,48 +92,47 @@ class LiveSyncImport {
   public static async function genMandatoriesSet(
     stdClass $level,
   ): Awaitable<bool> {
-    if (!property_exists($level, 'title')) {
+    if (property_exists($level, 'title') === false) {
       return false;
     }
-    if (!property_exists($level, 'description')) {
+    if (property_exists($level, 'description') === false) {
       return false;
     }
-    if (!property_exists($level, 'points')) {
+    if (property_exists($level, 'points') === false) {
       return false;
     }
-
     return true;
   }
 
   public static async function genDefaults(
     stdClass $level,
   ): Awaitable<stdClass> {
-    if (!property_exists($level, 'active')) {
+    if (property_exists($level, 'active') === false) {
       $level->active = true;
     }
-    if (!property_exists($level, 'type')) {
+    if (property_exists($level, 'type') === false) {
       $level->type = 'flag';
     }
-    if (!property_exists($level, 'entity_iso_code')) {
+    if (property_exists($level, 'entity_iso_code') === false) {
       $countries = await Country::genAllAvailableCountries();
       $country = $countries[array_rand($countries)];
       $country_id = $country->getId();
       $level->entity_iso_code = $country->getIsoCode();
       $level->random_country = true;
     }
-    if (!property_exists($level, 'category')) {
+    if (property_exists($level, 'category') === false) {
       $level->category = 'None';
     }
-    if (!property_exists($level, 'bonus')) {
+    if (property_exists($level, 'bonus') === false) {
       $level->bonus = 0;
     }
-    if (!property_exists($level, 'bonus_dec')) {
+    if (property_exists($level, 'bonus_dec') === false) {
       $level->bonus_dec = 0;
     }
-    if (!property_exists($level, 'penalty')) {
+    if (property_exists($level, 'penalty') === false) {
       $level->penalty = 0;
     }
-    if (!property_exists($level, 'teams')) {
+    if (property_exists($level, 'teams') === false) {
       $level->teams = new stdClass();
     }
     return $level;
@@ -116,9 +142,18 @@ class LiveSyncImport {
     string $url,
     bool $check_certificates,
   ): Awaitable<string> {
+    $headers = array();
+    if (strpos($url, '|')) {
+      $url_options = explode("|", $url);
+      $url = array_shift($url_options);
+      $headers = $url_options;
+    }
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+    if (isset($headers)) {
+      curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    }
     if ($check_certificates === false) {
       curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
       curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
@@ -129,6 +164,7 @@ class LiveSyncImport {
       self::debug(true, $url, '!!!', 'Download Error: '.curl_error($curl));
       return '';
     }
+    $json = preg_replace('/^[^[]*\[/', '[', $json, 1);
     return $json;
   }
 
@@ -373,10 +409,10 @@ class LiveSyncImport {
     array $teams,
   ): Awaitable<array> {
     foreach ($teams as $team_key => $team) {
-      if (!array_key_exists('capture', $team)) {
+      if (array_key_exists('capture', $team) === false) {
         $teams[$team_key]['capture'] = false;
       }
-      if (!array_key_exists('hint', $team)) {
+      if (array_key_exists('hint', $team) === false) {
         $teams[$team_key]['hint'] = false;
       }
     }
@@ -547,14 +583,9 @@ class LiveSyncImport {
   }
 }
 
-$urls_string = $argv[1];
-$sleep = (isset($argv[2])) ? intval($argv[2]) : 300;
-$check_certificates = (isset($argv[3])) ? false : true;
-$debug = (isset($argv[4])) ? true : false;
-
 while (1) {
   \HH\Asio\join(
-    LiveSyncImport::genProcess($urls_string, $check_certificates, $debug),
+    LiveSyncImport::genProcess($urls, $check_certificates, $debug),
   );
   sleep($sleep);
 }

@@ -18,13 +18,12 @@ if (Configuration::genGoogleOAuthFileExists()) {
     $access_token = $client->getAccessToken();
     $oauth_client = new Google_Service_Oauth2($client);
     $profile = $oauth_client->userinfo->get();
-    $livesync_key = base64_encode($profile->email);
     $livesync_password_update = \HH\Asio\join(
       Team::genSetLiveSyncPassword(
         SessionUtils::sessionTeam(),
         "google_oauth",
         $profile->email,
-        $livesync_key,
+        $profile->id,
       ),
     );
     if ($livesync_password_update === true) {
