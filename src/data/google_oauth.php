@@ -12,6 +12,9 @@ if (Configuration::genGoogleOAuthFileExists()) {
   $client->setAuthConfig($google_oauth_file);
   $client->setAccessType('offline');
   $client->setScopes(['profile email']);
+  $client->setRedirectUri(
+    'https://'.$_SERVER['HTTP_HOST'].'/data/google_oauth.php',
+  );
 
   if (isset($_GET['code'])) {
     $client->authenticate($_GET['code']);
@@ -61,6 +64,7 @@ if (Configuration::genGoogleOAuthFileExists()) {
   } else {
     $auth_url = $client->createAuthUrl();
     header('Location: '.filter_var($auth_url, FILTER_SANITIZE_URL));
+    exit;
   }
 } else {
   $message = tr('Google OAuth is disabled.');
@@ -76,7 +80,7 @@ $output =
     <script>{$javascript_status}</script>
     <script>{$javascript_close}</script>
     <header class="modal-title">
-      {$title}
+      {tr('Google OAuth')}
       <a href="#" class="js-close-modal">
         <svg class="icon icon--close">
           <use href="#icon--close" />

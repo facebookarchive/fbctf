@@ -578,7 +578,7 @@ class LiveSyncImport {
     string $message,
   ): void {
     if ($debug === true) {
-      print "[$url] $indicator $message\n";
+      print "[".date('D M j G:i:s Y')."] [$url] $indicator $message\n";
     }
   }
 }
