@@ -293,6 +293,8 @@ class AdminController extends Controller {
       'autorun_cycle' => Configuration::gen('autorun_cycle'),
       'start_ts' => Configuration::gen('start_ts'),
       'end_ts' => Configuration::gen('end_ts'),
+      'livesync' => Configuration::gen('livesync'),
+      'livesync_auth_key' => Configuration::gen('livesync_auth_key'),
     };
 
     $results = await \HH\Asio\m($awaitables);
@@ -318,6 +320,8 @@ class AdminController extends Controller {
     $autorun_cycle = $results['autorun_cycle'];
     $start_ts = $results['start_ts'];
     $end_ts = $results['end_ts'];
+    $livesync = $results['livesync'];
+    $livesync_auth_key = $results['livesync_auth_key'];
 
     $registration_on = $registration->getValue() === '1';
     $registration_off = $registration->getValue() === '0';
@@ -337,6 +341,8 @@ class AdminController extends Controller {
     $gameboard_off = $gameboard->getValue() === '0';
     $timer_on = $timer->getValue() === '1';
     $timer_off = $timer->getValue() === '0';
+    $livesync_on = $livesync->getValue() === '1';
+    $livesync_off = $livesync->getValue() === '0';
 
     $game_start_array = array();
     if ($start_ts->getValue() !== '0' && $start_ts->getValue() !== 'NaN') {
@@ -882,6 +888,43 @@ class AdminController extends Controller {
                         value={$timer_end_ts}
                         id="fb--conf--end_ts"
                         disabled={true}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <section class="admin-box">
+                <header class="admin-box-header">
+                  <h3>{tr('LiveSync')}</h3>
+                  <div class="admin-section-toggle radio-inline">
+                    <input
+                      type="radio"
+                      name="fb--conf--livesync"
+                      id="fb--conf--livesync--on"
+                      checked={$livesync_on}
+                    />
+                    <label for="fb--conf--livesync--on">
+                      {tr('On')}
+                    </label>
+                    <input
+                      type="radio"
+                      name="fb--conf--livesync"
+                      id="fb--conf--livesync--off"
+                      checked={$livesync_off}
+                    />
+                    <label for="fb--conf--livesync--off">
+                      {tr('Off')}
+                    </label>
+                  </div>
+                </header>
+                <div class="fb-column-container">
+                  <div class="col col-pad col-1-4">
+                    <div class="form-el el--block-label el--full-text">
+                      <label>{tr('Optional LiveSync Auth Key')}</label>
+                      <input
+                        type="text"
+                        value={$livesync_auth_key->getValue()}
+                        name="fb--conf--livesync_auth_key"
                       />
                     </div>
                   </div>

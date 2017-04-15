@@ -60,6 +60,10 @@ class LiveSyncImport {
       $json = await self::genDownloadData($url, $check_certificates);
       $data = json_decode($json);
       if (empty($data) === false) {
+        if ((!is_array($data)) && (property_exists($data, 'error'))) {
+          self::debug(true, $url, '!!!', strval($data->error));
+          continue;
+        }
         foreach ($data as $level) {
           $mandatories_set = await self::genMandatoriesSet($level);
           if ($mandatories_set === false) {
