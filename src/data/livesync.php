@@ -8,28 +8,76 @@ class LiveSyncDataController extends DataController {
     $data = array();
     await tr_start();
     $input_auth_key = idx(Utils::getGET(), 'auth', '');
-    $livesync_enabled = await Configuration::gen('livesync');
-    $livesync_auth_key = await Configuration::gen('livesync_auth_key');
+    $livesync_awaits = Map {
+      'livesync_enabled' => Configuration::gen('livesync'),
+      'livesync_auth_key' => Configuration::gen('livesync_auth_key'),
+    };
+    $livesync_awaits_results = await \HH\Asio\m($livesync_awaits);
+    $livesync_enabled = $livesync_awaits_results['livesync_enabled'];
+    $livesync_auth_key = $livesync_awaits_results['livesync_auth_key'];
+
     if ($livesync_enabled->getValue() === '1' &&
-        strval($input_auth_key) === strval($livesync_auth_key->getValue())) {
+        hash_equals(
+          strval($livesync_auth_key->getValue()),
+          strval($input_auth_key),
+        )) {
+
+      $livesync_enabled_awaits = Map {
+        'all_teams' => Team::genAllTeams(),
+        'all_scores' => ScoreLog::genAllScores(),
+        'all_hints' => HintLog::genAllHints(),
+        'all_levels' => Level::genAllLevels(),
+      };
+      $livesync_enabled_awaits_results =
+        await \HH\Asio\m($livesync_enabled_awaits);
+      $all_teams = $livesync_enabled_awaits_results['all_teams'];
+      invariant(
+        is_array($all_teams),
+        'all_teams should be an array and not null',
+      );
+
+      $all_scores = $livesync_enabled_awaits_results['all_scores'];
+      invariant(
+        is_array($all_scores),
+        'all_scores should be an array and not null',
+      );
+
+      $all_hints = $livesync_enabled_awaits_results['all_hints'];
+      invariant(
+        is_array($all_hints),
+        'all_hints should be an array and not null',
+      );
+
+      $all_levels = $livesync_enabled_awaits_results['all_levels'];
+      invariant(
+        is_array($all_levels),
+        'all_levels should be an array and not null',
+      );
 
       $data = array();
-
       $teams_array = array();
-      $all_teams = await Team::genAllTeams();
+      $team_livesync_exists = Map {};
+      $team_livesync_key = Map {};
       foreach ($all_teams as $team) {
-        $team_livesync_exists =
-          await Team::genLiveSyncExists($team->getId(), "fbctf");
-        if ($team_livesync_exists === true) {
-          $team_livesync_key =
-            await Team::genGetLiveSyncKey($team->getId(), "fbctf");
-          $teams_array[$team->getId()] = strval($team_livesync_key);
+        $team_id = $team->getId();
+        $team_livesync_exists->add(
+          Pair {$team_id, Team::genLiveSyncExists($team_id, "fbctf")},
+        );
+      }
+      $team_livesync_exists_results = await \HH\Asio\m($team_livesync_exists);
+      foreach ($team_livesync_exists_results as $team_id => $livesync_exists) {
+        if ($livesync_exists === true) {
+          $team_livesync_key->add(
+            Pair {$team_id, Team::genGetLiveSyncKey($team_id, "fbctf")},
+          );
         }
       }
+      $team_livesync_key_results = await \HH\Asio\m($team_livesync_key);
+      $teams_array = $team_livesync_key_results->toArray();
 
       $scores_array = array();
       $scored_teams = array();
-      $all_scores = await ScoreLog::genAllScores();
+
       foreach ($all_scores as $score) {
         if (in_array($score->getTeamId(), array_keys($teams_array)) ===
             false) {
@@ -43,7 +91,6 @@ class LiveSyncDataController extends DataController {
           false;
         $scored_teams[$score->getLevelId()][] = $score->getTeamId();
       }
-      $all_hints = await HintLog::genAllHints();
       foreach ($all_hints as $hint) {
         if ($hint->getPenalty()) {
           if (in_array($hint->getTeamId(), array_keys($teams_array)) ===
@@ -66,13 +113,46 @@ class LiveSyncDataController extends DataController {
       }
 
       $levels_array = array();
-      $all_levels = await Level::genAllLevels();
+      $entities = Map {};
+      $categories = Map {};
       foreach ($all_levels as $level) {
-        $entity = await Country::gen($level->getEntityId());
-        $category =
-          await Category::genSingleCategory($level->getCategoryId());
+        $level_id = $level->getId();
+        $entities->add(Pair {$level_id, Country::gen($level->getEntityId())});
+        $categories->add(
+          Pair {
+            $level_id,
+            Category::genSingleCategory($level->getCategoryId()),
+          },
+        );
+      }
+      $entities_results = await \HH\Asio\m($entities);
+      invariant(
+        $entities_results instanceof Map,
+        'entities_results should of type Map and not null',
+      );
+
+      $categories_results = await \HH\Asio\m($categories);
+      invariant(
+        $categories_results instanceof Map,
+        'categories_results should of type Map and not null',
+      );
+
+      foreach ($all_levels as $level) {
+        $level_id = $level->getId();
+        $entity = $entities_results->get($level_id);
+        invariant(
+          $entity instanceof Country,
+          'entity should of type Country and not null',
+        );
+
+        $category = $categories_results->get($level_id);
+        invariant(
+          $category instanceof Category,
+          'category should of type Category and not null',
+        );
+
         if (array_key_exists($level->getId(), $scores_array)) {
-          $score_level_array = $scores_array[$level->getId()];
+          $score_level_array = $scores_array[$level_id];
         } else {
           $score_level_array = array();
         }
@@ -94,15 +174,19 @@ class LiveSyncDataController extends DataController {
 
       $data = $levels_array;
     } else if ($livesync_enabled->getValue() === '0') {
-      $data['error'] =
-        tr('LiveSync is disabled, please contact the administrator for access.');
+      $data['error'] = tr(
+        'LiveSync is disabled, please contact the administrator for access.',
+      );
     } else if (strval($input_auth_key) !==
                strval($livesync_auth_key->getValue())) {
       $data['error'] =
-        tr('LiveSync auth key is invalid, please contact the administrator for access.');
+        tr(
+          'LiveSync auth key is invalid, please contact the administrator for access.',
+        );
     } else {
-      $data['error'] =
-        tr('LiveSync failed, please contact the administrator for assistance.');
+      $data['error'] = tr(
+        'LiveSync failed, please contact the administrator for assistance.',
+      );
     }
     $this->jsonSend($data);
   }
