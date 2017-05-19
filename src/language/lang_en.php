@@ -85,6 +85,12 @@ $translations = array(
     'Password',
   'Choose an Emblem' =>
     'Choose an Emblem',
+  'or Upload your own' =>
+    'or Upload your own',
+  'Clear your custom emblem to use a default emblem.' =>
+    'Clear your custom emblem to use a default emblem.',
+  'Password is too simple' =>
+    'Password is too simple',
   'Sign Up' =>
     'Sign Up',
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>

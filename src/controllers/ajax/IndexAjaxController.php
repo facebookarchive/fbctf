@@ -117,6 +117,15 @@ class IndexAjaxController extends AjaxController {
       return Utils::error_response('Registration failed', 'registration');
     }
 
+    // Check if strongs passwords are enforced
+    $login_strongpasswords = await Configuration::gen('login_strongpasswords');
+    if ($login_strongpasswords->getValue() !== '0') {
+      $password_type = await Configuration::genCurrentPasswordType();
+      if (!preg_match(strval($password_type->getValue()), $password)) {
+        return Utils::error_response('Password too simple', 'registration');
+      }
+    }
+
     // Check if ldap is enabled and verify credentials if successful
     $ldap = await Configuration::gen('ldap');
     if ($ldap->getValue() === '1') {
