@@ -80,7 +80,7 @@ function run_grunt() {
   local __mode=$2
 
   cd "$__path"
-  grunt
+  grunt --force
 
   # grunt watch on the VM will make sure your js files are
   # properly updated when developing 'remotely' with unison.

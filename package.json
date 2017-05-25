@@ -26,6 +26,6 @@
     "jquery": "^2.2.3",
     "keycode": "^2.1.1",
     "typed.js": "^1.1.1",
-    "bxslider": "~4.2.6"
+    "bxslider": "4.2.6"
   }
 }

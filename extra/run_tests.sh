@@ -29,3 +29,11 @@ hhvm vendor/phpunit/phpunit/phpunit tests
 echo "[+] Deleting test database"
 mysql -u "$DB_USER" --password="$DB_PWD" -e "DROP DATABASE IF EXISTS $DB;"
 mysql -u "$DB_USER" --password="$DB_PWD" -e "FLUSH PRIVILEGES;"
+
+# In the future, we should use the hh_client exit status.
+# Current there are some PHP built-ins not found in the hhi files upstream in HHVM.
+echo "[+] Verifying HHVM Strict Compliance and Error Checking"
+if [[ $(hh_client $CODE_PATH | grep -vP "Unbound" | wc -l) != 0 ]]; then
+  hh_client $CODE_PATH
+  exit 1
+fi

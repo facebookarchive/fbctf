@@ -2452,6 +2452,66 @@ function setupInputListeners() {
       FB_CTF.gameboard.initTutorial();
     });
 
+    // load account modal
+    $('.js-account-modal').on('click', function(event) {
+      event.preventDefault();
+      Modal.loadPopup('p=action&modal=account', 'action-account');
+    });
+
+    // submit account modal
+    $body.on('click', '.js-trigger-account-save', function(event) {
+        event.preventDefault();
+
+        var livesync_username = $('.account-link-form input[name=livesync_username]')[0].value;
+        var livesync_password = $('.account-link-form input[name=livesync_password]')[0].value;
+        var csrf_token = $('.account-link-form input[name=csrf_token]')[0].value;
+        var livesync_data = {
+          action: 'set_livesync_password',
+          livesync_username: livesync_username,
+          livesync_password: livesync_password,
+          csrf_token: csrf_token
+        };
+
+        $.post(
+          'index.php?p=game&ajax=true',
+          livesync_data
+        ).fail(function() {
+          // TODO: Make this a modal
+          console.log('ERROR');
+        }).done(function(data) {
+          var responseData = JSON.parse(data);
+          if (responseData.result === 'OK') {
+            console.log('OK');
+            $('.account-link-form input[name=livesync_username]').css("background-color", "#1f7a1f");
+            $('.account-link-form input[name=livesync_password]').css("background-color", "#1f7a1f");
+            $('.account-link-form span').text('Live Sync password updated.');
+          } else {
+            console.log('Failed');
+            $('.account-link-form input[name=livesync_username]').css("background-color", "#800000");
+            $('.account-link-form input[name=livesync_password]').css("background-color", "#800000");
+            $('.account-link-form span').text('Failed! Please try different credentials.');
+          }
+        });
+      });
+
+    $body.on('keypress', '.account-link-form', function(e) {
+        if (e.keyCode == 13) {
+          e.preventDefault();
+          $('.js-trigger-account-save').click();
+        }
+      });
+
+    // open Google OAuth popup
+    $body.on('click', '.js-trigger-google-oauth', function(event) {
+        event.preventDefault();
+
+            var popup = window.open('/data/google_oauth.php', 'Google OAuth', 'height=800,width=800,toolbar=no,scrollbars=1,status=no,location=no,directories=no');
+            if (window.focus)  {
+                popup.focus();
+            }
+        return false;
+      });
+
     // click events
     $body.on('click', '.click-effect', function() {
       var $self = $(this).addClass('clicked');

@@ -129,17 +129,20 @@ class AdminAjaxController extends AjaxController {
       'pause_game',
       'unpause_game',
       'reset_game',
+      'export_attachments',
       'backup_db',
       'export_game',
       'export_teams',
       'export_logos',
       'export_levels',
       'export_categories',
+      'restore_db',
       'import_game',
       'import_teams',
       'import_logos',
       'import_levels',
       'import_categories',
+      'import_attachments',
       'flush_memcached',
       'reset_database',
     );
@@ -445,8 +448,11 @@ class AdminAjaxController extends AjaxController {
       case 'unpause_game':
         await Control::genUnpause();
         return Utils::ok_response('Success', 'admin');
+      case 'export_attachments':
+        await Control::exportAttachments();
+        return Utils::ok_response('Success', 'admin');
       case 'backup_db':
-        Control::backupDb();
+        await Control::backupDb();
         return Utils::ok_response('Success', 'admin');
       case 'export_game':
         await Control::exportGame();
@@ -463,6 +469,12 @@ class AdminAjaxController extends AjaxController {
       case 'export_categories':
         await Control::exportCategories();
         return Utils::ok_response('Success', 'admin');
+      case 'restore_db':
+        $result = await Control::restoreDb();
+        if ($result) {
+          return Utils::ok_response('Success', 'admin');
+        }
+        return Utils::error_response('Error importing', 'admin');
       case 'import_game':
         $result = await Control::importGame();
         if ($result) {
@@ -489,6 +501,12 @@ class AdminAjaxController extends AjaxController {
         return Utils::error_response('Error importing', 'admin');
       case 'import_categories':
         $result = await Control::importCategories();
+        if ($result) {
+          return Utils::ok_response('Success', 'admin');
+        }
+        return Utils::error_response('Error importing', 'admin');
+      case 'import_attachments':
+        $result = await Control::importAttachments();
         if ($result) {
           return Utils::ok_response('Success', 'admin');
         }

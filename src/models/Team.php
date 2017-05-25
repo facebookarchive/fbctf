@@ -665,4 +665,253 @@ class Team extends Model implements Importable, Exportable {
 
     return $rank;
   }
+
+  public static async function genTeamUpdatePoints(
+    int $team_id,
+    int $points,
+  ): Awaitable<void> {
+    $db = await self::genDb();
+    await $db->queryf(
+      'UPDATE teams SET last_score = last_score, points = %d WHERE id = %d',
+      $points,
+      $team_id,
+    );
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
+    Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
+  }
+
+  public static async function genGetLiveSyncKey(
+    int $team_id,
+    string $type,
+  ): Awaitable<string> {
+    $db = await self::genDb();
+    $result = await $db->queryf(
+      'SELECT * FROM livesync WHERE team_id = %d AND type = %s',
+      $team_id,
+      $type,
+    );
+    invariant($result->numRows() === 1, 'Expected exactly one result');
+
+    $username = strval(must_have_idx($result->mapRows()[0], 'username'));
+    $key_from_db = strval(must_have_idx($result->mapRows()[0], 'sync_key'));
+
+    switch ($type) {
+      case 'fbctf':
+        $key = self::generateHash($key_from_db);
+        break;
+        // FALLTHROUGH
+      default:
+        $key = $key_from_db;
+        break;
+    }
+
+    return strval($type.":".$username.":".$key);
+  }
+
+  public static async function genLiveSyncExists(
+    int $team_id,
+    string $type,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+    $result = await $db->queryf(
+      'SELECT id FROM livesync WHERE team_id = %d AND type = %s',
+      $team_id,
+      $type,
+    );
+    if ($result->numRows() === 1) {
+      return true;
+    }
+    return false;
+  }
+
+  public static async function genSetLiveSyncPassword(
+    int $team_id,
+    string $type,
+    string $username,
+    string $password,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    if (($username === '') || ($password === '')) {
+      return false;
+    }
+
+    switch ($type) {
+      case 'fbctf':
+        $key = hash("sha256", $password);
+        $team = await self::genTeam($team_id);
+        if (password_verify($password, $team->getPasswordHash())) {
+          return false;
+        }
+        break;
+        // FALLTHROUGH
+      default:
+        $key = $password;
+        break;
+    }
+
+    $username_result =
+      await $db->queryf(
+        'SELECT id FROM livesync WHERE username = %s AND type = %s AND team_id != %d',
+        $username,
+        $type,
+        $team_id,
+      );
+    if ($username_result->numRows() > 0) {
+      return false;
+    }
+
+    $current_id_result = await $db->queryf(
+      'SELECT id FROM livesync WHERE team_id = %d AND type = %s',
+      $team_id,
+      $type,
+    );
+    if ($current_id_result->numRows() === 1) {
+      $result = await $db->queryf(
+        'UPDATE livesync SET username = %s, sync_key = %s WHERE id = %d',
+        $username,
+        $key,
+        intval(must_have_idx($current_id_result->mapRows()[0], 'id')),
+      );
+      if ($result) {
+        return true;
+      }
+    } else {
+      $result =
+        await $db->queryf(
+          'INSERT INTO livesync (type, team_id, username, sync_key) VALUES (%s, %d, %s, %s)',
+          $type,
+          $team_id,
+          $username,
+          $key,
+        );
+      if ($result) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static async function genLiveSyncKeyExists(
+    string $key,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    if (strpos($key, ':') === false) {
+      return false;
+    }
+    list($type, $username, $key) = explode(':', $key);
+
+    switch ($type) {
+      case 'fbctf':
+        $result = await $db->queryf(
+          'SELECT * FROM livesync WHERE username = %s AND type = %s',
+          $username,
+          $type,
+        );
+        break;
+      case 'google_oauth':
+        $result = await $db->queryf(
+          'SELECT * FROM livesync WHERE sync_key = %s AND type = %s',
+          $key,
+          $type,
+        );
+        break;
+        // FALLTHROUGH
+      default:
+        $result = await $db->queryf(
+          'SELECT * FROM livesync WHERE sync_key = %s',
+          $key,
+        );
+        break;
+    }
+
+    if ($result->numRows() > 0) {
+      $team_id = 0;
+      foreach ($result->mapRows() as $row) {
+        $type = strval(must_have_idx($row, 'type'));
+        $username = strval(must_have_idx($row, 'username'));
+        $key_from_db = strval(must_have_idx($row, 'sync_key'));
+
+        switch ($type) {
+          case 'fbctf':
+            if (password_verify($key_from_db, $key)) {
+              return true;
+            }
+            break;
+            // FALLTHROUGH
+          default:
+            if (strval($key) === strval($key_from_db)) {
+              return true;
+            }
+            break;
+        }
+      }
+    }
+    return false;
+  }
+
+  public static async function genTeamFromLiveSyncKey(
+    string $key,
+  ): Awaitable<Team> {
+    $db = await self::genDb();
+
+    invariant(strpos($key, ':'), "Invalid live sync key");
+    list($type, $username, $key) = explode(':', $key);
+
+    switch ($type) {
+      case 'fbctf':
+        $result = await $db->queryf(
+          'SELECT * FROM livesync WHERE username = %s AND type = %s',
+          $username,
+          $type,
+        );
+        invariant($result->numRows() > 0, 'Expected at least one result');
+        break;
+      case 'google_oauth':
+        $result = await $db->queryf(
+          'SELECT * FROM livesync WHERE sync_key = %s AND type = %s',
+          $key,
+          $type,
+        );
+        break;
+        // FALLTHROUGH
+      default:
+        $result = await $db->queryf(
+          'SELECT * FROM livesync WHERE sync_key = %s',
+          $key,
+        );
+        invariant($result->numRows() > 0, 'Expected at least one result');
+        break;
+    }
+
+    $team_id = 0;
+    foreach ($result->mapRows() as $row) {
+      $type = strval(must_have_idx($row, 'type'));
+      $username = strval(must_have_idx($row, 'username'));
+      $key_from_db = strval(must_have_idx($row, 'sync_key'));
+
+      switch ($type) {
+        case 'fbctf':
+          if (password_verify($key_from_db, $key)) {
+            $team_id = intval(must_have_idx($row, 'team_id'));
+            $team = await self::genTeam($team_id);
+            return $team;
+          }
+          break;
+          // FALLTHROUGH
+        default:
+          if (strval($key) === strval($key_from_db)) {
+            $team_id = intval(must_have_idx($row, 'team_id'));
+            $team = await self::genTeam($team_id);
+            return $team;
+          }
+          break;
+      }
+    }
+    invariant($team_id !== 0, 'team_id not found');
+    $team = await self::genTeam($team_id);
+    return $team;
+  }
+
 }

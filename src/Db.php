@@ -39,6 +39,20 @@ class Db {
     return $backup_cmd;
   }
 
+  public function getRestoreCmd(): string {
+    $usr = must_have_idx($this->config, 'DB_USERNAME');
+    $pwd = must_have_idx($this->config, 'DB_PASSWORD');
+    $db = must_have_idx($this->config, 'DB_NAME');
+    $restore_cmd =
+      'mysql -u '.
+      escapeshellarg($usr).
+      ' --password='.
+      escapeshellarg($pwd).
+      ' '.
+      escapeshellarg($db);
+    return $restore_cmd;
+  }
+
   public async function genConnection(): Awaitable<AsyncMysqlConnection> {
     await $this->genConnect();
     invariant($this->conn !== null, 'Connection cant be null.');

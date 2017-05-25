@@ -16,6 +16,7 @@ class Router {
       $xhp = await self::genRouteModal($page, strval($modal));
       return strval($xhp);
     } else {
+      await Control::genRunAutoRunScript();
       $response = await self::genRouteNormal($page);
       return strval($response);
     }

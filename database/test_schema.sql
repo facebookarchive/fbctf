@@ -130,6 +130,23 @@ CREATE TABLE `teams` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `livesync`
+--
+
+DROP TABLE IF EXISTS `livesync`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `livesync` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `type` text NOT NULL,
+  `team_id` int(11) NOT NULL,
+  `username` text NOT NULL,
+  `sync_key` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `teams_data`
 --
 
@@ -196,6 +213,7 @@ INSERT INTO `configuration` (field, value, description) VALUES("scoring", "0", "
 INSERT INTO `configuration` (field, value, description) VALUES("gameboard", "1", "(Boolean) Refresh all data in the gameboard");
 INSERT INTO `configuration` (field, value, description) VALUES("progressive_cycle", "300", "(Integer) Frequency to take progressive scoreboard in seconds");
 INSERT INTO `configuration` (field, value, description) VALUES("bases_cycle", "5", "(Integer) Frequency to score base levels in seconds");
+INSERT INTO `configuration` (field, value, description) VALUES("autorun_cycle", "30", "(Integer) Frequency to cycle autorun in seconds");
 INSERT INTO `configuration` (field, value, description) VALUES("registration", "0", "(Boolean) Ability to register teams");
 INSERT INTO `configuration` (field, value, description) VALUES("registration_names", "0", "(Boolean) Registration will ask for names");
 INSERT INTO `configuration` (field, value, description) VALUES("registration_type", "1", "(Integer) Type of registration: 1 - Open; 2 - Tokenized;");
@@ -211,6 +229,8 @@ INSERT INTO `configuration` (field, value, description) VALUES("password_type", 
 INSERT INTO `configuration` (field, value, description) VALUES("default_bonus", "30", "(Integer) Default value for bonus in levels");
 INSERT INTO `configuration` (field, value, description) VALUES("default_bonusdec", "10", "(Integer) Default bonus decrement in levels");
 INSERT INTO `configuration` (field, value, description) VALUES("language", "en", "(String) Language of the system");
+INSERT INTO `configuration` (field, value, description) VALUES("livesync", "0", "(Boolean) LiveSync functionality");
+INSERT INTO `configuration` (field, value, description) VALUES("livesync_auth_key", "", "(String) Optional LiveSync Auth Key");
 UNLOCK TABLES;
 
 --

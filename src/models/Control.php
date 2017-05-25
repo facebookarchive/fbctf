@@ -216,6 +216,95 @@ class Control extends Model {
     await Level::genBaseScoring();
   }
 
+  public static async function genAutoBegin(): Awaitable<void> {
+    // Get start time
+    $config_start_ts = await Configuration::gen('start_ts');
+    $start_ts = intval($config_start_ts->getValue());
+
+    // Get end time
+    $config_end_ts = await Configuration::gen('end_ts');
+    $end_ts = intval($config_end_ts->getValue());
+
+    // Get paused status
+    $config_game_paused = await Configuration::gen('game_paused');
+    $game_paused = intval($config_game_paused->getValue());
+
+    if (($game_paused === 0) && ($start_ts <= time()) && ($end_ts > time())) {
+      // Start the game
+      await Control::genBegin();
+    }
+  }
+
+  public static async function genAutoEnd(): Awaitable<void> {
+    // Get start time
+    $config_start_ts = await Configuration::gen('start_ts');
+    $start_ts = intval($config_start_ts->getValue());
+
+    // Get end time
+    $config_end_ts = await Configuration::gen('end_ts');
+    $end_ts = intval($config_end_ts->getValue());
+
+    // Get paused status
+    $config_game_paused = await Configuration::gen('game_paused');
+    $game_paused = intval($config_game_paused->getValue());
+
+    if (($game_paused === 0) && ($end_ts <= time())) {
+      // Start the game
+      await Control::genEnd();
+    }
+  }
+
+  public static async function genAutoRun(): Awaitable<void> {
+    // Get start time
+    $config_game = await Configuration::gen('game');
+    $game = intval($config_game->getValue());
+
+    if ($game === 0) {
+      // Check and start the game
+      await Control::genAutoBegin();
+    } else {
+      // Check and stop the game
+      await Control::genAutoEnd();
+    }
+  }
+
+  public static async function genRunAutoRunScript(): Awaitable<void> {
+    $autorun_status = await Control::checkScriptRunning('autorun');
+    if ($autorun_status === false) {
+      $autorun_location = escapeshellarg(
+        must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT').
+        '/scripts/autorun.php',
+      );
+      $cmd =
+        'hhvm -vRepo.Central.Path=/var/run/hhvm/.hhvm.hhbc_autorun '.
+        $autorun_location.
+        ' > /dev/null 2>&1 & echo $!';
+      $pid = shell_exec($cmd);
+      await Control::genStartScriptLog(intval($pid), 'autorun', $cmd);
+    }
+  }
+
+  public static async function checkScriptRunning(
+    string $name,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+    $result = await $db->queryf(
+      'SELECT pid FROM scripts WHERE name = %s AND status = 1 LIMIT 1',
+      $name,
+    );
+    if ($result->numRows() >= 1) {
+      $pid = intval(must_have_idx($result->mapRows()[0], 'pid'));
+      $status = file_exists("/proc/$pid");
+      if ($status === false) {
+        await Control::genStopScriptLog($pid);
+        await Control::genClearScriptLog();
+      }
+      return $status;
+    } else {
+      return false;
+    }
+  }
+
   public static async function importGame(): Awaitable<bool> {
     $data_game = JSONImporterController::readJSON('game_file');
     if (is_array($data_game)) {
@@ -251,6 +340,7 @@ class Control extends Model {
       if (!$levels_result) {
         return false;
       }
+      await self::genFlushMemcached();
       return true;
     }
     return false;
@@ -260,6 +350,7 @@ class Control extends Model {
     $data_teams = JSONImporterController::readJSON('teams_file');
     if (is_array($data_teams)) {
       $teams = must_have_idx($data_teams, 'teams');
+      await self::genFlushMemcached();
       return await Team::importAll($teams);
     }
     return false;
@@ -269,6 +360,7 @@ class Control extends Model {
     $data_logos = JSONImporterController::readJSON('logos_file');
     if (is_array($data_logos)) {
       $logos = must_have_idx($data_logos, 'logos');
+      await self::genFlushMemcached();
       return await Logo::importAll($logos);
     }
     return false;
@@ -278,6 +370,7 @@ class Control extends Model {
     $data_levels = JSONImporterController::readJSON('levels_file');
     if (is_array($data_levels)) {
       $levels = must_have_idx($data_levels, 'levels');
+      await self::genFlushMemcached();
       return await Level::importAll($levels);
     }
     return false;
@@ -287,9 +380,53 @@ class Control extends Model {
     $data_categories = JSONImporterController::readJSON('categories_file');
     if (is_array($data_categories)) {
       $categories = must_have_idx($data_categories, 'categories');
+      await self::genFlushMemcached();
       return await Category::importAll($categories);
     }
     return false;
+  }
+
+  public static async function importAttachments(): Awaitable<bool> {
+    $output = array();
+    $status = 0;
+    $filename =
+      strval(BinaryImporterController::getFilename('attachments_file'));
+    $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
+    $directory = $document_root.Attachment::attachmentsDir;
+    $cmd = "tar -zx -C $directory -f $filename";
+    exec($cmd, $output, $status);
+    if (intval($status) !== 0) {
+      return false;
+    }
+    $directory_files = scandir($directory);
+    foreach ($directory_files as $file) {
+      $chmod = chmod($directory.$file, 0600);
+      invariant(
+        $chmod === true,
+        'Failed to set attachment file permissions to 0600',
+      );
+    }
+    await self::genFlushMemcached();
+    return true;
+  }
+
+  public static async function restoreDb(): Awaitable<bool> {
+    $output = array();
+    $status = 0;
+    $filename =
+      strval(BinaryImporterController::getFilename('database_file'));
+    $cmd = "cat $filename | gunzip - ";
+    exec($cmd, $output, $status);
+    if (intval($status) !== 0) {
+      return false;
+    }
+    $cmd = "cat $filename | gunzip - | ".Db::getInstance()->getRestoreCmd();
+    exec($cmd, $output, $status);
+    if (intval($status) !== 0) {
+      return false;
+    }
+    await self::genFlushMemcached();
+    return true;
   }
 
   public static async function exportGame(): Awaitable<void> {
@@ -335,12 +472,24 @@ class Control extends Model {
     exit();
   }
 
-  public static function backupDb(): void {
+  public static async function exportAttachments(): Awaitable<void> {
+    $filename = 'fbctf-attachments-'.date("d-m-Y").'.tgz';
+    header('Content-Type: application/x-tgz');
+    header('Content-Disposition: attachment; filename="'.$filename.'"');
+    $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
+    $directory = $document_root.Attachment::attachmentsDir;
+    $cmd = "tar -cz -C $directory . ";
+    passthru($cmd);
+    exit();
+  }
+
+  public static async function backupDb(): Awaitable<void> {
     $filename = 'fbctf-backup-'.date("d-m-Y").'.sql.gz';
     header('Content-Type: application/x-gzip');
     header('Content-Disposition: attachment; filename="'.$filename.'"');
     $cmd = Db::getInstance()->getBackupCmd().' | gzip --best';
     passthru($cmd);
+    exit();
   }
 
   public static async function genAllActivity(

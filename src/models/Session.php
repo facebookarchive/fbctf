@@ -111,7 +111,7 @@ class Session extends Model {
   ): Awaitable<void> {
     $db = await self::genDb();
     await $db->queryf(
-      'INSERT INTO sessions (cookie, data, created_ts, last_access_ts, team_id, last_page_access) VALUES (%s, %s, NOW(), NOW(), 1, %s)',
+      'INSERT INTO sessions (cookie, data, created_ts, last_access_ts, team_id, last_page_access) VALUES (%s, %s, NOW(), NOW(), 0, %s)',
       $cookie,
       $data,
       Router::getRequestedPage(),

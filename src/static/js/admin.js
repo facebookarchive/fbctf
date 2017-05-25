@@ -408,6 +408,14 @@ function createAnnouncement(section) {
   }
 }
 
+//Create and download attachments backup
+function attachmentsExport() {
+  var csrf_token = $('input[name=csrf_token]')[0].value;
+  var action = 'export_attachments';
+  var url = 'index.php?p=admin&ajax=true&action=' + action + '&csrf_token=' + csrf_token;
+  window.location.href = url;
+}
+
 // Create and download database backup
 function databaseBackup() {
   var csrf_token = $('input[name=csrf_token]')[0].value;
@@ -444,13 +452,28 @@ function submitImport(type_file, action_file) {
     var responseData = JSON.parse(data);
     if (responseData.result == 'OK') {
       console.log('OK');
-       Modal.loadPopup('p=action&modal=import-done', 'action-import');
+       Modal.loadPopup('p=action&modal=import-done', 'action-import', function() {
+         var ok_button = $("a[class='fb-cta cta--yellow js-close-modal']");
+         ok_button.attr('href', '?p=admin&page=controls');
+         ok_button.removeClass('js-close-modal');
+       });
     } else {
       console.log('Failed');
       Modal.loadPopup('p=action&modal=error', 'action-error', function() {
         $('.error-text').html('<p>Sorry there was a problem importing the items. Please try again.</p>');
+        var ok_button = $("a[class='fb-cta cta--yellow js-close-modal']");
+        ok_button.attr('href', '?p=admin&page=controls');
+        ok_button.removeClass('js-close-modal');
       });
     }
+  });
+}
+
+//Restore and replace database
+function databaseRestore() {
+  $('#restore-database_file').trigger('click');
+  $('#restore-database_file').change(function() {
+    submitImport('database_file', 'restore_db');
   });
 }
 
@@ -491,6 +514,14 @@ function importLevels() {
   $('#import-levels_file').trigger('click');
   $('#import-levels_file').change(function() {
     submitImport('levels_file', 'import_levels');
+  });
+}
+
+//Import and replace current attachments
+function importAttachments() {
+  $('#import-attachments_file').trigger('click');
+  $('#import-attachments_file').change(function() {
+    submitImport('attachments_file', 'import_attachments');
   });
 }
 
@@ -1027,6 +1058,8 @@ module.exports = {
         }
       } else if (action === 'create-announcement') {
         createAnnouncement($section);
+      } else if (action === 'export-attachments') {
+        attachmentsExport();
       } else if (action === 'backup-db') {
         databaseBackup();
       } else if (action === 'import-game') {
@@ -1047,6 +1080,8 @@ module.exports = {
         exportCurrentLogos();
       } else if (action === 'import-levels') {
         importLevels();
+      } else if (action === 'import-attachments') {
+        importAttachments();
       } else if (action === 'export-levels') {
         exportCurrentLevels();
       } else if (action === 'import-categories') {
@@ -1393,6 +1428,14 @@ module.exports = {
       });
     });
 
+    // prompt restore database
+    $('.js-restore-database').on('click', function(event) {
+      event.preventDefault();
+      Modal.loadPopup('p=action&modal=restore-database', 'action-restore-database', function() {
+        $('#restore_database').click(databaseRestore);
+      });
+    });
+
     // custom logo file selector
     var $customLogoInput = $('#custom-logo-input');
     var $customLogoImage = $('#custom-logo-image');
@@ -1429,6 +1472,5 @@ module.exports = {
 
       }
     });
-
   }
 };

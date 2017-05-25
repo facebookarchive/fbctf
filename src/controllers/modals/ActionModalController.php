@@ -189,10 +189,30 @@ class ActionModalController extends ModalController {
           <div class="action-main">
             <p>{tr('Items have been imported successfully')}</p>
             <div class="action-actionable">
-              <a
-                href="#"
-                class="fb-cta cta--yellow js-close-modal js-confirm-save">
+              <a href="#" class="fb-cta cta--yellow js-close-modal">
                 {tr('OK')}
+              </a>
+            </div>
+          </div>;
+        return tuple($title, $content);
+      case 'restore-database':
+        $title =
+          <h4>
+            {tr('restore_')}<span class="highlighted">{tr('Database')}</span>
+          </h4>;
+        $content =
+          <div class="action-main">
+            <p>
+              {tr(
+                'Are you sure you want to restore the database? This will overwrite ALL existing data!',
+              )}
+            </p>
+            <div class="action-actionable">
+              <a href="#" class="fb-cta cta--red js-close-modal">
+                {tr('No')}
+              </a>
+              <a href="#" id="restore_database" class="fb-cta cta--yellow">
+                {tr('Yes')}
               </a>
             </div>
           </div>;
@@ -215,6 +235,80 @@ class ActionModalController extends ModalController {
               </a>
               <a href="#" id="reset_database" class="fb-cta cta--yellow">
                 {tr('Yes')}
+              </a>
+            </div>
+          </div>;
+        return tuple($title, $content);
+      case 'account':
+        $title =
+          <h4>
+            {tr('account_')}<span class="highlighted">{tr('Settings')}</span>
+          </h4>;
+        if (Configuration::genGoogleOAuthFileExists() === true) {
+          $google_oauth_content =
+            <div class="google-link-form">
+              <p>
+                {tr(
+                  'Link your account with Google.  You may link your FBCTF account on this instance with your Google account.  Note that this will provide your email address to the administrators of this FBCTF instance.',
+                )}
+              </p>
+              <div class="action-actionable">
+                <a
+                  href="#"
+                  class="fb-cta cta--yellow js-trigger-google-oauth">
+                  {tr('Link Your Google Account')}
+                </a>
+              </div>
+              <br />
+              <span class="google-link-response highlighted--blue"></span>
+              <br />
+            </div>;
+        } else {
+          $google_oauth_content = '';
+        }
+        $content =
+          <div class="action-main">
+            {$google_oauth_content}
+            <br />
+            <p>
+              {tr(
+                'Setup your FBCTF Live Sync credentials.  These credentials must be the SAME on all other FBCTF instances that you are linking.  DO NOT use your account password.',
+              )}
+            </p>
+            <form class="fb-form account-link-form">
+              <input name="set_livesync_password" type="hidden" value="" />
+              <div class="form-el el--text">
+                <input
+                  placeholder={tr('Set your live sync username')}
+                  name="livesync_username"
+                  type="text"
+                  autocomplete="off"
+                />
+                <input
+                  placeholder={tr('Set your live sync password')}
+                  name="livesync_password"
+                  type="password"
+                  autocomplete="off"
+                />
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value={SessionUtils::CSRFToken()}
+                />
+              </div>
+              <div class="action-actionable">
+                <a class="fb-cta cta--yellow js-trigger-account-save">
+                  {tr('Submit')}
+                </a>
+              </div>
+              <br />
+              <span class="account-link-form-response highlighted--blue">
+              </span>
+              <br />
+            </form>
+            <div class="action-actionable">
+              <a href="#" class="fb-cta cta--red js-close-modal">
+                {tr('Close')}
               </a>
             </div>
           </div>;

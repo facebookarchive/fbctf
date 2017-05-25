@@ -109,6 +109,8 @@ class IndexAjaxController extends AjaxController {
     array<string> $names,
     array<string> $emails,
   ): Awaitable<string> {
+    $ldap_password = $password;
+
     // Check if registration is enabled
     $registration = await Configuration::gen('registration');
     if ($registration->getValue() === '0') {
@@ -199,6 +201,7 @@ class IndexAjaxController extends AjaxController {
     // Verify that this team name is not created yet
     $team_exists = await Team::genTeamExist($shortname);
     if (!$team_exists) {
+      invariant(is_string($password), "Expected password to be a string");
       $password_hash = Team::generateHash($password);
       $team_id =
         await Team::genCreate($shortname, $password_hash, $logo_name);
@@ -216,7 +219,7 @@ class IndexAjaxController extends AjaxController {
         }
         // Login the team
         if ($ldap->getValue() === '1') {
-          return await $this->genLoginTeam($team_id, $ldap_password); 
+          return await $this->genLoginTeam($team_id, $ldap_password);
         } else {
           return await $this->genLoginTeam($team_id, $password);
         }
