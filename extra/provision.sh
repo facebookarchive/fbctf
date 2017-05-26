@@ -173,6 +173,9 @@ done
 
 source "$CODE_PATH/extra/lib.sh"
 
+# Update apt repos
+sudo apt-get update
+
 # Install git first
 package git
 
