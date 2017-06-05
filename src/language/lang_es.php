@@ -12,7 +12,7 @@ $translations = array(
   'Play' =>
     'Jugar',
   'Welcome to the Facebook Capture the Flag Competition. By clicking "Play," you will be entered into the official CTF challenge. Good luck in your conquest.' =>
-    'Bienvenido a la competición CTF de Facebook. Al hacer clic en "Jugar," entrarás en la competición CTF. ¡Mucha suerte!.',
+    'Bienvenido a la competencia CTF de Facebook. Al hacer clic en "Jugar," entrarás en la competencia CTF. ¡Mucha suerte!.',
   'Get ready for the CTF to start and access the gameboard now!' =>
     '¡Prepárate para competir y acceder al panel de juego!',
   'Gameboard' =>
@@ -38,7 +38,7 @@ $translations = array(
   'Official CTF Rules' =>
     'Reglas Oficiales de CTF',
   'Following actions are prohibited, unless explicitly told otherwise by event Admins.' =>
-    'Las siguientes acciones se encuentran prohibidas, si no son permitidas explícitamente por los Administradores del evento.',
+    'Las siguientes acciones están prohibidas, a menos que sean permitidas explícitamente por los Administradores del evento.',
   'Rule' =>
     'Regla',
   'Cooperation' =>
@@ -48,7 +48,7 @@ $translations = array(
   'Attacking Scoreboard' =>
     'Puntuaciones de Ataque',
   'No attacking the competition infrastructure. If bugs or vulns are found, please alert the competition organizers immediately.' =>
-    'Prohibido atacar la infraestructura de la competencia. Si se encuentra alguna vulnerabilidad, por favor alerten inmediatamente a los organizadores.',
+    'Prohibido atacar la infraestructura de la competencia. Si se encuentra alguna vulnerabilidad o falla, por favor alerten inmediatamente a los organizadores.',
   'Sabotage' =>
     'Sabotaje',
   'Absolutely no sabotaging of other competing teams, or in any way hindering their independent progress.' =>
@@ -66,7 +66,7 @@ $translations = array(
   'Disclaimer' =>
     'Disclaimer',
   'By participating in the contest, you agree to release Facebook and its employees, and the hosting organization from any and all liability, claims or actions of any kind whatsoever for injuries, damages or losses to persons and property which may be sustained in connection with the contest. You acknowledge and agree that Facebook et al is not responsible for technical, hardware or software failures, or other errors or problems which may occur in connection with the contest.' =>
-    'Al participar en el concurso, usted acepta liberar a Facebook y sus empleados, y a la organizadora del evento de cualquier responsabilidad, reclamos o acciones de cualquier tipo por lesiones, daños o pérdidas a las personas y bienes que puedan ir en relación con el concurso. Usted reconoce y acepta que Facebook y otros no se hacen responsables de fallos técnicos, de hardware o software, u otros errores o problemas que pueden ocurrir relacionados al concurso',
+    'Al participar en la competencia, usted acepta liberar a Facebook y sus empleados, y a la organizadora del evento de cualquier responsabilidad, reclamo(s) o accion(es) de cualquier tipo por lesiones, daños o pérdidas a las personas y bienes que puedan ir en relación con el concurso. Usted reconoce y acepta que Facebook y otros no se hacen responsables de fallos técnicos, de hardware o software, u otros errores o problemas que pueden ocurrir relacionados al concurso',
   'If you have any questions about what is or is not allowed, please ask an organizer.' =>
     'Si tiene alguna pregunta acerca de lo que está o no permitido, consulte a un organizador.',
   'Have fun!' =>
