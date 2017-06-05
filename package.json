@@ -29,3 +29,4 @@
     "bxslider": "4.2.6"
   }
 }
+// At the moment you have to click "Begin Game" manually to start a game. We should add a feature to set the start time and a duration or end time, and have the game automatically start at the start time.
