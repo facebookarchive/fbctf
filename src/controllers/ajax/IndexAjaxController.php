@@ -27,7 +27,7 @@ class IndexAjaxController extends AjaxController {
       ),
     );
   }
-
+// Works for all operating systems
   <<__Override>>
   protected function getActions(): array<string> {
     return array('register_team', 'register_names', 'login_team');
