@@ -1,5 +1,7 @@
 # FBCTF [![Build Status](https://travis-ci.org/facebook/fbctf.svg)](https://travis-ci.org/facebook/fbctf)
 
+~AWESOME!!!!
+
 ## What is FBCTF?
 
 The Facebook CTF is a platform to host Jeopardy and “King of the Hill” style Capture the Flag competitions.
