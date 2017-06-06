@@ -3,7 +3,8 @@
 class AdminController extends Controller {
   <<__Override>>
   protected function getTitle(): string {
-    return tr('Facebook CTF').' | '.tr('Admin');
+    $custom_org = \HH\Asio\join(Configuration::gen('custom_org'));
+    return tr($custom_org->getValue()). ' '. tr('CTF'). ' | '. tr('Admin');
   }
 
   <<__Override>>
@@ -315,7 +316,8 @@ class AdminController extends Controller {
       'livesync' => Configuration::gen('livesync'),
       'livesync_auth_key' => Configuration::gen('livesync_auth_key'),
       'custom_logo' => Configuration::gen('custom_logo'),
-      'custom_text' => Configuration::gen('custom_text'),
+      'custom_org' => Configuration::gen('custom_org'),
+      'custom_byline' => Configuration::gen('custom_byline'),
       'custom_logo_image' => Configuration::gen('custom_logo_image'),
     };
 
@@ -345,7 +347,8 @@ class AdminController extends Controller {
     $livesync = $results['livesync'];
     $livesync_auth_key = $results['livesync_auth_key'];
     $custom_logo = $results['custom_logo'];
-    $custom_text = $results['custom_text'];
+    $custom_org = $results['custom_org'];
+    $custom_byline = $results['custom_byline'];
     $custom_logo_image = $results['custom_logo_image'];
 
     $registration_on = $registration->getValue() === '1';
@@ -1047,11 +1050,21 @@ class AdminController extends Controller {
                   </div>
                   <div class="col col-pad col-1-3">
                     <div class="form-el el--block-label el--full-text">
-                      <label for="">{tr('Custom Text')}</label>
+                      <label for="">{tr('Custom Organization')}</label>
                       <input
                         type="text"
-                        name="fb--conf--custom_text"
-                        value={$custom_text->getValue()}
+                        name="fb--conf--custom_org"
+                        value={$custom_org->getValue()}
+                      />
+                    </div>
+                  </div>
+                  <div class="col col-pad col-1-3">
+                    <div class="form-el el--block-label el--full-text">
+                      <label for="">{tr('Custom Byline')}</label>
+                      <input
+                        type="text"
+                        name="fb--conf--custom_byline"
+                        value={$custom_byline->getValue()}
                       />
                     </div>
                   </div>

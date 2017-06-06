@@ -3,7 +3,8 @@
 class ViewModeController extends Controller {
   <<__Override>>
   protected function getTitle(): string {
-    return tr('Facebook CTF').' | '.tr('View mode');
+    $custom_org = \HH\Asio\join(Configuration::gen('custom_org'));
+    return tr($custom_org->getValue()).' | '.tr('View mode');
   }
 
   <<__Override>>

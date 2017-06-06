@@ -232,7 +232,8 @@ INSERT INTO `configuration` (field, value, description) VALUES("language", "en",
 INSERT INTO `configuration` (field, value, description) VALUES("livesync", "0", "(Boolean) LiveSync functionality");
 INSERT INTO `configuration` (field, value, description) VALUES("livesync_auth_key", "", "(String) Optional LiveSync Auth Key");
 INSERT INTO `configuration` (field, value, description) VALUES("custom_logo", "0", "(Boolean) Custom branding logo");
-INSERT INTO `configuration` (field, value, description) VALUES("custom_text", "Powered By Facebook", "(String) Custom branding text");
+INSERT INTO `configuration` (field, value, description) VALUES("custom_org", "Facebook", "(String) Custom branding organization text");
+INSERT INTO `configuration` (field, value, description) VALUES("custom_byline", "Powered By Facebook", "(String) Custom branding byline text");
 INSERT INTO `configuration` (field, value, description) VALUES("custom_logo_image", "static/img/favicon.png", "(String) Custom logo image file");
 UNLOCK TABLES;
 

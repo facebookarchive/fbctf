@@ -3,7 +3,8 @@
 class GameboardController extends Controller {
   <<__Override>>
   protected function getTitle(): string {
-    return tr('Facebook CTF').' | '.tr('Gameboard');
+    $custom_org = \HH\Asio\join(Configuration::gen('custom_org'));
+    return tr($custom_org->getValue()). ' '. tr('CTF').' | '.tr('Gameboard');
   }
 
   <<__Override>>

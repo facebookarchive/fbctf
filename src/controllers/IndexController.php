@@ -2,8 +2,9 @@
 
 class IndexController extends Controller {
   <<__Override>>
-  protected function getTitle(): string {
-    return tr('Facebook CTF');
+  public function getTitle(): string {
+    $custom_org = \HH\Asio\join(Configuration::gen('custom_org'));
+    return tr($custom_org->getValue()). ' '. tr('CTF');
   }
 
   <<__Override>>
@@ -38,6 +39,12 @@ class IndexController extends Controller {
   }
 
   public function renderMainContent(): :xhp {
+    $custom_org = \HH\Asio\join(Configuration::gen('custom_org'));
+    if ($custom_org->getValue() === 'Facebook') {
+      $welcome_msg = tr('Welcome to the Facebook Capture the Flag Competition. By clicking "Play," you will be entered into the official CTF challenge. Good luck in your conquest.');
+    } else {
+      $welcome_msg = 'Welcome to the ' . $custom_org->getValue() . ' Capture the Flag Competition. By clicking "Play," you will be entered into the official CTF challenge. Good luck in your conquest.';
+    }
     return
       <div class="fb-row-container full-height fb-scroll">
         <main
@@ -49,9 +56,7 @@ class IndexController extends Controller {
               {tr('Conquer the world')}
             </h1>
             <p class="typed-text">
-              {tr(
-                'Welcome to the Facebook Capture the Flag Competition. By clicking "Play," you will be entered into the official CTF challenge. Good luck in your conquest.',
-              )}
+              {$welcome_msg}
             </p>
             <div class="fb-actionable">
               <a href="/index.php?page=countdown" class="fb-cta cta--yellow">
