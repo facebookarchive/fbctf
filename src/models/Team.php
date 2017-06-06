@@ -415,6 +415,20 @@ class Team extends Model implements Importable, Exportable {
     MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
   }
 
+  // Sets toggles team protection status.
+  public static async function genSetProtected(
+    int $team_id,
+    bool $protect,
+  ): Awaitable<void> {
+    $db = await self::genDb();
+    await $db->queryf(
+      'UPDATE teams SET protected = %d WHERE id = %d LIMIT 1',
+      $protect ? 1 : 0,
+      $team_id,
+    );
+    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
+  }
+
   // Sets toggles team admin status.
   public static async function genSetAdmin(
     int $team_id,

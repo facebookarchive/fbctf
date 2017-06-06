@@ -542,15 +542,15 @@ class Control extends Model {
     $logos = await self::genLoadDatabaseFile('../database/logos.sql');
     if ($schema && $countries && $logos) {
       foreach ($admins as $admin) {
-        await Team::genCreate(
+        $team_id = await Team::genCreate(
           $admin->getName(),
           $admin->getPasswordHash(),
           $admin->getLogo(),
         );
-      }
-      $teams = await MultiTeam::genAllTeamsCache();
-      foreach ($teams as $team) {
-        await Team::genSetAdmin($team->getId(), true);
+        await Team::genSetAdmin($team_id, true);
+        if ($admin->getProtected() === true) {
+          await Team::genSetProtected($team_id, true);
+        }
       }
       await self::genFlushMemcached();
       return true;
