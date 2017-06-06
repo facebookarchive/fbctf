@@ -11,26 +11,55 @@ class ActivityModuleController {
     await tr_start();
     $activity_ul = <ul class="activity-stream"></ul>;
 
-    $all_activity = await Control::genAllActivity();
+    $all_activity = await ActivityLog::genAllActivity();
     $config = await Configuration::gen('language');
     $language = $config->getValue();
-    foreach ($all_activity as $score) {
-      if (intval($score['team_id']) === SessionUtils::sessionTeam()) {
-        $class_li = 'your-team';
-        $class_span = 'your-name';
+    foreach ($all_activity as $activity) {
+      $subject = $activity->getSubject();
+      $entity = $activity->getEntity();
+      $ts = $activity->getTs();
+      if (($subject !== '') && ($entity !== '')) {
+        $class_li = '';
+        $class_span = '';
+        list($subject_type, $subject_id) =
+          explode(':', $activity->getSubject());
+        list($entity_type, $entity_id) = explode(':', $activity->getEntity());
+        if ($subject_type === 'Team') {
+          if (intval($subject_id) === SessionUtils::sessionTeam()) {
+            $class_li = 'your-team';
+            $class_span = 'your-name';
+          } else {
+            $class_li = 'opponent-team';
+            $class_span = 'opponent-name';
+          }
+        }
+        if ($entity_type === 'Country') {
+          $formatted_entity = locale_get_display_region(
+            '-'.$activity->getFormattedEntity(),
+            $language,
+          );
+        } else {
+          $formatted_entity = $activity->getFormattedEntity();
+        }
+        $activity_ul->appendChild(
+          <li class={$class_li}>
+            [ {time_ago($ts)} ]
+            <span class={$class_span}>
+              {$activity->getFormattedSubject()}
+            </span>&nbsp;{tr($activity->getAction())}&nbsp;
+            {$formatted_entity}
+          </li>
+        );
       } else {
-        $class_li = 'opponent-team';
-        $class_span = 'opponent-name';
+        $activity_ul->appendChild(
+          <li class={'opponent-team'}>
+            [ {time_ago($ts)} ]
+            <span class={'opponent-name'}>
+              {$activity->getFormattedMessage()}
+            </span>
+          </li>
+        );
       }
-      $translated_country =
-        locale_get_display_region('-'.$score['country'], $language);
-      $activity_ul->appendChild(
-        <li class={$class_li}>
-          [ {time_ago($score['time'])} ]
-          <span class={$class_span}>{$score['team']}</span>&nbsp;
-          {tr('captured')}&nbsp;{$translated_country}
-        </li>
-      );
     }
 
     return

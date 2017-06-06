@@ -135,6 +135,24 @@
       <value>en</value>
       <value>description</value>
     </row>
+    <row>
+      <value>3</value>
+      <value>game</value>
+      <value></value>
+      <value>description</value>
+    </row>
+    <row>
+      <value>4</value>
+      <value>auto_announce</value>
+      <value>0</value>
+      <value>description</value>
+    </row>
+    <row>
+      <value>5</value>
+      <value>game_paused</value>
+      <value>0</value>
+      <value>description</value>
+    </row>
   </table>
   <table name="categories">
     <column>id</column>

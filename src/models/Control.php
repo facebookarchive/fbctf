@@ -47,6 +47,18 @@ class Control extends Model {
     // Disable registration
     await Configuration::genUpdate('registration', '0');
 
+    // Clear announcements log
+    await Announcement::genDeleteAll();
+
+    // Clear activity log
+    await ActivityLog::genDeleteAll();
+
+    // Announce game starting
+    await Announcement::genCreateAuto('Game has started!');
+
+    // Log game starting
+    await ActivityLog::genCreateGenericLog('Game has started!');
+
     // Reset all points
     await Team::genResetAllPoints();
 
@@ -122,6 +134,12 @@ class Control extends Model {
   }
 
   public static async function genEnd(): Awaitable<void> {
+    // Announce game ending
+    await Announcement::genCreateAuto('Game has ended!');
+
+    // Log game ending
+    await ActivityLog::genCreateGenericLog('Game has ended!');
+
     // Mark game as finished and it stops progressive scoreboard
     await Configuration::genUpdate('game', '0');
 
@@ -155,6 +173,12 @@ class Control extends Model {
   }
 
   public static async function genPause(): Awaitable<void> {
+    // Announce game starting
+    await Announcement::genCreateAuto('Game has been paused!');
+
+    // Log game paused
+    await ActivityLog::genCreateGenericLog('Game has been paused!');
+
     // Disable scoring
     await Configuration::genUpdate('scoring', '0');
 
@@ -214,6 +238,12 @@ class Control extends Model {
 
     // Kick off scoring for bases
     await Level::genBaseScoring();
+
+    // Announce game resumed
+    await Announcement::genCreateAuto('Game has resumed!');
+
+    // Log game paused
+    await ActivityLog::genCreateGenericLog('Game has resumed!');
   }
 
   public static async function genAutoBegin(): Awaitable<void> {

@@ -127,10 +127,10 @@ class LevelTest extends FBCTFTest {
   }
 
   public function testSetStatus(): void {
-    HH\Asio\join(Level::genSetStatus(1, false));
+    HH\Asio\join(Level::genSetStatus(2, false));
     $all = HH\Asio\join(Level::genAllLevels());
     $this->assertEquals(3, count($all));
-    $l = $all[0];
+    $l = $all[1];
     $this->assertFalse($l->getActive());
   }
 

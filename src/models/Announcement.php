@@ -47,6 +47,25 @@ class Announcement extends Model {
     self::invalidateMCRecords(); // Invalidate Memcached Announcement data.
   }
 
+  public static async function genCreateAuto(
+    string $announcement,
+  ): Awaitable<void> {
+    $config_game = await Configuration::gen('game');
+    $config_pause = await Configuration::gen('game_paused');
+    if ((intval($config_game->getValue()) === 1) &&
+        (intval($config_pause->getValue()) === 0)) {
+      $auto_announce = await Configuration::gen('auto_announce');
+      if ($auto_announce->getValue() === '1') {
+        $db = await self::genDb();
+        await $db->queryf(
+          'INSERT INTO announcements_log (ts, announcement) (SELECT NOW(), %s) LIMIT 1',
+          $announcement,
+        );
+        self::invalidateMCRecords(); // Invalidate Memcached Announcement data.
+      }
+    }
+  }
+
   public static async function genDelete(
     int $announcement_id,
   ): Awaitable<void> {
@@ -55,6 +74,13 @@ class Announcement extends Model {
       'DELETE FROM announcements_log WHERE id = %d LIMIT 1',
       $announcement_id,
     );
+
+    self::invalidateMCRecords(); // Invalidate Memcached Announcement data.
+  }
+
+  public static async function genDeleteAll(): Awaitable<void> {
+    $db = await self::genDb();
+    await $db->queryf('TRUNCATE TABLE announcements_log');
 
     self::invalidateMCRecords(); // Invalidate Memcached Announcement data.
   }

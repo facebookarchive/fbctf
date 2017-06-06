@@ -345,7 +345,7 @@ class Team extends Model implements Importable, Exportable {
       $team_id,
     );
     MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
-    Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
+    ActivityLog::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached ActivityLog data.
   }
 
   // Update team password.
@@ -381,7 +381,7 @@ class Team extends Model implements Importable, Exportable {
       $team_id,
     );
     MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
-    Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
+    ActivityLog::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached ActivityLog data.
     await Session::genDeleteByTeam($team_id);
   }
 
@@ -442,7 +442,7 @@ class Team extends Model implements Importable, Exportable {
       $team_id,
     );
     MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
-    Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
+    ActivityLog::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached ActivityLog data.
   }
 
   // Check if a team name is already created.
@@ -455,6 +455,23 @@ class Team extends Model implements Importable, Exportable {
       'SELECT COUNT(*) FROM teams WHERE name = %s',
       $team_name,
     );
+
+    if ($result->numRows() > 0) {
+      invariant($result->numRows() === 1, 'Expected exactly one result');
+      return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
+    } else {
+      return false;
+    }
+  }
+
+  // Check if a team name is already created.
+  public static async function genTeamExistById(
+    int $team_id,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    $result =
+      await $db->queryf('SELECT COUNT(*) FROM teams WHERE id = %d', $team_id);
 
     if ($result->numRows() > 0) {
       invariant($result->numRows() === 1, 'Expected exactly one result');
@@ -608,7 +625,7 @@ class Team extends Model implements Importable, Exportable {
     $db = await self::genDb();
     await $db->queryf('UPDATE teams SET points = 0 WHERE id > 0');
     MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
-    Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
+    ActivityLog::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached ActivityLog data.
   }
 
   // Teams total number.

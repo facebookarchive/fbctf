@@ -304,6 +304,7 @@ class AdminController extends Controller {
       'ldap_domain_suffix' => Configuration::gen('ldap_domain_suffix'),
       'scoring' => Configuration::gen('scoring'),
       'gameboard' => Configuration::gen('gameboard'),
+      'auto_announce' => Configuration::gen('auto_announce'),
       'timer' => Configuration::gen('timer'),
       'progressive_cycle' => Configuration::gen('progressive_cycle'),
       'default_bonus' => Configuration::gen('default_bonus'),
@@ -334,6 +335,7 @@ class AdminController extends Controller {
     $ldap_domain_suffix = $results['ldap_domain_suffix'];
     $scoring = $results['scoring'];
     $gameboard = $results['gameboard'];
+    $auto_announce = $results['auto_announce'];
     $timer = $results['timer'];
     $progressive_cycle = $results['progressive_cycle'];
     $default_bonus = $results['default_bonus'];
@@ -364,6 +366,8 @@ class AdminController extends Controller {
     $scoring_off = $scoring->getValue() === '0';
     $gameboard_on = $gameboard->getValue() === '1';
     $gameboard_off = $gameboard->getValue() === '0';
+    $auto_announce_on = $auto_announce->getValue() === '1';
+    $auto_announce_off = $auto_announce->getValue() === '0';
     $timer_on = $timer->getValue() === '1';
     $timer_off = $timer->getValue() === '0';
     $livesync_on = $livesync->getValue() === '1';
@@ -798,6 +802,29 @@ class AdminController extends Controller {
                         value={$autorun_cycle->getValue()}
                         name="fb--conf--autorun_cycle"
                       />
+                    </div>
+                    <div class="form-el el--block-label">
+                      <label>{tr('Auto Announcements')}</label>
+                      <div class="admin-section-toggle radio-inline">
+                        <input
+                          type="radio"
+                          name="fb--conf--auto_announce"
+                          id="fb--conf--auto_announce--on"
+                          checked={$auto_announce_on}
+                        />
+                        <label for="fb--conf--auto_announce--on">
+                          {tr('On')}
+                        </label>
+                        <input
+                          type="radio"
+                          name="fb--conf--auto_announce"
+                          id="fb--conf--auto_announce--off"
+                          checked={$auto_announce_off}
+                        />
+                        <label for="fb--conf--auto_announce--off">
+                          {tr('Off')}
+                        </label>
+                      </div>
                     </div>
                     <div class="form-el el--block-label"></div>
                   </div>
