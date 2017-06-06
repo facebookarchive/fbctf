@@ -172,22 +172,26 @@ class Level extends Model implements Importable, Exportable {
           must_have_string($level, 'hint'),
           must_have_int($level, 'penalty'),
         );
-        $links = must_have_idx($level, 'links');
-        invariant(is_array($links), 'links must be of type array');
-        foreach ($links as $link) {
-          await Link::genCreate($link, $level_id);
+        if (array_key_exists('links', $level)) {
+          $links = must_have_idx($level, 'links');
+          invariant(is_array($links), 'links must be of type array');
+          foreach ($links as $link) {
+            await Link::genCreate($link, $level_id);
+          }
         }
-        $attachments = must_have_idx($level, 'attachments');
-        invariant(
-          is_array($attachments),
-          'attachments must be of type array',
-        );
-        foreach ($attachments as $attachment) {
-          await Attachment::genImportAttachments(
-            $level_id,
-            $attachment['filename'],
-            $attachment['type'],
+        if (array_key_exists('attachments', $level)) {
+          $attachments = must_have_idx($level, 'attachments');
+          invariant(
+            is_array($attachments),
+            'attachments must be of type array',
           );
+          foreach ($attachments as $attachment) {
+            await Attachment::genImportAttachments(
+              $level_id,
+              $attachment['filename'],
+              $attachment['type'],
+            );
+          }
         }
       }
     }
