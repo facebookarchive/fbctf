@@ -625,9 +625,47 @@ class Level extends Model implements Importable, Exportable {
     $level = await self::gen($level_id);
     await Country::genSetUsed($level->getEntityId(), false);
 
-    await $db->queryf('DELETE FROM levels WHERE id = %d LIMIT 1', $level_id);
+    // Remove team points for level
+    $scores = await ScoreLog::genAllScoresByLevel($level_id);
+    foreach ($scores as $score) {
+      $team_id = $score->getTeamId();
+      $points = $score->getPoints();
+      await $db->queryf(
+        'UPDATE teams SET points = points - %d WHERE id = %d',
+        $points,
+        $team_id,
+      );
+    }
 
-    self::invalidateMCRecords(); // Invalidate Memcached Level data.
+    // Remove hint penalties from teams points for level
+    $hints = await HintLog::genAllHintsByLevel($level_id);
+    foreach ($hints as $hint) {
+      $team_id = $hint->getTeamId();
+      $penalty = $hint->getPenalty();
+      await $db->queryf(
+        'UPDATE teams SET points = points + %d WHERE id = %d',
+        $penalty,
+        $team_id,
+      );
+    }
+
+    // Delete all references to level
+    await $db->queryf('DELETE FROM levels WHERE id = %d LIMIT 1', $level_id);
+    await $db->queryf('DELETE FROM hints_log WHERE level_id = %d', $level_id);
+    await $db->queryf(
+      'DELETE FROM scores_log WHERE level_id = %d',
+      $level_id,
+    );
+    await $db->queryf(
+      'DELETE FROM failures_log WHERE level_id = %d',
+      $level_id,
+    );
+
+    self::invalidateMCRecords();
+    Control::invalidateMCRecords();
+    MultiTeam::invalidateMCRecords();
+    HintLog::invalidateMCRecords();
+    ScoreLog::invalidateMCRecords();
   }
 
   // Enable or disable level by passing 1 or 0.

@@ -202,6 +202,24 @@ class ScoreLog extends Model {
     return $scores;
   }
 
+  // Get all scores by level.
+  public static async function genAllScoresByLevel(
+    int $level_id,
+  ): Awaitable<array<ScoreLog>> {
+    $db = await self::genDb();
+    $result = await $db->queryf(
+      'SELECT * FROM scores_log WHERE level_id = %d',
+      $level_id,
+    );
+
+    $scores = array();
+    foreach ($result->mapRows() as $row) {
+      $scores[] = self::scorelogFromRow($row);
+    }
+
+    return $scores;
+  }
+
   // Log successful score.
   public static async function genLogValidScore(
     int $level_id,

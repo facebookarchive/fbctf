@@ -152,7 +152,7 @@ class HintLog extends Model {
     }
   }
 
-  // Get all scores.
+  // Get all hints.
   public static async function genAllHints(): Awaitable<array<HintLog>> {
     $db = await self::genDb();
     $result = await $db->queryf('SELECT * FROM hints_log ORDER BY ts DESC');
@@ -165,7 +165,7 @@ class HintLog extends Model {
     return $hints;
   }
 
-  // Get all scores by team.
+  // Get all hints by team.
   public static async function genAllHintsByTeam(
     int $team_id,
   ): Awaitable<array<HintLog>> {
@@ -173,6 +173,24 @@ class HintLog extends Model {
     $result = await $db->queryf(
       'SELECT * FROM hints_log WHERE team_id = %d ORDER BY ts DESC',
       $team_id,
+    );
+
+    $hints = array();
+    foreach ($result->mapRows() as $row) {
+      $hints[] = self::hintlogFromRow($row);
+    }
+
+    return $hints;
+  }
+
+  // Get all hints by level.
+  public static async function genAllHintsByLevel(
+    int $level_id,
+  ): Awaitable<array<HintLog>> {
+    $db = await self::genDb();
+    $result = await $db->queryf(
+      'SELECT * FROM hints_log WHERE level_id = %d',
+      $level_id,
     );
 
     $hints = array();

@@ -46,6 +46,15 @@ function deleteTeamPopup(team_id) {
   sendAdminRequest(delete_team, true);
 }
 
+//Confirm level deletion
+function deleteLevelPopup(level_id) {
+  var delete_level = {
+    action: 'delete_level',
+    level_id: level_id
+  };
+  sendAdminRequest(delete_level, true);
+}
+
 // Reset the database
 function resetDatabase() {
   var reset_database = {
@@ -1402,6 +1411,17 @@ module.exports = {
       });
     });
 
+    // prompt delete level
+    $('.js-delete-level').on('click', function(event) {
+      event.preventDefault();
+      var level_id = $(this).prev('input').attr('value');
+      Modal.loadPopup('p=action&modal=delete-level', 'action-delete-level', function() {
+        $('#delete_level').click(function() {
+          deleteLevelPopup(level_id);
+        });
+      });
+    });
+    
     // prompt logout
     $('.js-prompt-logout').on('click', function(event) {
       event.preventDefault();

@@ -99,6 +99,28 @@ class ActionModalController extends ModalController {
             </div>
           </div>;
         return tuple($title, $content);
+      case 'delete-level':
+        $title =
+          <h4>
+            {tr('delete_')}<span class="highlighted">{tr('Level')}</span>
+          </h4>;
+        $content =
+          <div class="action-main">
+            <p>
+              {tr(
+                'Are you sure you want to delete this level? All data for this level will be irreversibly removed, including scores.',
+              )}
+            </p>
+            <div class="action-actionable">
+              <a href="#" class="fb-cta cta--red js-close-modal">
+                {tr('No')}
+              </a>
+              <a href="#" id="delete_level" class="fb-cta cta--yellow">
+                {tr('Yes')}
+              </a>
+            </div>
+          </div>;
+        return tuple($title, $content);
       case 'logout':
         $title =
           <h4>
