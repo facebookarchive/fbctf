@@ -1,11 +1,12 @@
 <?hh // strict
+
 /* HH_IGNORE_ERROR[1002] */
 $translations = array(
   'date and time format' =>
     'H:i:s D d/m/Y', //used by date() function
   //Translations for IndexController
   'Facebook CTF' =>
-    ' Facebook CTF',
+    'Facebook CTF',
   'Conquer the world' =>
     'दुनिया जीत लो',
   'Play' =>
@@ -84,6 +85,12 @@ $translations = array(
     'पासवर्ड',
   'Choose an Emblem' =>
     'एक प्रतीक चुनें',
+  'or upload your own' =>
+    'या अपना खुद का अपलोड करें',
+  'Clear your custom emblem to use a default emblem.' =>
+    'एक डिफ़ॉल्ट प्रतीक का उपयोग करने के लिए अपने कस्टम प्रतीक को साफ़ करें.',
+  'Password is too simple' =>
+    'पासवर्ड बहुत सरल है',
   'Sign Up' =>
     'साइन अप करें',
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
@@ -228,8 +235,18 @@ $translations = array(
     'शुरू होने का समय',
   'Expected End Time' =>
     'अपेक्षित समाप्ति समय',
+  'Internationalization' =>
+    'अंतर्राष्ट्रीयकरण',
   'Language' =>
     'भाषा',
+  'Branding' =>
+    'ब्रांडिंग',
+  'Custom Logo' =>
+    'कस्टम लोगो',
+  'Logo' =>
+    'प्रतीक चिन्ह',
+  'Custom Text' =>
+    'प्रचलित पाठ',
   'DELETE' =>
     'हटाएँ',
   'Delete' =>
@@ -655,4 +672,12 @@ $translations = array(
     'खेलने के लिए स्किप करें ',
   'Powered By Facebook' =>
     ' Facebook द्वारा संचालित',
+  'Active Directory / LDAP' =>
+    'सक्रिय निर्देशिका / एलडीएपी',
+  'LDAP Server' =>
+    'एलडीएपी सर्वर',
+  'LDAP Port' =>
+    'एलडीएपी पोर्ट',
+  'LDAP Domain' =>
+    'एलडीएपी डोमेन',
 );

@@ -85,6 +85,12 @@ $translations = array(
     'Contrassenya',
   'Choose an Emblem' =>
     'Escollir un emblema',
+  'or upload your own' =>
+    'o pujar el seu propi',
+  'Clear your custom emblem to use a default emblem.' =>
+    'Rebuig seu emblema costum d\'utilitzar un emblema predeterminat.',
+  'Password is too simple' =>
+    'La contrasenya és massa simple',
   'Sign Up' =>
     'Donar-se d\'alta',
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
@@ -229,8 +235,18 @@ $translations = array(
     'Hora de començar!',
   'Expected End Time' =>
     'S\'esperava la fi del Temps',
+  'Internationalization' =>
+    'Internacionalització',
   'Language' =>
     'Idioma',
+  'Branding' =>
+    'Branding',
+  'Custom Logo' =>
+    'Logotip Personalitzat',
+  'Logo' =>
+    'Logo',
+  'Custom Text' =>
+    'Text Personalitzat',
   'DELETE' =>
     'ESBORRAR',
   'Delete' =>

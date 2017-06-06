@@ -85,6 +85,12 @@ $translations = array(
     'Şifre',
   'Choose an Emblem' =>
     'Amblem seçin',
+  'or upload your own' =>
+    'veya kendi yüklemenizi yükleyin',
+  'Clear your custom emblem to use a default emblem.' =>
+    'Varsayılan amblemi kullanmak için özel ambleminizi boşaltın.',
+  'Password is too simple' =>
+    'Şifre çok basit',
   'Sign Up' =>
     'Kayıt Olun',
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
@@ -229,8 +235,18 @@ $translations = array(
     'Başlangıç Saati',
   'Expected End Time' =>
     'Tahmini Bitiş Saati',
+  'Internationalization' =>
+    'Uluslararasılaşma',
   'Language' =>
     'Dil',
+  'Branding' =>
+    'Dağlama',
+  'Custom Logo' =>
+    'Özel Logo',
+  'Logo' =>
+    'Logo',
+  'Custom Text' =>
+    'Özel Metin',
   'DELETE' =>
     'SİL',
   'Delete' =>
@@ -453,6 +469,8 @@ $translations = array(
     'Oluşturma Saati',
   'Last Access' =>
     'Son Erişim',
+  'Last Page Access' =>
+    'Son Sayfa Erişimi',
   'Data' =>
     'Veri',
   'Sessions' =>
@@ -656,4 +674,12 @@ $translations = array(
     'Oyuna geç',
   'Powered By Facebook' =>
     'Facebook Tarafından Geliştiriliyor',
+  'Active Directory / LDAP' =>
+    'Active Directory / LDAP',
+  'LDAP Server' =>
+    'LDAP Sunucusu',
+  'LDAP Port' =>
+    'LDAP Bağlantı Noktası',
+  'LDAP Domain' =>
+    'LDAP Etki Alanı',
 );

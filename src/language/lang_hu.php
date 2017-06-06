@@ -79,16 +79,22 @@ $translations = array(
     'Token',
   'Team Registration' =>
     'Csapat regisztráció',
-  'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
-    'Regisztrálj a Capture The Flag versenyre! A regisztráció után a rendszer automatikusan beléptet.',
   'Team Name' =>
     'Csapatnév',
   'Password' =>
     'Jelszó',
   'Choose an Emblem' =>
     'Válassz egy logót',
+  'or upload your own' =>
+    'vagy feltöltheti a sajátját',
+  'Clear your custom emblem to use a default emblem.' =>
+    'Törölje az egyéni emblémát az alapértelmezett embléma használatához.',
+  'Password is too simple' =>
+    'A jelszó túl egyszerű',
   'Sign Up' =>
     'Regisztráció',
+  'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
+    'Regisztrálj a Capture The Flag versenyre! A regisztráció után a rendszer automatikusan beléptet.',
   'Not Available' =>
     'Nem elérhető',
   'Team Registration will be open soon, stay tuned!' =>
@@ -229,8 +235,18 @@ $translations = array(
     'A játék kezdete',
   'Expected End Time' =>
     'A játék várható vége',
+  'Internationalization' =>
+    'Nemzetközivé',
   'Language' =>
     'Nyelv',
+  'Branding' =>
+    'Branding',
+  'Custom Logo' =>
+    'Egyéni logó',
+  'Logo' =>
+    'Logo',
+  'Custom Text' =>
+    'Egyéni Szöveg',
   'DELETE' =>
     'TÖRÖL',
   'Delete' =>
@@ -251,6 +267,22 @@ $translations = array(
     'Játék exportálása',
   'Import Full Game' =>
     'Játék importálása',
+  'Import Teams' =>
+    'Import csapatok',
+  'Export Teams' =>
+    'Export csapatok',
+  'Import Logos' =>
+    'Import Logos',
+  'Export Logos' =>
+    'Export Logos',
+  'Import Levels' =>
+    'Import szintek',
+  'Export Levels' =>
+    'Export szintek',
+  'Import Categories' =>
+    'Import Kategóriák',
+  'Export Categories' =>
+    'Export Kategóriák',
   'Levels' =>
     'Feladatok',
   'New Quiz Level' =>

@@ -85,6 +85,12 @@ $translations = array(
     'Lösenord',
   'Choose an Emblem' =>
     'Välj en lagsymbol',
+  'or upload your own' =>
+    'eller ladda upp din egen',
+  'Clear your custom emblem to use a default emblem.' =>
+    'Rensa ditt anpassade emblem för att använda ett standardemblem.',
+  'Password is too simple' =>
+    'Lösenordet är för enkelt',
   'Sign Up' =>
     'Skapa Konto',
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
@@ -229,8 +235,18 @@ $translations = array(
     'Starttid',
   'Expected End Time' =>
     'Förväntad sluttid',
+  'Internationalization' =>
+    'Internationalisering',
   'Language' =>
     'Språk',
+  'Branding' =>
+    'Branding',
+  'Custom Logo' =>
+    'Anpassad logotyp',
+  'Logo' =>
+    'Logotyp',
+  'Custom Text' =>
+    'Anpassad Text',
   'DELETE' =>
     'RADERA',
   'Delete' =>
@@ -453,6 +469,8 @@ $translations = array(
     'Skapad',
   'Last Access' =>
     'Senaste användning',
+  'Last Page Access' =>
+    'Sista sidan Åtkomst',
   'Data' =>
     'Data',
   'Sessions' =>
@@ -656,4 +674,12 @@ $translations = array(
     'Hoppa till spelet',
   'Powered By Facebook' =>
     'Powered By Facebook',
+  'Active Directory / LDAP' =>
+    'Active Directory / LDAP',
+  'LDAP Server' =>
+    'LDAP Server',
+  'LDAP Port' =>
+    'LDAP Port',
+  'LDAP Domain' =>
+    'LDAP Domain',
 );

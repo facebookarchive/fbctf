@@ -85,6 +85,12 @@ $translations = array(
     'Nenosiri',
   'Choose an Emblem' =>
     'Chagua Nembo',
+  'or upload your own' =>
+    'au kupakia yako mwenyewe',
+  'Clear your custom emblem to use a default emblem.' =>
+    'Futa nembo zako maalum ya kutumia nembo default.',
+  'Password is too simple' =>
+    'Password ni rahisi sana',
   'Sign Up' =>
     'Jiunge',
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
@@ -229,8 +235,18 @@ $translations = array(
     'Muda wa kuanza',
   'Expected End Time' =>
     'Muda tegemewa wa kumaliza',
+  'Internationalization' =>
+    'Umataifishaji',
   'Language' =>
     'Lugha',
+  'Branding' =>
+    'Chapa',
+  'Custom Logo' =>
+    'Desturi za Mkono',
+  'Logo' =>
+    'Logo',
+  'Custom Text' =>
+    'Desturi Nakala',
   'DELETE' =>
     'FUTA',
   'Delete' =>

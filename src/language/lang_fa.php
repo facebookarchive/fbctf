@@ -85,6 +85,12 @@ $translations = array(
     'گذرواژه',
   'Choose an Emblem' =>
     'یک علامت انتخاب کنید',
+  'or upload your own' =>
+    'و یا خود را',
+  'Clear your custom emblem to use a default emblem.' =>
+    'پاک آرم سفارشی خود را به استفاده از یک علامت به طور پیش فرض.',
+  'Password is too simple' =>
+    'گذرواژه خیلی ساده است',
   'Sign Up' =>
     'ثبت‌نام',
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
@@ -229,8 +235,18 @@ $translations = array(
     'زمان شروع',
   'Expected End Time' =>
     'زمان مورد انتظار برای پایان',
+  'Internationalization' =>
+    'بین المللی کردن',
   'Language' =>
     'زبان',
+  'Branding' =>
+    'نام تجاری',
+  'Custom Logo' =>
+    'لوگو های سفارشی',
+  'Logo' =>
+    'آرم',
+  'Custom Text' =>
+    'متن سفارشی',
   'DELETE' =>
     'حذف',
   'Delete' =>

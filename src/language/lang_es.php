@@ -85,6 +85,12 @@ $translations = array(
     'Password',
   'Choose an Emblem' =>
     'Elige un Emblema',
+  'or upload your own' =>
+    'o sube tus propios',
+  'Clear your custom emblem to use a default emblem.' =>
+    'Elimine su emblema personalizado para usar un emblema predeterminado.',
+  'Password is too simple' =>
+    'La contraseña es demasiado simple',
   'Sign Up' =>
     'Regístrate',
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
@@ -232,11 +238,11 @@ $translations = array(
   'Internationalization' =>
     'Internacionalización',
   'Language' =>
-    'Idioma',
+    'Lenguaje',
   'Branding' =>
-    'Personalización',
+    'Marca',
   'Custom Logo' =>
-    'Logo Personalizado',
+    'Logotipo Personalizado',
   'Logo' =>
     'Logo',
   'Custom Text' =>
@@ -257,10 +263,26 @@ $translations = array(
     'General',
   'Back Up Database' =>
     'Hacer Copia de Seguridad de la Base de Datos',
-  'Export Game' =>
-    'Exportar Juego',
-  'Import Game' =>
-    'Importar Juego',
+  'Export Full Game' =>
+    'Juego completo de exportación',
+  'Import Full Game' =>
+    'Juego completo de importación',
+  'Import Teams' =>
+    'Equipos de importación',
+  'Export Teams' =>
+    'Exportar Equipos',
+  'Import Logos' =>
+    'Importar Logos',
+  'Export Logos' =>
+    'Exportar Logos',
+  'Import Levels' =>
+    'Niveles de importación',
+  'Export Levels' =>
+    'Niveles de exportación',
+  'Import Categories' =>
+    'Categorías de importación',
+  'Export Categories' =>
+    'Categorías de exportación',
   'Levels' =>
     'Niveles',
   'New Quiz Level' =>
@@ -638,7 +660,7 @@ $translations = array(
     'Command_Line',
   'Click "Nav" to access main navigation links like Rules of Play, Registration, Blog, Jobs & more.' =>
     'Presiona "Nav" para acceder a los links principales como Reglas del Juego, Registro, Blog, Trabajo y más.',
-  'Track your competition by clicking "scorboard" to access real-time game statistics and graphs.' =>
+  'Track your competition by clicking "scoreboard" to access real-time game statistics and graphs.' =>
     'Haz un seguimiento del juego haciendo clic en "scoreboard" para acceder a estadísticas y gráficas en tiempo real.',
   'Have fun, be the best and conquer the world.' =>
     'Diviértete, sé el mejor y conquista el mundo.',

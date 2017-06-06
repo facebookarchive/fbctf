@@ -85,6 +85,12 @@ $translations = array(
     'Pasahitza',
   'Choose an Emblem' =>
     'Aukeratu ikur bat',
+  'or upload your own' =>
+    'edo zure igo',
+  'Clear your custom emblem to use a default emblem.' =>
+    'Garbitu zure pertsonalizatua ikurra ikur lehenetsia erabiltzeko.',
+  'Password is too simple' =>
+    'Pasahitza sinpleegia da',
   'Sign Up' =>
     'Izena eman',
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
@@ -229,8 +235,18 @@ $translations = array(
     'Hasi Time',
   'Expected End Time' =>
     'Espero zen End Time',
+  'Internationalization' =>
+    'Nazioartekotzea',
   'Language' =>
     'Hizkuntza',
+  'Branding' =>
+    'Branding',
+  'Custom Logo' =>
+    'Logotipo Pertsonalizatua',
+  'Logo' =>
+    'Logotipo',
+  'Custom Text' =>
+    'Testua Pertsonalizatua',
   'DELETE' =>
     'eZABATU',
   'Delete' =>
@@ -247,10 +263,26 @@ $translations = array(
     'General',
   'Back Up Database' =>
     'Backup Database',
-  'Export Game' =>
-    'Export Game',
-  'Import Game' =>
-    'Inportatu Game',
+  'Export Full Game' =>
+    'Export Full Game',
+  'Import Full Game' =>
+    'Inportazio Full Game',
+  'Import Teams' =>
+    'Inportazio Taldeak',
+  'Export Teams' =>
+    'Export Taldeak',
+  'Import Logos' =>
+    'Inportazio Logos',
+  'Export Logos' =>
+    'Export Logos',
+  'Import Levels' =>
+    'Inportazio Mailak',
+  'Export Levels' =>
+    'Export Mailak',
+  'Import Categories' =>
+    'Inportazio Kategoriak',
+  'Export Categories' =>
+    'Export Kategoriak',
   'Levels' =>
     'Mailak',
   'New Quiz Level' =>

@@ -85,6 +85,12 @@ $translations = array(
     'Kata Laluan',
   'Choose an Emblem' =>
     'Pilih Emblem',
+  'or upload your own' =>
+    'atau muat naik anda sendiri',
+  'Clear your custom emblem to use a default emblem.' =>
+    'Membersihkan lambang adat anda untuk menggunakan lambang lalai.',
+  'Password is too simple' =>
+    'Password adalah terlalu mudah',
   'Sign Up' =>
     'Daftar Baru',
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
@@ -229,8 +235,18 @@ $translations = array(
     'Masa Mula',
   'Expected End Time' =>
     'Jangkaan Masa Tamat',
+  'Internationalization' =>
+    'Pengantarabangsaan',
   'Language' =>
     'Bahasa',
+  'Branding' =>
+    'Branding',
+  'Custom Logo' =>
+    'Custom Logo',
+  'Logo' =>
+    'Logo',
+  'Custom Text' =>
+    'Text Custom',
   'DELETE' =>
     'HAPUS',
   'Delete' =>
@@ -658,4 +674,12 @@ $translations = array(
     'Langkau untuk bermain',
   'Powered By Facebook' =>
     'Dikuasakan Oleh Facebook',
+  'Active Directory / LDAP' =>
+    'Active Directory / LDAP',
+  'LDAP Server' =>
+    'LDAP Server',
+  'LDAP Port' =>
+    'Port LDAP',
+  'LDAP Domain' =>
+    'LDAP Domain',
 );

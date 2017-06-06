@@ -85,6 +85,12 @@ $translations = array(
     'Senha',
   'Choose an Emblem' =>
     'Escolha um Emblema',
+  'or upload your own' =>
+    'ou carregue o seu próprio',
+  'Clear your custom emblem to use a default emblem.' =>
+    'Limpe seu emblema personalizado para usar um emblema padrão.',
+  'Password is too simple' =>
+    'A senha é muito simples',
   'Sign Up' =>
     'Registrar',
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
@@ -229,8 +235,18 @@ $translations = array(
     'Tempo Inicial',
   'Expected End Time' =>
     'Tempo Final Esperado',
+  'Internationalization' =>
+    'Internacionalização',
   'Language' =>
     'Idioma',
+  'Branding' =>
+    'Branding',
+  'Custom Logo' =>
+    'Logotipo personalizado',
+  'Logo' =>
+    'Logotipo',
+  'Custom Text' =>
+    'Texto personalizado',
   'DELETE' =>
     'DELETAR',
   'Delete' =>
@@ -658,4 +674,12 @@ $translations = array(
     'Pule para jogar',
   'Powered By Facebook' =>
     'Powered By Facebook',
+  'Active Directory / LDAP' =>
+    'Active Directory / LDAP',
+  'LDAP Server' =>
+    'LDAP Servidor',
+  'LDAP Port' =>
+    'LDAP Porta',
+  'LDAP Domain' =>
+    'LDAP Domínio',
 );
