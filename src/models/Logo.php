@@ -93,6 +93,20 @@ class Logo extends Model implements Importable, Exportable {
     self::invalidateMCRecords();
   }
 
+  // Set logo as used or unused by passing 1 or 0.
+  public static async function genSetUsed(
+    string $logo_name,
+    bool $used,
+  ): Awaitable<void> {
+    $db = await self::genDb();
+    await $db->queryf(
+      'UPDATE logos SET used = %d WHERE name = %s LIMIT 1',
+      (int) $used,
+      $logo_name,
+    );
+    self::invalidateMCRecords();
+  }
+
   // Retrieve a random logo from the table.
   public static async function genRandomLogo(): Awaitable<string> {
     $all_logos = await self::genAllLogos();
@@ -148,7 +162,7 @@ class Logo extends Model implements Importable, Exportable {
       $all_enabled_logos = array();
       $result =
         await $db->queryf(
-          'SELECT * FROM logos WHERE enabled = 1 AND protected = 0 AND custom = 0',
+          'SELECT * FROM logos WHERE enabled = 1 AND used = 0 AND protected = 0 AND custom = 0',
         );
 
       foreach ($result->mapRows() as $row) {

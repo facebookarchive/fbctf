@@ -7,7 +7,7 @@ DROP TABLE IF EXISTS `logos`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `logos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `used` tinyint(1) DEFAULT 1,
+  `used` tinyint(1) DEFAULT 0,
   `enabled` tinyint(1) DEFAULT 1,
   `protected` tinyint(1) DEFAULT 0,
   `custom` tinyint(1) DEFAULT 0,
@@ -23,7 +23,7 @@ CREATE TABLE `logos` (
 
 LOCK TABLES `logos` WRITE;
 /*!40000 ALTER TABLE `logos` DISABLE KEYS */;
-INSERT INTO `logos` (name, logo, protected, custom) VALUES ('admin', '/static/svg/icons/badges/badge-admin.svg', 1, 0);
+INSERT INTO `logos` (name, logo, protected, used, custom) VALUES ('admin', '/static/svg/icons/badges/badge-admin.svg', 1, 1, 0);
 INSERT INTO `logos` (name, logo, custom) VALUES ('4chan-2', '/static/svg/icons/badges/badge-4chan-2.svg', 0);
 INSERT INTO `logos` (name, logo, custom) VALUES ('4chan', '/static/svg/icons/badges/badge-4chan.svg', 0);
 INSERT INTO `logos` (name, logo, custom) VALUES ('8ball', '/static/svg/icons/badges/badge-8ball.svg', 0);
