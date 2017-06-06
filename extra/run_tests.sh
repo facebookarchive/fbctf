@@ -20,6 +20,11 @@ mysql -u "$DB_USER" --password="$DB_PWD" "$DB" -e "source $CODE_PATH/database/te
 mysql -u "$DB_USER" --password="$DB_PWD" "$DB" -e "source $CODE_PATH/database/logos.sql;"
 mysql -u "$DB_USER" --password="$DB_PWD" "$DB" -e "source $CODE_PATH/database/countries.sql;"
 
+if [ -f "$CODE_PATH/settings.ini" ]; then
+  echo "[+] Backing up existing settings.ini"
+  cp "$CODE_PATH/settings.ini" "$CODE_PATH/settings.ini.bak"
+fi
+
 echo "[+] DB Connection file"
 cat "$CODE_PATH/extra/settings.ini.example" | sed "s/DATABASE/$DB/g" | sed "s/MYUSER/$DB_USER/g" | sed "s/MYPWD/$DB_PWD/g" > "$CODE_PATH/settings.ini"
 
@@ -29,6 +34,11 @@ hhvm vendor/phpunit/phpunit/phpunit tests
 echo "[+] Deleting test database"
 mysql -u "$DB_USER" --password="$DB_PWD" -e "DROP DATABASE IF EXISTS $DB;"
 mysql -u "$DB_USER" --password="$DB_PWD" -e "FLUSH PRIVILEGES;"
+
+if [ -f "$CODE_PATH/settings.ini.bak" ]; then
+  echo "[+] Restoring previous settings.ini"
+  mv "$CODE_PATH/settings.ini.bak" "$CODE_PATH/settings.ini"
+fi
 
 # In the future, we should use the hh_client exit status.
 # Current there are some PHP built-ins not found in the hhi files upstream in HHVM.
