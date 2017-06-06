@@ -130,6 +130,12 @@ class MultiTeam extends Team {
             );
             $points_by_type->add(Pair {intval($team->get('id')), $type_pair});
           }
+        } else {
+          $type_pair = Map {};
+          $type_pair->add(Pair {'quiz', 0});
+          $type_pair->add(Pair {'flag', 0});
+          $type_pair->add(Pair {'base', 0});
+          $points_by_type->add(Pair {intval($team->get('id')), $type_pair});
         }
       }
       self::setMCRecords('POINTS_BY_TYPE', new Map($points_by_type));
