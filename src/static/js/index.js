@@ -7,6 +7,13 @@ function teamNameFormError() {
   });
 }
 
+function teamLoginFormError() {
+  $('.el--text')[0].classList.add('form-error');
+  $('.fb-form input').on('change', function() {
+    $('.el--text')[0].classList.remove('form-error');
+  });
+}
+
 function teamPasswordFormError(toosimple) {
   $('.el--text')[1].classList.add('form-error');
   if (toosimple) {
@@ -115,11 +122,16 @@ function sendIndexRequest(request_data) {
       goToPage(responseData.redirect);
     } else {
       // TODO: Make this a modal
-      verifyTeamName('register');
       if (responseData.message === 'Password too simple') {
         teamPasswordFormError(true);
       }
-      teamTokenFormError();
+      if (responseData.message === 'Login failed') {
+        teamLoginFormError();
+      }
+      if (responseData.message === 'Registration failed') {
+        teamNameFormError();
+        teamTokenFormError();
+      }
     }
   });
 }
