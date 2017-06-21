@@ -627,13 +627,16 @@ class Level extends Model implements Importable, Exportable {
 
     // Remove team points for level
     $scores = await ScoreLog::genAllScoresByLevel($level_id);
+    $level_delete_queries = Vector {};
     foreach ($scores as $score) {
       $team_id = $score->getTeamId();
       $points = $score->getPoints();
-      await $db->queryf(
-        'UPDATE teams SET points = points - %d WHERE id = %d',
-        $points,
-        $team_id,
+      $level_delete_queries->add(
+        sprintf(
+          'UPDATE teams SET points = points - %d WHERE id = %d',
+          $points,
+          $team_id,
+        ),
       );
     }
 
@@ -642,24 +645,25 @@ class Level extends Model implements Importable, Exportable {
     foreach ($hints as $hint) {
       $team_id = $hint->getTeamId();
       $penalty = $hint->getPenalty();
-      await $db->queryf(
-        'UPDATE teams SET points = points + %d WHERE id = %d',
-        $penalty,
-        $team_id,
+      $level_delete_queries->add(
+        sprintf(
+          'UPDATE teams SET points = points + %d WHERE id = %d',
+          $penalty,
+          $team_id,
+        ),
       );
     }
 
     // Delete all references to level
-    await $db->queryf('DELETE FROM levels WHERE id = %d LIMIT 1', $level_id);
-    await $db->queryf('DELETE FROM hints_log WHERE level_id = %d', $level_id);
-    await $db->queryf(
-      'DELETE FROM scores_log WHERE level_id = %d',
-      $level_id,
+    $level_delete_queries->addAll(
+      Set {
+        sprintf('DELETE FROM levels WHERE id = %d LIMIT 1', $level_id),
+        sprintf('DELETE FROM hints_log WHERE level_id = %d', $level_id),
+        sprintf('DELETE FROM scores_log WHERE level_id = %d', $level_id),
+        sprintf('DELETE FROM failures_log WHERE level_id = %d', $level_id),
+      },
     );
-    await $db->queryf(
-      'DELETE FROM failures_log WHERE level_id = %d',
-      $level_id,
-    );
+    await $db->multiQuery($level_delete_queries);
 
     self::invalidateMCRecords();
     Control::invalidateMCRecords();
