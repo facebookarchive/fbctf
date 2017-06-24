@@ -1,0 +1,44 @@
+version: '2'
+services:
+  mysql:
+    restart: always
+    build:
+      context: .
+      dockerfile: mysql/Dockerfile
+    environment:
+      MYSQL_ROOT_PASSWORD: toor
+      ADMIN_PASSWORD:
+    labels:
+      traefik.enable: "false"
+    expose:
+      - "3306"
+
+  nginx:
+    restart: always
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    depends_on:
+      - hhvm
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs
+    ports:
+      - 80:80
+      - 443:443
+
+  memcached:
+    restart: always
+    image: memcached:1.4.22
+    expose:
+      - "11211"
+
+  hhvm:
+    restart: always
+    build:
+      context: .
+      dockerfile: hhvm/Dockerfile
+    depends_on:
+      - mysql
+      - memcached
+    expose:
+      - "9000"
