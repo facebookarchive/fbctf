@@ -3,6 +3,7 @@
 set -e
 
 service hhvm restart
+service memcached restart
 
 while true; do
     if [[ -e /var/run/hhvm/sock ]]; then
