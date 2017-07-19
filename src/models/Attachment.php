@@ -81,6 +81,17 @@ class Attachment extends Model {
         $chmod === true,
         'Failed to set attachment file permissions to 0600',
       );
+
+      // Force ownership to www-data
+      $chown = chown(
+        must_have_string($server, 'DOCUMENT_ROOT').$local_filename,
+        'www-data',
+      );
+      invariant(
+        $chown === true,
+        'Failed to set attachment file ownership to www-data',
+      );
+
     } else {
       return false;
     }

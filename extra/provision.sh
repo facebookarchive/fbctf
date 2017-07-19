@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# fbctf provisioning script
+# FBCTF provisioning script
 #
 # Usage: provision.sh [-h|--help] [PARAMETER [ARGUMENT]] [PARAMETER [ARGUMENT]] ...
 #
@@ -12,7 +12,7 @@
 # Arguments for MODE:
 #   dev    Provision will run in development mode. Certificate will be self-signed.
 #   prod   Provision will run in production mode.
-#   update Provision will update fbctf running in the machine.
+#   update Provision will update FBCTF running in the machine.
 #
 # Arguments for TYPE:
 #   self   Provision will use a self-signed SSL certificate that will be generated.
@@ -20,14 +20,18 @@
 #   certbot Provision will generate a SSL certificate using letsencrypt/certbot. More info here: https://certbot.eff.org/
 #
 # Optional Parameters:
-#   -U,      --update            Pull from master GitHub branch and sync files to fbctf folder.
-#   -R,      --no-repo-mode      Disables HHVM Repo Authoritative mode in production mode.
-#   -k PATH, --keyfile PATH      Path to supplied SSL key file.
-#   -C PATH, --certfile PATH     Path to supplied SSL certificate pem file.
-#   -D DOMAIN, --domain DOMAIN   Domain for the SSL certificate to be generated using letsencrypt.
-#   -e EMAIL, --email EMAIL      Domain for the SSL certificate to be generated using letsencrypt.
-#   -s PATH, --code PATH         Path to fbctf code.
-#   -d PATH, --destination PATH  Destination path to place the fbctf folder.
+#   -U,         --update             Pull from master GitHub branch and sync files to fbctf folder.
+#   -R,         --no-repo-mode       Disables HHVM Repo Authoritative mode in production mode.
+#   -k PATH,    --keyfile PATH       Path to supplied SSL key file.
+#   -C PATH,    --certfile PATH      Path to supplied SSL certificate pem file.
+#   -D DOMAIN,  --domain DOMAIN      Domain for the SSL certificate to be generated using letsencrypt.
+#   -e EMAIL,   --email EMAIL        Domain for the SSL certificate to be generated using letsencrypt.
+#   -s PATH,    --code PATH          Path to fbctf code.
+#   -d PATH,    --destination PATH   Destination path to place the fbctf folder.
+#               --multiple-servers     Utilize multiple servers for installation. Server must be specified with --server-type
+#               --server-type  SERVER  Server to provision. 'hhvm', 'nginx', 'mysql', or 'cache' can be used.
+#               --hhvm-server  SERVER  HHVM Server IP when utilizing multiple servers. Call from 'nginx' server provision.
+#               --mysql-server SERVER  MySQL Server IP when utilizing multiple servers. Call from 'hhvm' server provision.
 #
 # Examples:
 #   Provision fbctf in development mode:
@@ -56,6 +60,11 @@ EMAIL="none"
 CODE_PATH="/vagrant"
 CTF_PATH="/var/www/fbctf"
 HHVM_CONFIG_PATH="/etc/hhvm/server.ini"
+DOCKER=false
+MULTIPLE_SERVERS=false
+SERVER_TYPE="none"
+HHVM_SERVER="hhvm"
+MYSQL_SERVER="mysql"
 
 # Arrays with valid arguments
 VALID_MODE=("dev" "prod")
@@ -69,32 +78,36 @@ function usage() {
   printf "  -m MODE, --mode MODE \tMode of operation. Default value is dev\n"
   printf "  -c TYPE, --cert TYPE \tType of certificate to use. Default value is self\n"
   printf "\nArguments for MODE:\n"
-  printf "  dev \tProvision will run in development mode. Certificate will be self-signed.\n"
-  printf "  prod \tProvision will run in production mode.\n"
-  printf "  update \tProvision will update fbctf running in the machine.\n"
+  printf "  dev \tProvision will run in Development mode. Certificate will be self-signed.\n"
+  printf "  prod \tProvision will run in Production mode.\n"
+  printf "  update \tProvision will update FBCTF running in the machine.\n"
   printf "\nArguments for TYPE:\n"
   printf "  self \tProvision will use a self-signed SSL certificate that will be generated.\n"
   printf "  own \tProvision will use the SSL certificate provided by the user.\n"
   printf "  certbot Provision will generate a SSL certificate using letsencrypt/certbot. More info here: https://certbot.eff.org/\n"
   printf "\nOptional Parameters:\n"
-  printf "  -U,      --update \t\tPull from master GitHub branch and sync files to fbctf folder.\n"
-  printf "  -R,      --no-repo-mode \tDisables HHVM Repo Authoritative mode in production mode.\n"
-  printf "  -k PATH, --keyfile PATH \tPath to supplied SSL key file.\n"
-  printf "  -C PATH, --certfile PATH \tPath to supplied SSL certificate pem file.\n"
-  printf "  -D DOMAIN, --domain DOMAIN \tDomain for the SSL certificate to be generated using letsencrypt.\n"
-  printf "  -e EMAIL, --email EMAIL \tDomain for the SSL certificate to be generated using letsencrypt.\n"
-  printf "  -s PATH, --code PATH \t\tPath to fbctf code. Default is /vagrant\n"
-  printf "  -d PATH, --destination PATH \tDestination path to place the fbctf folder. Default is /var/www/fbctf\n"
+  printf "  -U          --update \t\tPull from master GitHub branch and sync files to fbctf folder.\n"
+  printf "  -R          --no-repo-mode \tDisables HHVM Repo Authoritative mode in production mode.\n"
+  printf "  -k PATH     --keyfile PATH \tPath to supplied SSL key file.\n"
+  printf "  -C PATH     --certfile PATH \tPath to supplied SSL certificate pem file.\n"
+  printf "  -D DOMAIN   --domain DOMAIN \tDomain for the SSL certificate to be generated using letsencrypt.\n"
+  printf "  -e EMAIL    --email EMAIL \tDomain for the SSL certificate to be generated using letsencrypt.\n"
+  printf "  -s PATH     --code PATH \t\tPath to fbctf code. Default is /vagrant\n"
+  printf "  -d PATH     --destination PATH \tDestination path to place the fbctf folder. Default is /var/www/fbctf\n"
+  printf "  --multiple-servers    --utilize multiple servers for installation. Server must be specified with -st\n"
+  printf "  --server-type SERVER  --specify server to provision. 'hhvm', 'nginx', or 'mysql' can be used.\n"
+  printf "  --hhvm-server SERVER  --specify HHVM Server IP when utilizing multiple servers. Call from 'nginx' container.\n"
+  printf "  --mysql-server SERVER --specify MySQL Server IP when utilizing multiple servers. Call from 'hhvm' container.\n"
   printf "\nExamples:\n"
-  printf "  Provision fbctf in development mode:\n"
+  printf "  Provision FBCTF in development mode:\n"
   printf "\t%s -m dev -s /home/foobar/fbctf -d /var/fbctf\n" "${0}"
-  printf "  Provision fbctf in production mode using my own certificate:\n"
+  printf "  Provision FBCTF in production mode using my own certificate:\n"
   printf "\t%s -m prod -c own -k /etc/certs/my.key -C /etc/certs/cert.crt -s /home/foobar/fbctf -d /var/fbctf\n" "${0}"
-  printf "  Update current fbctf in development mode, having code in /home/foobar/fbctf and running from /var/fbctf:\n"
+  printf "  Update current FBCTF in development mode, having code in /home/foobar/fbctf and running from /var/fbctf:\n"
   printf "\t%s -m dev -U -s /home/foobar/fbctf -d /var/fbctf\n" "${0}"
 }
 
-ARGS=$(getopt -n "$0" -o hm:c:URk:C:D:e:s:d: -l "help,mode:,cert:,update,repo-mode,keyfile:,certfile:,domain:,email:,code:,destination:,docker" -- "$@")
+ARGS=$(getopt -n "$0" -o hm:c:URk:C:D:e:s:d: -l "help,mode:,cert:,update,repo-mode,keyfile:,certfile:,domain:,email:,code:,destination:,docker,multiple-servers,server-type:,hhvm-server:,mysql-server:" -- "$@")
 
 eval set -- "$ARGS"
 
@@ -160,6 +173,22 @@ while true; do
       DOCKER=true
       shift
       ;;
+    --multiple-servers)
+      MULTIPLE_SERVERS=true
+      shift
+      ;;
+    --server-type)
+      SERVER_TYPE=$2
+      shift 2
+      ;;
+    --hhvm-server)
+      HHVM_SERVER=$2
+      shift 2
+      ;;
+    --mysql-server)
+      MYSQL_SERVER=$2
+      shift 2
+      ;;
     --)
       shift
       break
@@ -171,17 +200,17 @@ while true; do
   esac
 done
 
+# Source library script for subprocesses
 source "$CODE_PATH/extra/lib.sh"
 
-# Install git first
+package_repo_update
+
 package git
+package curl
+package wget
+package rsync
 
-# Are we just updating a running fbctf?
-if [[ "$UPDATE" == true ]] ; then
-    update_repo "$MODE" "$CODE_PATH" "$CTF_PATH"
-    exit 0
-fi
-
+# Check for available memory, should be over 1GB
 AVAILABLE_RAM=`free -mt | grep Total | awk '{print $2}'`
 
 if [ $AVAILABLE_RAM -lt 1024 ]; then
@@ -190,13 +219,7 @@ if [ $AVAILABLE_RAM -lt 1024 ]; then
     sleep 5
 fi
 
-log "Provisioning in $MODE mode"
-log "Using $TYPE certificate"
-log "Source code folder $CODE_PATH"
-log "Destination folder $CTF_PATH"
-
-# We only create a new directory and rsync files over if it's different from the
-# original code path
+# We only create a new directory and rsync files over if it's different from the original code path
 if [[ "$CODE_PATH" != "$CTF_PATH" ]]; then
     log "Creating code folder $CTF_PATH"
     [[ -d "$CTF_PATH" ]] || sudo mkdir -p "$CTF_PATH"
@@ -209,94 +232,149 @@ if [[ "$CODE_PATH" != "$CTF_PATH" ]]; then
         log "Configuring git to ignore permission changes"
         git -C "$CTF_PATH/" config core.filemode false
         log "Setting permissions"
-        sudo chmod -R 777 "$CTF_PATH/"
+        sudo chmod -R 755 "$CTF_PATH/"
     fi
 fi
 
-# There we go!
+# If multiple servers are being utilized, ensure provision was called from the "nginx" or "hhvm" servers
+    if [[ "$MULTIPLE_SERVERS" == false || "$SERVER_TYPE" = "nginx" || $SERVER_TYPE = "hhvm" ]]; then
+    package language-pack-en
 
-# Ascii art is always appreciated
-set_motd "$CTF_PATH"
+    if [[ "$UPDATE" == true ]] ; then
+        log "Updating repo"
+        update_repo "$MODE" "$CODE_PATH" "$CTF_PATH"
+        exit 0
+    fi
 
-# Some Ubuntu distros don't come with curl installed
-package curl
+    log "Provisioning in $MODE mode"
+    log "Using $TYPE certificate"
+    log "Source code folder $CODE_PATH"
+    log "Destination folder $CTF_PATH"
 
-# We only run this once so provisioning is faster
-sudo apt-get update
+    log "Setting Message of the Day (MOTD)"
+    set_motd "$CTF_PATH"
 
-# Some people need this language pack installed or HHVM will report errors
-package language-pack-en
+    # If multiple servers are being utilized, ensure provision was called from the "hhvm" server
+    if [[ "$MULTIPLE_SERVERS" == false || "$SERVER_TYPE" = "hhvm" ]]; then
+        log "Installing HHVM"
+        install_hhvm "$CTF_PATH" "$HHVM_CONFIG_PATH" "$MULTIPLE_SERVERS"
 
-# Packages to be installed in dev mode
-if [[ "$MODE" == "dev" ]]; then
-    sudo apt-get install -y build-essential python-all-dev python-setuptools
-    package python-pip
-    sudo -H pip install --upgrade pip
-    sudo -H pip install mycli
-    package emacs
-    package htop
+        # Install Composer
+        log "Installing composer"
+        install_composer "$CTF_PATH"
+        log "Installing composer.phar"
+        composer.phar install
+
+        # In production, enable HHVM Repo Authoritative mode by default.
+        # More info here: https://docs.hhvm.com/hhvm/advanced-usage/repo-authoritative
+        if [[ "$MODE" == "prod" ]] && [[ "$NOREPOMODE" == false ]]; then
+            log "Enabling HHVM Repo Authoritative Mode"
+            hhvm_performance "$CTF_PATH" "$HHVM_CONFIG_PATH"
+        else
+            log "HHVM Repo Authoritative mode NOT enabled"
+        fi
+
+        log "Creating DB Connection file"
+        if [[ $MULTIPLE_SERVERS == true ]]; then
+          cat "$CTF_PATH/extra/settings.ini.example" | sed "s/DBHOST/$MYSQL_SERVER/g" | sed "s/DATABASE/$DB/g" | sed "s/MYUSER/$U/g" | sed "s/MYPWD/$P/g" | sed "s/MCHOST/127.0.0.1/g" | sudo tee "$CTF_PATH/settings.ini"
+        else
+          cat "$CTF_PATH/extra/settings.ini.example" | sed "s/DBHOST/127.0.0.1/g" | sed "s/DATABASE/$DB/g" | sed "s/MYUSER/$U/g" | sed "s/MYPWD/$P/g" | sed "s/MCHOST/127.0.0.1/g" | sudo tee "$CTF_PATH/settings.ini"
+        fi
+
+        ## Install Memcached
+        package memcached
+    fi
+
+    # If multiple servers are being utilized, ensure provision was called from the "nginx" server
+    if [[ "$MULTIPLE_SERVERS" == false || "$SERVER_TYPE" = "nginx" ]]; then
+        # Packages to be installed in Dev mode
+        if [[ "$MODE" == "dev" ]]; then
+            package build-essential
+            package libssl-dev
+            package python-all-dev
+            package python-setuptools
+            package python-pip
+            log "Upgrading pip"
+            sudo -H pip install --upgrade pip
+            log "Installing pip - mycli"
+            sudo -H pip install mycli
+            package emacs
+            package htop
+        fi
+
+        package ca-certificates
+        package npm
+        log "Updating npm"
+        sudo npm install -g npm@lts
+
+        package nodejs-legacy
+
+        log "Installing all required npm node_modules"
+        sudo npm install --prefix "$CTF_PATH"
+        sudo npm install -g grunt
+        sudo npm install -g flow-bin
+
+        log "Running grunt to generate JS files"
+        run_grunt "$CTF_PATH" "$MODE"
+
+        log "Installing nginx and certificates"
+        install_nginx "$CTF_PATH" "$MODE" "$TYPE" "$EMAIL" "$DOMAIN" "$DOCKER" "$MULTIPLE_SERVERS" "$HHVM_SERVER"
+
+        log "Installing unison 2.48.3. Remember to install the same version on your host machine"
+        package xz-utils
+        install_unison
+    fi
+
+    log "Creating attachments folder, and setting ownership to www-data"
+    sudo sudo mkdir -p "$CTF_PATH/src/data/attachments"
+    sudo sudo mkdir -p "$CTF_PATH/src/data/attachments/deleted"
+    sudo chown -R www-data:www-data "$CTF_PATH/src/data/attachments"
+    sudo chown -R www-data:www-data "$CTF_PATH/src/data/attachments/deleted"
+
+    log "Creating custom logos folder, and setting ownership to www-data"
+    sudo mkdir -p "$CTF_PATH/src/data/customlogos"
+    sudo chown -R www-data:www-data "$CTF_PATH/src/data/customlogos"
 fi
 
-# Install memcached
-package memcached
+# If multiple servers are being utilized, ensure provision was called from the "mysql" server
+if [[ "$MULTIPLE_SERVERS" == false || "$SERVER_TYPE" = "mysql" ]]; then
+    log "Installing MySQL"
+    install_mysql "$P_ROOT"
 
-# Install MySQL
-install_mysql "$P_ROOT"
+    # Configuration for MySQL
+    if [[ "$MULTIPLE_SERVERS" == true ]] && [[ "$SERVER_TYPE" = "mysql" ]]; then
+        ## This is required in order to generate password hash (since HHVM is not being installed)
+        package php5-cli
 
-# Install HHVM
-install_hhvm "$CTF_PATH" "$HHVM_CONFIG_PATH"
+        sudo sed -e '/^bind-address/ s/^#*/#/' -i /etc/mysql/my.cnf
+        sudo sed -e '/^skip-external-locking/ s/^#*/#/' -i /etc/mysql/my.cnf
+	fi
 
-# Install Composer
-install_composer "$CTF_PATH"
-# This step has done `cd "$CTF_PATH"`
-composer.phar install
-
-# In production, enable HHVM Repo Authoritative mode by default.
-# More info here: https://docs.hhvm.com/hhvm/advanced-usage/repo-authoritative
-if [[ "$MODE" == "prod" ]] && [[ "$NOREPOMODE" == false ]]; then
-  hhvm_performance "$CTF_PATH" "$HHVM_CONFIG_PATH"
-else
-  log "HHVM Repo Authoritative mode NOT enabled"
+    # Database creation
+    log "Creating database"
+    import_empty_db "root" "$P_ROOT" "$DB" "$CTF_PATH" "$MODE" "$MULTIPLE_SERVERS"
 fi
-
-# Install and update NPM
-package npm
-# Update NPM with itself: https://github.com/npm/npm/issues/14610
-sudo npm install -g npm@lts
-
-# Install node
-package nodejs-legacy
-
-# Install all required node_modules in the CTF folder
-sudo npm install --prefix "$CTF_PATH"
-sudo npm install -g grunt
-sudo npm install -g flow-bin
-
-# Run grunt to generate JS files
-run_grunt "$CTF_PATH" "$MODE"
-
-# Install nginx and certificates
-install_nginx "$CTF_PATH" "$MODE" "$TYPE" "$EMAIL" "$DOMAIN" "$DOCKER"
-
-# Install unison 2.48.3
-install_unison
-log "Remember install the same version of unison (2.48.3) in your host machine"
-
-# Database creation
-import_empty_db "root" "$P_ROOT" "$DB" "$CTF_PATH" "$MODE"
-
-# Make attachments folder world writable
-sudo chmod 777 "$CTF_PATH/src/data/attachments"
-sudo chmod 777 "$CTF_PATH/src/data/attachments/deleted"
-# Make custom logos folder, and make it world writable
-sudo mkdir -p "$CTF_PATH/src/data/customlogos"
-sudo chmod 777 "$CTF_PATH/src/data/customlogos"
 
 # Display the final message, depending on the context
-if [[ -d "/vagrant" ]]; then
-  log 'fbctf deployment is complete! Ready in https://10.10.10.5'
+if [[ "$MULTIPLE_SERVERS" == true ]]; then
+    if [[ "$DOCKER" == true ]]; then
+        :
+    else
+        if [[ "$SERVER_TYPE" = "hhvm" ]]; then
+            sudo service hhvm restart
+        elif [[ "$SERVER_TYPE" = "nginx" ]]; then
+            sudo service nginx restart
+            if [[ -d "/vagrant" ]]; then
+                ok_log 'FBCTF deployment is complete! Cleaning up... FBCTF will be Ready at https://10.10.10.5'
+            fi
+        elif [[ "$SERVER_TYPE" = "mysql" ]]; then
+            sudo service mysql restart
+        fi
+    fi
+elif [[ -d "/vagrant" ]]; then
+    ok_log 'FBCTF deployment is complete! Cleaning up... FBCTF will be Ready at https://10.10.10.5'
 else
-  ok_log 'fbctf deployment is complete!'
+    ok_log 'FBCTF deployment is complete! Cleaning up...'
 fi
 
 exit 0

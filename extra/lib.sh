@@ -7,16 +7,23 @@ function log() {
   echo "[+] $1"
 }
 
+function print_blank_lines() {
+  for i in {1..10}
+  do
+    echo
+  done
+}
+
 function error_log() {
   RED='\033[0;31m'
   NORMAL='\033[0m'
-  echo "${RED} [!] $1 ${NORMAL}"
+  echo -e "${RED} [!] $1 ${NORMAL}"
 }
 
 function ok_log() {
   GREEN='\033[0;32m'
   NORMAL='\033[0m'
-  echo "${GREEN} [+] $1 ${NORMAL}"
+  echo -e "${GREEN} [+] $1 ${NORMAL}"
 }
 
 function dl() {
@@ -30,8 +37,13 @@ function dl() {
   fi
 }
 
+function package_repo_update() {
+  log "Running apt-get update"
+  sudo DEBIAN_FRONTEND=noninteractive apt-get update
+}
+
 function package() {
-  if [[ -n "$(dpkg --get-selections | grep $1)" ]]; then
+  if [[ -n "$(dpkg --get-selections | grep -P '^$1\s')" ]]; then
     log "$1 is already installed. skipping."
   else
     log "Installing $1"
@@ -40,21 +52,18 @@ function package() {
 }
 
 function install_unison() {
-  log "Installing Unison 2.48.4"
   cd /
   curl -sL https://www.archlinux.org/packages/extra/x86_64/unison/download/ | sudo tar Jx
 }
 
 function repo_osquery() {
   log "Adding osquery repository keys"
-  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1484120AC4E9F8A1A577AEEE97A80C63C9D8B80B
-  sudo add-apt-repository "deb [arch=amd64] https://osquery-packages.s3.amazonaws.com/trusty trusty main"
+  sudo DEBIAN_FRONTEND=noninteractive apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1484120AC4E9F8A1A577AEEE97A80C63C9D8B80B
+  sudo DEBIAN_FRONTEND=noninteractive add-apt-repository "deb [arch=amd64] https://osquery-packages.s3.amazonaws.com/trusty trusty main"
 }
 
 function install_mysql() {
   local __pwd=$1
-
-  log "Installing MySQL"
 
   echo "mysql-server-5.5 mysql-server/root_password password $__pwd" | sudo debconf-set-selections
   echo "mysql-server-5.5 mysql-server/root_password_again password $__pwd" | sudo debconf-set-selections
@@ -71,7 +80,6 @@ function set_motd() {
   if [[ -f /etc/update-motd.d/51/cloudguest ]]; then
     sudo chmod -x /etc/update-motd.d/51-cloudguest
   fi
-
   sudo cp "$__path/extra/motd-ctf.sh" /etc/update-motd.d/10-help-text
 }
 
@@ -86,7 +94,7 @@ function run_grunt() {
   # properly updated when developing 'remotely' with unison.
   # grunt watch might take up to 5 seconds to update a file,
   # give it some time while you are developing.
-  if [[ $__mode = "dev" ]]; then
+  if [[ "$__mode" = "dev" ]]; then
     grunt watch &
   fi
 }
@@ -108,18 +116,18 @@ function letsencrypt_cert() {
   dl "https://dl.eff.org/certbot-auto" /usr/bin/certbot-auto
   sudo chmod a+x /usr/bin/certbot-auto
 
-  if [[ $__email == "none" ]]; then
+  if [[ "$__email" == "none" ]]; then
     read -p ' -> What is the email for the SSL Certificate recovery? ' __myemail
   else
     __myemail=$__email
   fi
-  if [[ $__domain == "none" ]]; then
+  if [[ "$__domain" == "none" ]]; then
     read -p ' -> What is the domain for the SSL Certificate? ' __mydomain
   else
     __mydomain=$__domain
   fi
 
-  if [[ $__docker = true ]]; then
+  if [[ "$__docker" = true ]]; then
     cat <<- EOF > /root/tmp/certbot.sh
 		#!/bin/bash
 		if [[ ! ( -d /etc/letsencrypt && "\$(ls -A /etc/letsencrypt)" ) ]]; then
@@ -153,17 +161,19 @@ function install_nginx() {
   local __email=$4
   local __domain=$5
   local __docker=$6
+  local __multiservers=$7
+  local __hhvmserver=$8
 
   local __certs_path="/etc/nginx/certs"
 
   log "Deploying certificates"
   sudo mkdir -p "$__certs_path"
 
-  if [[ $__mode = "dev" ]]; then
+  if [[ "$__mode" = "dev" ]]; then
     local __cert="$__certs_path/dev.crt"
     local __key="$__certs_path/dev.key"
     self_signed_cert "$__cert" "$__key"
-  elif [[ $__mode = "prod" ]]; then
+  elif [[ "$__mode" = "prod" ]]; then
     local __cert="$__certs_path/fbctf.crt"
     local __key="$__certs_path/fbctf.key"
     case "$__certs" in
@@ -174,7 +184,7 @@ function install_nginx() {
         own_cert "$__cert" "$__key"
       ;;
       certbot)
-        if [[ $__docker = true ]]; then
+        if [[ "$__docker" = true ]]; then
           self_signed_cert "$__cert" "$__key"
         fi
         letsencrypt_cert "$__cert" "$__key" "$__email" "$__domain" "$__docker"
@@ -193,14 +203,20 @@ function install_nginx() {
   __dhparam="/etc/nginx/certs/dhparam.pem"
   sudo openssl dhparam -out "$__dhparam" 2048
 
-  cat "$__path/extra/nginx.conf" | sed "s|CTFPATH|$__path/src|g" | sed "s|CER_FILE|$__cert|g" | sed "s|KEY_FILE|$__key|g" | sed "s|DHPARAM_FILE|$__dhparam|g" | sudo tee /etc/nginx/sites-available/fbctf.conf
+  if [[ "$__multiservers" == true ]]; then
+      cat "$__path/extra/nginx/nginx.conf" | sed "s|CTFPATH|$__path/src|g" | sed "s|CER_FILE|$__cert|g" | sed "s|KEY_FILE|$__key|g" | sed "s|DHPARAM_FILE|$__dhparam|g" | sed "s|HHVMSERVER|$__hhvmserver|g" | sudo tee /etc/nginx/sites-available/fbctf.conf
+  else
+      cat "$__path/extra/nginx.conf" | sed "s|CTFPATH|$__path/src|g" | sed "s|CER_FILE|$__cert|g" | sed "s|KEY_FILE|$__key|g" | sed "s|DHPARAM_FILE|$__dhparam|g" | sudo tee /etc/nginx/sites-available/fbctf.conf
+  fi
 
   sudo rm -f /etc/nginx/sites-enabled/default
   sudo ln -sf /etc/nginx/sites-available/fbctf.conf /etc/nginx/sites-enabled/fbctf.conf
 
-  # Restart nginx
-  sudo nginx -t
-  sudo service nginx restart
+  if [[ "$__multiservers" == false ]]; then
+      # Restart nginx
+      sudo nginx -t
+      sudo service nginx restart
+  fi
 }
 
 # TODO: We should split this function into one where the repo is added, and a
@@ -208,40 +224,36 @@ function install_nginx() {
 function install_hhvm() {
   local __path=$1
   local __config=$2
+  local __multiservers=$3
 
   package software-properties-common
 
   log "Adding HHVM key"
-  sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0x5a16e7281be7a449
+  sudo DEBIAN_FRONTEND=noninteractive apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0x5a16e7281be7a449
 
   log "Adding HHVM repo"
-  sudo add-apt-repository "deb http://dl.hhvm.com/ubuntu $(lsb_release -sc) main"
+  sudo DEBIAN_FRONTEND=noninteractive add-apt-repository "deb http://dl.hhvm.com/ubuntu $(lsb_release -sc) main"
+
+  package_repo_update
 
   log "Installing HHVM"
-  sudo apt-get update
   # Installing the package so the dependencies are installed too
   package hhvm
-  # The HHVM package version 3.15 is broken and crashes. See: https://github.com/facebook/hhvm/issues/7333
-  # Until this is fixed, install manually closest previous version, 3.14.5
-  sudo apt-get remove hhvm -y
-  # Clear old files
-  sudo rm -Rf /var/run/hhvm/*
-  sudo rm -Rf /var/cache/hhvm/*
-
-  local __package="hhvm_3.14.5~$(lsb_release -sc)_amd64.deb"
-  dl "http://dl.hhvm.com/ubuntu/pool/main/h/hhvm/$__package" "/tmp/$__package"
-  sudo dpkg -i "/tmp/$__package"
-
-  log "Copying HHVM configuration"
-  cat "$__path/extra/hhvm.conf" | sed "s|CTFPATH|$__path/|g" | sudo tee "$__config"
-
-  log "HHVM as PHP systemwide"
-  sudo /usr/bin/update-alternatives --install /usr/bin/php php /usr/bin/hhvm 60
 
   log "Enabling HHVM to start by default"
   sudo update-rc.d hhvm defaults
 
-  log "Restart HHVM"
+  log "Copying HHVM configuration"
+  if [[ "$__multiservers" == true ]]; then
+    cat "$__path/extra/hhvm.conf" | sed "s|CTFPATH|$__path/|g" | sed "s|hhvm.server.ip|;hhvm.server.ip|g" | sed "s|hhvm.server.file_socket|;hhvm.server.file_socket|g" | sudo tee "$__config"
+  else
+    cat "$__path/extra/hhvm.conf" | sed "s|CTFPATH|$__path/|g" | sed "s|hhvm.server.port|;hhvm.server.port|g" | sudo tee "$__config"
+  fi
+
+  log "HHVM as PHP systemwide"
+  sudo /usr/bin/update-alternatives --install /usr/bin/php php /usr/bin/hhvm 60
+
+  log "Restarting HHVM"
   sudo service hhvm restart
 }
 
@@ -251,16 +263,15 @@ function hhvm_performance() {
   local __oldrepo="/var/run/hhvm/hhvm.hhbc"
   local __repofile="/var/cache/hhvm/hhvm.hhbc"
 
-  log "Enabling HHVM RepoAuthoritative mode"
   cat "$__config" | sed "s|$__oldrepo|$__repofile|g" | sudo tee "$__config"
   sudo hhvm-repo-mode enable "$__path"
   sudo chown www-data:www-data "$__repofile"
+  sudo service hhvm start
 }
 
 function install_composer() {
   local __path=$1
 
-  log "Installing composer"
   cd $__path
   curl -sS https://getcomposer.org/installer | php
   php composer.phar install
@@ -276,6 +287,7 @@ function import_empty_db() {
   local __db=$3
   local __path=$4
   local __mode=$5
+  local __multiservers=$6
 
   log "Creating DB - $__db"
   mysql -u "$__user" --password="$__pwd" -e "CREATE DATABASE IF NOT EXISTS \`$__db\`;"
@@ -288,12 +300,14 @@ function import_empty_db() {
   mysql -u "$__user" --password="$__pwd" "$__db" -e "source $__path/database/logos.sql;"
 
   log "Creating user..."
-  mysql -u "$__user" --password="$__pwd" -e "CREATE USER '$__u'@'localhost' IDENTIFIED BY '$__p';" || true # don't fail if the user exists
-  mysql -u "$__user" --password="$__pwd" -e "GRANT ALL PRIVILEGES ON \`$__db\`.* TO '$__u'@'localhost';"
+  if [[ "$__multiservers == true" ]]; then
+      mysql -u "$__user" --password="$__pwd" -e "CREATE USER '$__u'@'%' IDENTIFIED BY '$__p';" || true # don't fail if the user exists
+      mysql -u "$__user" --password="$__pwd" -e "GRANT ALL PRIVILEGES ON \`$__db\`.* TO '$__u'@'%';"
+  else
+      mysql -u "$__user" --password="$__pwd" -e "CREATE USER '$__u'@'localhost' IDENTIFIED BY '$__p';" || true # don't fail if the user exists
+      mysql -u "$__user" --password="$__pwd" -e "GRANT ALL PRIVILEGES ON \`$__db\`.* TO '$__u'@'localhost';"
+  fi
   mysql -u "$__user" --password="$__pwd" -e "FLUSH PRIVILEGES;"
-
-  log "DB Connection file"
-  cat "$__path/extra/settings.ini.example" | sed "s/DATABASE/$__db/g" | sed "s/MYUSER/$__u/g" | sed "s/MYPWD/$__p/g" > "$__path/settings.ini"
 
   local PASSWORD
   log "Adding default admin user"
@@ -303,8 +317,17 @@ function import_empty_db() {
     PASSWORD=$(head -c 500 /dev/urandom | md5sum | cut -d" " -f1)
   fi
 
-  set_password "$PASSWORD" "$__user" "$__pwd" "$__db" "$__path"
-  log "The password for admin is: $PASSWORD"
+  set_password "$PASSWORD" "$__user" "$__pwd" "$__db" "$__path" "$__multiservers"
+
+  print_blank_lines
+  ok_log "The password for admin is: $PASSWORD"
+  if [[ "$__multiservers" == true ]]; then
+      echo
+      ok_log "Please note password as it will not be displayed again..."
+      echo
+      sleep 10
+  fi
+  print_blank_lines
 }
 
 function set_password() {
@@ -313,8 +336,13 @@ function set_password() {
   local __db_pwd=$3
   local __db=$4
   local __path=$5
+  local __multiservers=$6
 
-  HASH=$(hhvm -f "$__path/extra/hash.php" "$__admin_pwd")
+  if [[ "$__multiservers" == true ]]; then
+      HASH=$(php "$__path/extra/hash.php" "$__admin_pwd")
+  else
+      HASH=$(hhvm -f "$__path/extra/hash.php" "$__admin_pwd")
+  fi
 
   # First try to delete the existing admin user
   mysql -u "$__user" --password="$__db_pwd" "$__db" -e "DELETE FROM teams WHERE name='admin' AND admin=1"
@@ -348,7 +376,7 @@ function update_repo() {
           log "Configuring git to ignore permission changes"
           git -C "$CTF_PATH/" config core.filemode false
           log "Setting permissions"
-          sudo chmod -R 777 "$__ctf_path/"
+          sudo chmod -R 755 "$__ctf_path/"
       fi
   fi
 
@@ -356,4 +384,45 @@ function update_repo() {
   composer.phar install
 
   run_grunt "$__ctf_path" "$__mode"
+}
+
+function quick_setup() {
+  local __type=$1
+  local __mode=$2
+  local __ip=$3
+
+  if [[ "$__type" = "install" ]]; then
+    ./extra/provision.sh -m $__mode -s $PWD
+  elif [[ "$__type" = "install_multi_mysql" ]]; then
+    ./extra/provision.sh -m $__mode -s $PWD --multiple-servers --server-type mysql
+  elif [[ "$__type" = "install_multi_hhvm" ]]; then
+    ./extra/provision.sh -m $__mode -s $PWD --multiple-servers --server-type hhvm --mysql-server $__ip
+  elif [[ "$__type" = "install_multi_nginx" ]]; then
+    ./extra/provision.sh -m $__mode -s $PWD --multiple-servers --server-type nginx --hhvm-server $__ip
+  elif [[ "$__type" = "start_docker" ]]; then
+    package_repo_update
+    package docker-ce
+    sudo docker build --build-arg MODE=$__mode -t="fbctf" .
+    sudo docker run --name fbctf -p 80:80 -p 443:443 fbctf
+  elif [[ "$__type" = "start_docker_multi" ]]; then
+    package_repo_update
+    package python-pip
+    sudo pip install docker-compose
+    if [[ "$__mode" = "prod" ]]; then
+      sed -i -e 's|#  MODE: prod|  MODE: prod|g' ./docker-compose.yml
+      sed -i -e 's|      #args|      args|g' ./docker-compose.yml
+    elif [[ "$__mode" = "dev" ]]; then
+      sed -i -e 's|  MODE: prod|#  MODE: prod|g' ./docker-compose.yml
+      sed -i -e 's|      args|      #args|g' ./docker-compose.yml
+    fi
+    sudo docker-compose up
+  elif [[ "$__type" = "start_vagrant" ]]; then
+    cp Vagrantfile-single Vagrantfile
+    export FBCTF_PROVISION_ARGS="-m $__mode"
+    vagrant up
+  elif [[ "$__type" = "start_vagrant_multi" ]]; then
+    cp Vagrantfile-multi Vagrantfile
+    export FBCTF_PROVISION_ARGS="-m $__mode"
+    vagrant up
+  fi
 }

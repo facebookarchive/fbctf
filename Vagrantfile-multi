@@ -1,0 +1,45 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "ubuntu/trusty64"
+  config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
+
+  # MySQL Server
+  config.vm.define "mysql" do |mysql|
+    mysql.vm.network "private_network", ip: "10.10.10.6"
+    mysql.vm.hostname = "mysql"
+    mysql.vm.provision "shell", path: "extra/provision.sh", args: "ENV['FBCTF_PROVISION_ARGS'] --multiple-servers --server-type mysql", privileged: false
+    mysql.vm.provider "virtualbox" do |v|
+      v.memory = 1024
+      v.cpus = 2
+    end
+  end
+
+  # HHVM Server
+  config.vm.define "hhvm" do |hhvm|
+    hhvm.vm.network "private_network", ip: "10.10.10.7"
+    hhvm.vm.hostname = "hhvm"
+    hhvm.vm.provision "shell", path: "extra/provision.sh", args: "ENV['FBCTF_PROVISION_ARGS'] --multiple-servers --server-type hhvm --mysql-server 10.10.10.6", privileged: false
+    hhvm.vm.provider "virtualbox" do |v|
+      v.memory = 1024
+      v.cpus = 2
+    end
+  end
+
+  # Nginx Server
+  config.vm.define "nginx" do |nginx|
+    nginx.vm.network "private_network", ip: "10.10.10.5"
+    nginx.vm.network "forwarded_port", guest: 80, host: 80
+    nginx.vm.network "forwarded_port", guest: 443, host: 443
+    nginx.vm.hostname = "nginx"
+    nginx.vm.provision "shell", path: "extra/provision.sh", args: "ENV['FBCTF_PROVISION_ARGS'] --multiple-servers --server-type nginx --hhvm-server 10.10.10.7", privileged: false
+    nginx.vm.provider "virtualbox" do |v|
+      v.memory = 1024
+      v.cpus = 2
+    end
+  end
+
+end
