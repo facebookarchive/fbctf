@@ -257,7 +257,7 @@ function install_hhvm() {
   sudo service hhvm restart
 
   log "PHP/HHVM Version:"
-  lop `php-v`
+  log `php -v`
 }
 
 function hhvm_performance() {
