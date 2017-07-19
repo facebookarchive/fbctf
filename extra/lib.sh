@@ -253,11 +253,14 @@ function install_hhvm() {
   log "HHVM as PHP systemwide"
   sudo /usr/bin/update-alternatives --install /usr/bin/php php /usr/bin/hhvm 60
 
+  log "PHP Alternaives:"
+  sudo /usr/bin/update-alternatives --display php
+
   log "Restarting HHVM"
   sudo service hhvm restart
 
   log "PHP/HHVM Version:"
-  log `php -v`
+  php -v
 }
 
 function hhvm_performance() {
