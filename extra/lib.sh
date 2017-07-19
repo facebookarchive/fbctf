@@ -4,7 +4,7 @@
 #
 
 function log() {
-  echo "[+] $1"
+  echo "[+] $@"
 }
 
 function print_blank_lines() {
@@ -255,6 +255,9 @@ function install_hhvm() {
 
   log "Restarting HHVM"
   sudo service hhvm restart
+
+  log "PHP/HHVM Version:"
+  lop `php-v`
 }
 
 function hhvm_performance() {
