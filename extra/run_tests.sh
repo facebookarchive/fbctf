@@ -25,8 +25,9 @@ if [ -f "$CODE_PATH/settings.ini" ]; then
   sudo cp "$CODE_PATH/settings.ini" "$CODE_PATH/settings.ini.bak"
 fi
 
+# Because this is a test suite we assume you are running on a single server, if not update the DB and MC addresses...
 echo "[+] DB Connection file"
-cat "$CODE_PATH/extra/settings.ini.example" | sed "s/DATABASE/$DB/g" | sed "s/MYUSER/$DB_USER/g" | sed "s/MYPWD/$DB_PWD/g" | sudo tee "$CODE_PATH/settings.ini"
+cat "$CODE_PATH/extra/settings.ini.example" | sed "s/DATABASE/$DB/g" | sed "s/MYUSER/$DB_USER/g" | sed "s/MYPWD/$DB_PWD/g" | sed "s/DBHOST/127.0.0.1/g" | sed "s/MC_PORT/127.0.0.1/g" | sudo tee "$CODE_PATH/settings.ini"
 
 echo "[+] Starting tests"
 hhvm vendor/phpunit/phpunit/phpunit tests
