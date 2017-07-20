@@ -260,10 +260,10 @@ fi
         install_hhvm "$CTF_PATH" "$HHVM_CONFIG_PATH" "$MULTIPLE_SERVERS"
 
         # Install Composer
-        log "Installing composer"
+        log "Installing Composer"
         install_composer "$CTF_PATH"
-        log "Installing composer.phar"
-        composer.phar install
+        log "Installing Composer in /usr/bin"
+        hhvm /usr/bin/composer.phar install
 
         # In production, enable HHVM Repo Authoritative mode by default.
         # More info here: https://docs.hhvm.com/hhvm/advanced-usage/repo-authoritative
