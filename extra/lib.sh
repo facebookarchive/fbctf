@@ -280,7 +280,7 @@ function install_composer() {
 
   cd $__path
   curl -sS https://getcomposer.org/installer | php
-  php composer.phar install
+  hhvm composer.phar install
   sudo mv composer.phar /usr/bin
   sudo chmod +x /usr/bin/composer.phar
 }
