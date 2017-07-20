@@ -22,11 +22,11 @@ mysql -u "$DB_USER" --password="$DB_PWD" "$DB" -e "source $CODE_PATH/database/co
 
 if [ -f "$CODE_PATH/settings.ini" ]; then
   echo "[+] Backing up existing settings.ini"
-  cp "$CODE_PATH/settings.ini" "$CODE_PATH/settings.ini.bak"
+  sudo cp "$CODE_PATH/settings.ini" "$CODE_PATH/settings.ini.bak"
 fi
 
 echo "[+] DB Connection file"
-cat "$CODE_PATH/extra/settings.ini.example" | sed "s/DATABASE/$DB/g" | sed "s/MYUSER/$DB_USER/g" | sed "s/MYPWD/$DB_PWD/g" > "$CODE_PATH/settings.ini"
+cat "$CODE_PATH/extra/settings.ini.example" | sed "s/DATABASE/$DB/g" | sed "s/MYUSER/$DB_USER/g" | sed "s/MYPWD/$DB_PWD/g" | sudo tee "$CODE_PATH/settings.ini"
 
 echo "[+] Starting tests"
 hhvm vendor/phpunit/phpunit/phpunit tests
@@ -37,7 +37,7 @@ mysql -u "$DB_USER" --password="$DB_PWD" -e "FLUSH PRIVILEGES;"
 
 if [ -f "$CODE_PATH/settings.ini.bak" ]; then
   echo "[+] Restoring previous settings.ini"
-  mv "$CODE_PATH/settings.ini.bak" "$CODE_PATH/settings.ini"
+  sudo mv "$CODE_PATH/settings.ini.bak" "$CODE_PATH/settings.ini"
 fi
 
 # In the future, we should use the hh_client exit status.
