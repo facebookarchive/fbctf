@@ -4,6 +4,8 @@ language: generic
 sudo: required
 dist: trusty
 
+group: deprecated-2017Q2
+
 install: ./extra/provision.sh -m dev -s $TRAVIS_BUILD_DIR -d $TRAVIS_BUILD_DIR
 
 script: ./extra/run_tests.sh $TRAVIS_BUILD_DIR

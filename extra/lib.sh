@@ -261,6 +261,7 @@ function install_hhvm() {
 
   log "PHP/HHVM Version:"
   php -v
+  hhvm --version
 }
 
 function hhvm_performance() {
