@@ -336,6 +336,8 @@ class ActionModalController extends ModalController {
           </div>;
         return tuple($title, $content);
       default:
+        /* HH_IGNORE_ERROR[4110] - HHVM 3.18+ enforces \HH\FormatString, ignoring pending upstream documentation. */
+        /* HH_IGNORE_ERROR[4027] - HHVM 3.18+ enforces \HH\FormatString, ignoring pending upstream documentation. */
         invariant(false, "Invalid modal name $modal");
     }
   }
