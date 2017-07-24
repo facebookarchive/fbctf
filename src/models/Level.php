@@ -1004,24 +1004,7 @@ class Level extends Model implements Importable, Exportable {
 
           // Adjust bonus
           await self::genAdjustBonus($level_id);
-          // Score!
-          await $db->queryf(
-            'UPDATE teams SET points = points + %d, last_score = NOW() WHERE id = %d LIMIT 1',
-            $level->getPoints(),
-            $team_id,
-          );
-          // Score!
-          await $db->queryf(
-            'UPDATE teams SET points = points + %d, last_score = NOW() WHERE id = %d LIMIT 1',
-            $level->getBonus(),
-            $team_id,
-          );
-          // Score!
-          await $db->queryf(
-            'UPDATE teams SET points = points + %d, last_score = NOW() WHERE id = %d LIMIT 1',
-            $penalty,
-            $team_id,
-          );
+          
           // Score!
           await $db->queryf(
             'UPDATE teams SET points = points + %d, last_score = NOW() WHERE id = %d LIMIT 1',
