@@ -3,7 +3,6 @@
 set -e
 
 service hhvm restart
-service memcached restart
 
 while true; do
     if [[ -e /var/run/hhvm/sock ]]; then
@@ -13,5 +12,4 @@ while true; do
     sleep 5
 
     service hhvm status
-    service memcached status
 done

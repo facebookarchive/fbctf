@@ -12,6 +12,16 @@ services:
     expose:
       - "3306"
 
+  cache:
+    restart: always
+    build:
+      context: .
+      dockerfile: extra/cache/Dockerfile
+      #args:
+      #  MODE: prod
+    expose:
+      - "11211"
+
   hhvm:
     restart: always
     build:
@@ -21,6 +31,7 @@ services:
       #  MODE: prod
     depends_on:
       - mysql
+      - cache
     expose:
       - "9000"
 

@@ -3,7 +3,6 @@
 set -e
 
 service mysql restart
-myisamchk --safe-recover /var/lib/mysql/*/*.MYI
 
 while true; do
     sleep 5

@@ -352,7 +352,7 @@ function set_password() {
   fi
 
   # First try to delete the existing admin user
-  mysql -u "$__user" --password="$__db_pwd" "$__db" -e "DELETE FROM teams WHERE name='admin' AND admin=1"
+  mysql -u "$__user" --password="$__db_pwd" "$__db" -e "DELETE FROM teams WHERE name='admin' AND admin=1;"
 
   # Then insert the new admin user with ID 1 (just as a convention, we shouldn't rely on this in the code)
   mysql -u "$__user" --password="$__db_pwd" "$__db" -e "INSERT INTO teams (id, name, password_hash, admin, protected, logo, created_ts) VALUES (1, 'admin', '$HASH', 1, 1, 'admin', NOW());"
@@ -397,29 +397,32 @@ function quick_setup() {
   local __type=$1
   local __mode=$2
   local __ip=$3
+  local __ip2=$4
 
   if [[ "$__type" = "install" ]]; then
     ./extra/provision.sh -m $__mode -s $PWD
   elif [[ "$__type" = "install_multi_mysql" ]]; then
     ./extra/provision.sh -m $__mode -s $PWD --multiple-servers --server-type mysql
   elif [[ "$__type" = "install_multi_hhvm" ]]; then
-    ./extra/provision.sh -m $__mode -s $PWD --multiple-servers --server-type hhvm --mysql-server $__ip
+    ./extra/provision.sh -m $__mode -s $PWD --multiple-servers --server-type hhvm --mysql-server $__ip --cache-server $__ip2
   elif [[ "$__type" = "install_multi_nginx" ]]; then
     ./extra/provision.sh -m $__mode -s $PWD --multiple-servers --server-type nginx --hhvm-server $__ip
+  elif [[ "$__type" = "install_multi_cache" ]]; then
+    ./extra/provision.sh -m $__mode -s $PWD --multiple-servers --server-type cache
   elif [[ "$__type" = "start_docker" ]]; then
     package_repo_update
     package docker-ce
-    sudo docker build --build-arg MODE=$__mode -t="fbctf" .
-    sudo docker run --name fbctf -p 80:80 -p 443:443 fbctf
+    sudo docker build --build-arg MODE=$__mode -t="fbctf-image" .
+    sudo docker run --name fbctf -p 80:80 -p 443:443 fbctf-image
   elif [[ "$__type" = "start_docker_multi" ]]; then
     package_repo_update
     package python-pip
     sudo pip install docker-compose
     if [[ "$__mode" = "prod" ]]; then
-      sed -i -e 's|#  MODE: prod|  MODE: prod|g' ./docker-compose.yml
+      sed -i -e 's|      #  MODE: prod|        MODE: prod|g' ./docker-compose.yml
       sed -i -e 's|      #args|      args|g' ./docker-compose.yml
     elif [[ "$__mode" = "dev" ]]; then
-      sed -i -e 's|  MODE: prod|#  MODE: prod|g' ./docker-compose.yml
+      sed -i -e 's|        MODE: prod|      #  MODE: prod|g' ./docker-compose.yml
       sed -i -e 's|      args|      #args|g' ./docker-compose.yml
     fi
     sudo docker-compose up
@@ -433,3 +436,4 @@ function quick_setup() {
     vagrant up
   fi
 }
+

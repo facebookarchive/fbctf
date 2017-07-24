@@ -14,5 +14,5 @@ WORKDIR $HOME
 COPY . $HOME
 RUN chown www-data:www-data $HOME
 
-RUN ./extra/provision.sh -m $MODE -c $TYPE -k $KEY -C $CRT -D $DOMAIN -e $EMAIL -s `pwd` --docker --multiple-servers --server-type nginx
+RUN ./extra/provision.sh -m $MODE -c $TYPE -k $KEY -C $CRT -D $DOMAIN -e $EMAIL -s `pwd` --docker --multiple-servers --server-type nginx --hhvm-server hhvm
 CMD ["./extra/nginx/nginx_startup.sh"]

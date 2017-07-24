@@ -18,11 +18,22 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
+  # Cache Server
+  config.vm.define "cache" do |cache|
+    cache.vm.network "private_network", ip: "10.10.10.8"
+    cache.vm.hostname = "cache"
+    cache.vm.provision "shell", path: "extra/provision.sh", args: "ENV['FBCTF_PROVISION_ARGS'] --multiple-servers --server-type cache", privileged: false
+    cache.vm.provider "virtualbox" do |v|
+      v.memory = 1024
+      v.cpus = 2
+    end
+  end
+
   # HHVM Server
   config.vm.define "hhvm" do |hhvm|
     hhvm.vm.network "private_network", ip: "10.10.10.7"
     hhvm.vm.hostname = "hhvm"
-    hhvm.vm.provision "shell", path: "extra/provision.sh", args: "ENV['FBCTF_PROVISION_ARGS'] --multiple-servers --server-type hhvm --mysql-server 10.10.10.6", privileged: false
+    hhvm.vm.provision "shell", path: "extra/provision.sh", args: "ENV['FBCTF_PROVISION_ARGS'] --multiple-servers --server-type hhvm --mysql-server 10.10.10.6 --cache-server 10.10.10.8", privileged: false
     hhvm.vm.provider "virtualbox" do |v|
       v.memory = 1024
       v.cpus = 2

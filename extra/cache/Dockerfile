@@ -13,5 +13,5 @@ ARG CRT
 WORKDIR $HOME
 COPY . $HOME
 
-RUN ./extra/provision.sh -m $MODE -c $TYPE -k $KEY -C $CRT -D $DOMAIN -e $EMAIL -s `pwd` --docker --multiple-servers --server-type mysql
-CMD ["./extra/mysql/mysql_startup.sh"]
+RUN ./extra/provision.sh -m $MODE -c $TYPE -k $KEY -C $CRT -D $DOMAIN -e $EMAIL -s `pwd` --docker --multiple-servers --server-type cache
+CMD ["./extra/cache/cache_startup.sh"]

@@ -30,8 +30,9 @@
 #   -d PATH,    --destination PATH   Destination path to place the fbctf folder.
 #               --multiple-servers     Utilize multiple servers for installation. Server must be specified with --server-type
 #               --server-type  SERVER  Server to provision. 'hhvm', 'nginx', 'mysql', or 'cache' can be used.
-#               --hhvm-server  SERVER  HHVM Server IP when utilizing multiple servers. Call from 'nginx' server provision.
-#               --mysql-server SERVER  MySQL Server IP when utilizing multiple servers. Call from 'hhvm' server provision.
+#               --hhvm-server  SERVER  HHVM Server IP when utilizing multiple servers. Call from 'nginx' server container.
+#               --mysql-server SERVER  MySQL Server IP when utilizing multiple servers. Call from 'hhvm' server container.
+#               --cache-server SERVER  Memcached Server IP when utilizing multiple servers. Call from 'hhvm' server container.
 #
 # Examples:
 #   Provision fbctf in development mode:
@@ -65,6 +66,7 @@ MULTIPLE_SERVERS=false
 SERVER_TYPE="none"
 HHVM_SERVER="hhvm"
 MYSQL_SERVER="mysql"
+CACHE_SERVER="cache"
 
 # Arrays with valid arguments
 VALID_MODE=("dev" "prod")
@@ -95,9 +97,10 @@ function usage() {
   printf "  -s PATH     --code PATH \t\tPath to fbctf code. Default is /vagrant\n"
   printf "  -d PATH     --destination PATH \tDestination path to place the fbctf folder. Default is /var/www/fbctf\n"
   printf "  --multiple-servers    --utilize multiple servers for installation. Server must be specified with -st\n"
-  printf "  --server-type SERVER  --specify server to provision. 'hhvm', 'nginx', or 'mysql' can be used.\n"
+  printf "  --server-type SERVER  --specify server to provision. 'hhvm', 'nginx', 'mysql', or 'cache' can be used.\n"
   printf "  --hhvm-server SERVER  --specify HHVM Server IP when utilizing multiple servers. Call from 'nginx' container.\n"
   printf "  --mysql-server SERVER --specify MySQL Server IP when utilizing multiple servers. Call from 'hhvm' container.\n"
+  printf "  --cache-server SERVER --memcached Server IP when utilizing multiple servers. Call from 'hhvm' server container.\n"
   printf "\nExamples:\n"
   printf "  Provision FBCTF in development mode:\n"
   printf "\t%s -m dev -s /home/foobar/fbctf -d /var/fbctf\n" "${0}"
@@ -107,7 +110,7 @@ function usage() {
   printf "\t%s -m dev -U -s /home/foobar/fbctf -d /var/fbctf\n" "${0}"
 }
 
-ARGS=$(getopt -n "$0" -o hm:c:URk:C:D:e:s:d: -l "help,mode:,cert:,update,repo-mode,keyfile:,certfile:,domain:,email:,code:,destination:,docker,multiple-servers,server-type:,hhvm-server:,mysql-server:" -- "$@")
+ARGS=$(getopt -n "$0" -o hm:c:URk:C:D:e:s:d: -l "help,mode:,cert:,update,repo-mode,keyfile:,certfile:,domain:,email:,code:,destination:,docker,multiple-servers,server-type:,hhvm-server:,mysql-server:,cache-server:" -- "$@")
 
 eval set -- "$ARGS"
 
@@ -187,6 +190,10 @@ while true; do
       ;;
     --mysql-server)
       MYSQL_SERVER=$2
+      shift 2
+      ;;
+    --cache-server)
+      CACHE_SERVER=$2
       shift 2
       ;;
     --)
@@ -276,13 +283,10 @@ fi
 
         log "Creating DB Connection file"
         if [[ $MULTIPLE_SERVERS == true ]]; then
-          cat "$CTF_PATH/extra/settings.ini.example" | sed "s/DBHOST/$MYSQL_SERVER/g" | sed "s/DATABASE/$DB/g" | sed "s/MYUSER/$U/g" | sed "s/MYPWD/$P/g" | sed "s/MCHOST/127.0.0.1/g" | sudo tee "$CTF_PATH/settings.ini"
+          cat "$CTF_PATH/extra/settings.ini.example" | sed "s/DBHOST/$MYSQL_SERVER/g" | sed "s/DATABASE/$DB/g" | sed "s/MYUSER/$U/g" | sed "s/MYPWD/$P/g" | sed "s/MCHOST/$CACHE_SERVER/g" | sudo tee "$CTF_PATH/settings.ini"
         else
           cat "$CTF_PATH/extra/settings.ini.example" | sed "s/DBHOST/127.0.0.1/g" | sed "s/DATABASE/$DB/g" | sed "s/MYUSER/$U/g" | sed "s/MYPWD/$P/g" | sed "s/MCHOST/127.0.0.1/g" | sudo tee "$CTF_PATH/settings.ini"
         fi
-
-        ## Install Memcached
-        package memcached
     fi
 
     # If multiple servers are being utilized, ensure provision was called from the "nginx" server
@@ -336,6 +340,21 @@ fi
     sudo chown -R www-data:www-data "$CTF_PATH/src/data/customlogos"
 fi
 
+# If multiple servers are being utilized, ensure provision was called from the "cache" server
+if [[ "$MULTIPLE_SERVERS" == false || "$SERVER_TYPE" = "cache" ]]; then
+    # Install Memcached
+    package memcached
+
+    # If cache server is running standalone, enable memcached for all interfaces.
+    if [[ "$MULTIPLE_SERVERS" == true ]]; then
+        sudo sed -i 's/^-l/#-l/g' /etc/memcached.conf
+        sudo service memcached restart
+    else
+        sudo sed -i 's/^#-l/-l/g' /etc/memcached.conf
+        sudo service memcached restart
+    fi
+fi
+
 # If multiple servers are being utilized, ensure provision was called from the "mysql" server
 if [[ "$MULTIPLE_SERVERS" == false || "$SERVER_TYPE" = "mysql" ]]; then
     log "Installing MySQL"
@@ -343,7 +362,7 @@ if [[ "$MULTIPLE_SERVERS" == false || "$SERVER_TYPE" = "mysql" ]]; then
 
     # Configuration for MySQL
     if [[ "$MULTIPLE_SERVERS" == true ]] && [[ "$SERVER_TYPE" = "mysql" ]]; then
-        ## This is required in order to generate password hash (since HHVM is not being installed)
+        # This is required in order to generate password hash (since HHVM is not being installed)
         package php5-cli
 
         sudo sed -e '/^bind-address/ s/^#*/#/' -i /etc/mysql/my.cnf
@@ -369,6 +388,8 @@ if [[ "$MULTIPLE_SERVERS" == true ]]; then
             fi
         elif [[ "$SERVER_TYPE" = "mysql" ]]; then
             sudo service mysql restart
+        elif [[ "$SERVER_TYPE" = "cache" ]]; then
+            sudo service memcached restart
         fi
     fi
 elif [[ -d "/vagrant" ]]; then
