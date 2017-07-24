@@ -646,6 +646,16 @@ class Level extends Model implements Importable, Exportable {
     self::invalidateMCRecords(); // Invalidate Memcached Level data.
   }
 
+  // Reset level.
+  public static async function genResetBonuses(): Awaitable<void> {
+    $db = await self::genDb();
+
+    //Set all bonuses back to the valid of bonus_fix
+    await $db->queryf('UPDATE levels SET bonus = bonus_fix');
+
+    self::invalidateMCRecords(); // Invalidate Memcached Level data.
+  }
+
   // Enable or disable levels by type.
   public static async function genSetStatusType(
     bool $active,
@@ -994,7 +1004,24 @@ class Level extends Model implements Importable, Exportable {
 
           // Adjust bonus
           await self::genAdjustBonus($level_id);
-
+          // Score!
+          await $db->queryf(
+            'UPDATE teams SET points = points + %d, last_score = NOW() WHERE id = %d LIMIT 1',
+            $level->getPoints(),
+            $team_id,
+          );
+          // Score!
+          await $db->queryf(
+            'UPDATE teams SET points = points + %d, last_score = NOW() WHERE id = %d LIMIT 1',
+            $level->getBonus(),
+            $team_id,
+          );
+          // Score!
+          await $db->queryf(
+            'UPDATE teams SET points = points + %d, last_score = NOW() WHERE id = %d LIMIT 1',
+            $penalty,
+            $team_id,
+          );
           // Score!
           await $db->queryf(
             'UPDATE teams SET points = points + %d, last_score = NOW() WHERE id = %d LIMIT 1',
