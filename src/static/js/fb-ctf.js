@@ -495,7 +495,7 @@ function setupInputListeners() {
 
         // Load initial filters
         loadSavedFilterModule();
-        
+
         // Load initial teams related modules and data
         loadTeamData();
         var loaded = loadTeamsModule();
@@ -765,6 +765,7 @@ function setupInputListeners() {
      *   - the country that is being captured
      */
     function captureCountry(country) {
+      console.log(country);
       var $selectCountry = $('.countries .land[title="' + country + '"]', $mapSvg),
           capturedBy = getCapturedByMarkup($selectCountry.closest('g').data('captured')),
           showAnimation = !(is_ie || LIST_VIEW),
@@ -806,7 +807,7 @@ function setupInputListeners() {
         }, animationDuration);
       } else {
         setTimeout(function() {
-          launchCaptureModal(country, capturedBy);
+          launchCaptureModal(country);
         }, animationDuration);
       }
     } // function countryClick();
@@ -835,7 +836,7 @@ function setupInputListeners() {
         $('.capturing-team-name', $container).text(country);
         $('.points-value', $container).text('+ ' + points + ' Pts');
         $('.country-name', $container).text(country);
-
+        console.log($container);
         $container.css({
           left: positionX + 'px',
           top: positionY + 'px'
@@ -882,8 +883,8 @@ function setupInputListeners() {
      */
     function launchCaptureModal(country) {
       var data = FB_CTF.data.COUNTRIES[country];
-
       Modal.loadPopup('p=country&modal=capture', 'country-capture', function() {
+
         var $container = $('.fb-modal-content'),
             level_id = data ? data.level_id : 0,
             title = data ? data.title : '',
@@ -896,12 +897,29 @@ function setupInputListeners() {
             completed = data ? data.completed : '',
             owner = data ? data.owner : '',
             attachments = data ? data.attachments : '',
-            links = data ? data.links : '';
+            links = data ? data.links : '',
+            wrong_answer_penalty = data ? data.wrong_answer_penalty : '',
+            numIncorrectGuesses = data ? data.numIncorrectGuesses : '',
+            isShortAnswer = data ? data.isShortAnswer : '',
+            shuffledChoiceA = data ? data.shuffledChoiceA : '',
+            shuffledChoiceB = data ? data.shuffledChoiceB : '',
+            shuffledChoiceC = data ? data.shuffledChoiceC : '',
+            shuffledChoiceD = data ? data.shuffledChoiceD : '',
+            choiceA = data ? data.choiceA : '',
+            choiceB = data ? data.choiceB : '',
+            choiceC = data ? data.choiceC : '',
+            choiceD = data ? data.choiceD : '';
 
         $('.country-name', $container).text(country);
         $('.country-title', $container).text(title);
         $('input[name=level_id]', $container).attr('value', level_id);
         $('.capture-text', $container).text(intro);
+        $('.choiceA-text', $container).text(shuffledChoiceA);
+        $('.choiceB-text', $container).text(shuffledChoiceB);
+        $('.choiceC-text', $container).text(shuffledChoiceC);
+        $('.choiceD-text', $container).text(shuffledChoiceD);
+        $('.wrong-answer-penalty', $container).text("Wrong Answer Penalty: " + wrong_answer_penalty);
+        $('.number-incorrect-guesses', $container).text("Number of Incorrect Guesses: " + numIncorrectGuesses);
         if (attachments instanceof Array) {
           $.each(attachments, function() {
             var f = this.substr(this.lastIndexOf('/') + 1);
@@ -941,6 +959,14 @@ function setupInputListeners() {
         // Hide flag submission for bases
         if (type === 'base') {
           $('.answer_no_bases').addClass('completely-hidden');
+        }
+
+        //Hide the correct things for MC vs SA
+        if(isShortAnswer === true){
+          $('.radio-list').addClass('completely-hidden');
+        }
+        else{
+          $('.form-set').addClass('completely-hidden');
         }
 
         //
@@ -996,7 +1022,27 @@ function setupInputListeners() {
           event.preventDefault();
 
           var score_level = $('input[name=level_id]', $container)[0].value;
-          var score_answer = $('input[name=answer]', $container)[0].value;
+          console.log(isShortAnswer);
+          if(isShortAnswer === true){
+            var score_answer = $('input[name=answer]', $container)[0].value;
+          }
+          else{
+            var score_answer = $('input[name=multiple_choice_quiz]:radio:checked').val();
+          }
+
+          //undo the shuffling from country-data.php
+          if(isShortAnswer === false){
+            if(score_answer === "A"){score_answer = shuffledChoiceA;}
+            else if(score_answer === "B"){score_answer = shuffledChoiceB;}
+            else if(score_answer === "C"){score_answer = shuffledChoiceC;}
+            else{score_answer = shuffledChoiceD;}
+
+            if(score_answer === choiceA){score_answer = "Answer Choice 1";}
+            else if(score_answer === choiceB){score_answer = "Answer Choice 2";}
+            else if(score_answer === choiceC){score_answer = "Answer Choice 3";}
+            else{score_answer = "Answer Choice 4";}
+          }
+
           var csrf_token = $('input[name=csrf_token]')[0].value;
           var score_data = {
             action: 'answer_level',
@@ -1004,6 +1050,8 @@ function setupInputListeners() {
             answer: score_answer,
             csrf_token: csrf_token
           };
+
+          console.log(score_data);
 
           $.post(
             'index.php?p=game&ajax=true',
@@ -1015,7 +1063,12 @@ function setupInputListeners() {
             var responseData = JSON.parse(data);
             if (responseData.result === 'OK') {
               console.log('OK');
-              $('input[name=answer]', $container).css("background-color", "#1f7a1f");
+              if(isShortAnswer === true){
+                $('input[name=answer]', $container).css("background-color", "#1f7a1f");
+              }
+              else{
+                $('input[name=multiple_choice_quiz]:radio:checked', $container).css("background-color", "#1f7a1f");
+              }
               $('.js-trigger-score', $container).text('YES!');
               setTimeout(function() {
                 $('.js-close-modal', $container).click();
@@ -1027,12 +1080,21 @@ function setupInputListeners() {
               $('.js-trigger-score', $container).text('NOPE :(');
               setTimeout(function() {
                 $('.js-trigger-score', $container).text('SUBMIT');
-                $('input[name=answer]')[0].value = '';
-                $('input[name=answer]', $container).css("background-color", "");
+
+                if(isShortAnswer === true){
+                  $('input[name=answer]')[0].value = '';
+                  $('input[name=answer]', $container).css("background-color", "");
+                }
+                else{
+                  $('input[name=multiple_choice_quiz]:radio:checked')[0].value = '';
+                  $('input[name=multiple_choice_quiz]:radio:checked', $container).css("background-color", "");
+                }
+
               }, 2000);
             }
           });
         });
+
         $($container).on('keypress', function(e) {
           if (e.keyCode == 13) {
             e.preventDefault();
@@ -1461,8 +1523,8 @@ function setupInputListeners() {
       var filterTargetSelector = 'aside[data-module="filter"]';
 
       return loadModuleGeneric(
-        filterModulePath, 
-        filterTargetSelector, 
+        filterModulePath,
+        filterTargetSelector,
         function() {
           Filter.rememberFilters(filterList);
         }
