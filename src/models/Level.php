@@ -977,8 +977,20 @@ class Level extends Model implements Importable, Exportable {
 
           $level = await self::gen($level_id);
 
+
+          // Check if team has already gotten this hint
+          $hint = await HintLog::genPreviousHint($level_id, $team_id, false);
+          if ($hint) {
+            //Set penalty to the level hint penalty
+            $penalty = $level->getPenalty();
+          }
+          else{
+            //Set penalty to 0 (user did not receive a hint)
+            $penalty = 0;
+          }
+
           // Calculate points to give
-          $points = $level->getPoints() + $level->getBonus();
+          $points = $level->getPoints() + $level->getBonus() - $penalty;
 
           // Adjust bonus
           await self::genAdjustBonus($level_id);
@@ -1083,13 +1095,6 @@ class Level extends Model implements Importable, Exportable {
           if ($team->getPoints() < $penalty) {
             return null;
           }
-
-          // Adjust points
-          await $db->queryf(
-            'UPDATE teams SET points = points - %d WHERE id = %d LIMIT 1',
-            $penalty,
-            $team_id,
-          );
 
           // Log the hint
           await HintLog::genLogGetHint($level_id, $team_id, $penalty);
