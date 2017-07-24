@@ -76,14 +76,15 @@ function resetDatabase() {
  */
 function sendAdminRequest(request_data: any, refresh_page) {
   var csrf_token = $('input[name=csrf_token]')[0].value;
-
   request_data.csrf_token = csrf_token;
+  //console.log("Request data below:");
+  //console.log(request_data);
   $.post(
     'index.php?p=admin&ajax=true',
     request_data
-  ).fail(function() {
+  ).fail(function(data) {
     // TODO: Make this a modal
-    console.log('ERROR');
+    console.log('SEND ADMIN REQUEST Fail Function');
   }).done(function(data) {
     var responseData = JSON.parse(data);
     if (responseData.result == 'OK') {
@@ -127,7 +128,7 @@ function validateAdminForm($clicked) {
 
   $required.removeClass(errorClass).each(function() {
     var $self = $(this),
-        $requiredEl = $('input[type="text"], input[type="password"], textarea', $self),
+        $requiredEl = $('input[type="text"], input[type="password"], textarea, input[name="answer_choice_2"]', $self),
         $logoName = $('.logo-name', $self);
 
     // All the conditions that would make this element trigger an error
@@ -173,7 +174,6 @@ function addNewSection($clicked) {
 
   if (switchName) {
     newSwitchName = switchName.substr(0, switchName.lastIndexOf('--')) + '--' + sectionIndex;
-
     $('#' + switchName + '--on', $newSection).attr('id', newSwitchName + '--on');
     $('label[for="' + switchName + '--on"]', $newSection).attr('for', newSwitchName + '--on');
     $('#' + switchName + '--off', $newSection).attr('id', newSwitchName + '--off');
@@ -218,6 +218,12 @@ function addNewSection($clicked) {
   $sectionContainer.append($newSection);
 
   Slider.init(5);
+
+  //adding listener to the newly added short_answer toggle
+  $('input[type="radio"][name^="fb--quiz"]', $newSection).on('change', function() {
+    var $radioSection = $(this);
+    addRadioListener($radioSection);
+  });
 }
 
 /**
@@ -671,12 +677,31 @@ function createLevel(section) {
 // Create quiz level
 function createQuizLevel(section) {
   var title = $('.level_form input[name=title]', section)[0].value;
+  //get the id which is the level #. This is needed to get the correct radio button
+  var id = $('.level_form h3', section).text().split(' ')[2];
   var question = $('.level_form textarea[name=question]', section)[0].value;
-  var answer = $('.level_form input[name=answer]', section)[0].value;
   var entity_id = $('.level_form select[name=entity_id] option:selected', section)[0].value;
   var points = $('.level_form input[name=points]', section)[0].value;
+  var bonus = $('.level_form input[name=bonus]', section)[0].value;
+  var bonus_dec = $('.level_form input[name=bonus_dec]', section)[0].value;
   var hint = $('.level_form input[name=hint]', section)[0].value;
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
+  var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
+  //use the id to select the correct radio button. If short answer on, set to 1 (its a tinyint in SQL)
+  if ($('input[name=fb--quiz--short_answer--' + id + ']:radio:checked').val() === "Short Answer On"){
+    var is_short_answer = 1;
+    //grab the answer value from the input box
+    var answer = $('.level_form input[name=answer_short]', section)[0].value;
+  } else {
+    var is_short_answer = 0;
+    //if multi, you need to grab the answer value from the select box
+    var answer = $('.level_form select[name=answer_multi]', section)[0].value;
+  }
+
+  var answer_choice_1 = $('.level_form input[name=answer_choice_1]', section)[0].value;
+  var answer_choice_2 = $('.level_form input[name=answer_choice_2]', section)[0].value;
+  var answer_choice_3 = $('.level_form input[name=answer_choice_3]', section)[0].value;
+  var answer_choice_4 = $('.level_form input[name=answer_choice_4]', section)[0].value;
 
   var create_data = {
     action: 'create_quiz',
@@ -685,8 +710,16 @@ function createQuizLevel(section) {
     answer: answer,
     entity_id: entity_id,
     points: points,
+    bonus: bonus,
+    bonus_dec: bonus_dec,
     hint: hint,
-    penalty: penalty
+    penalty: penalty,
+    wrong_answer_penalty: wrong_answer_penalty,
+    is_short_answer: is_short_answer,
+    answer_choice_1: answer_choice_1,
+    answer_choice_2: answer_choice_2,
+    answer_choice_3: answer_choice_3,
+    answer_choice_4: answer_choice_4,
   };
   sendAdminRequest(create_data, true);
 }
@@ -699,8 +732,11 @@ function createFlagLevel(section) {
   var entity_id = $('.level_form select[name=entity_id] option:selected', section)[0].value;
   var category_id = $('.level_form select[name=category_id] option:selected', section)[0].value;
   var points = $('.level_form input[name=points]', section)[0].value;
+  var bonus = $('.level_form input[name=bonus]', section)[0].value;
+  var bonus_dec = $('.level_form input[name=bonus_dec]', section)[0].value;
   var hint = $('.level_form input[name=hint]', section)[0].value;
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
+  var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
 
   var create_data = {
     action: 'create_flag',
@@ -710,8 +746,11 @@ function createFlagLevel(section) {
     entity_id: entity_id,
     category_id: category_id,
     points: points,
+    bonus: bonus,
+    bonus_dec: bonus_dec,
     hint: hint,
-    penalty: penalty
+    penalty: penalty,
+    wrong_answer_penalty: wrong_answer_penalty,
   };
   sendAdminRequest(create_data, true);
 }
@@ -736,7 +775,7 @@ function createBaseLevel(section) {
     points: points,
     bonus: bonus,
     hint: hint,
-    penalty: penalty
+    penalty: penalty,
   };
   sendAdminRequest(create_data, true);
 }
@@ -761,7 +800,6 @@ function updateLevel(section) {
 function updateQuizLevel(section) {
   var title = $('.level_form input[name=title]', section)[0].value;
   var question = $('.level_form textarea[name=question]', section)[0].value;
-  var answer = $('.level_form input[name=answer]', section)[0].value;
   var entity_id = $('.level_form select[name=entity_id] option:selected', section)[0].value;
   var points = $('.level_form input[name=points]', section)[0].value;
   var bonus = $('.level_form input[name=bonus]', section)[0].value;
@@ -769,6 +807,25 @@ function updateQuizLevel(section) {
   var hint = $('.level_form input[name=hint]', section)[0].value;
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
   var level_id = $('.level_form input[name=level_id]', section)[0].value;
+  var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
+  var answer_choice_1 = $('.level_form input[name=answer_choice_1]', section)[0].value;
+  var answer_choice_2 = $('.level_form input[name=answer_choice_2]', section)[0].value;
+  var answer_choice_3 = $('.level_form input[name=answer_choice_3]', section)[0].value;
+  var answer_choice_4 = $('.level_form input[name=answer_choice_4]', section)[0].value;
+  var title_string = $('.level_form h3', section).text();
+  //need to check for a select since its no longer an input in most cases.
+  if ($('.level_form select[name^=answer]', section)[0] != null){
+    var answer = $('.level_form select[name^=answer]', section)[0].value;
+  } else {
+  // if re-hidden it will be back to an input so check if null and pull input value.
+    var answer = $('.level_form input[name^=answer]', section)[0].value;
+  }
+  // check if the string 'Short Answer' is in the title to tell if short answer / multi.
+  if ($('.level_form h3', section).text().indexOf("Short Answer") >= 0) {
+    var is_short_answer = 1;
+  } else {
+    var is_short_answer = 0;
+  }
 
   var update_data = {
     action: 'update_quiz',
@@ -781,7 +838,13 @@ function updateQuizLevel(section) {
     bonus_dec: bonus_dec,
     hint: hint,
     penalty: penalty,
-    level_id: level_id
+    wrong_answer_penalty: wrong_answer_penalty,
+    level_id: level_id,
+    is_short_answer: is_short_answer,
+    answer_choice_1: answer_choice_1,
+    answer_choice_2: answer_choice_2,
+    answer_choice_3: answer_choice_3,
+    answer_choice_4: answer_choice_4,
   };
   sendAdminRequest(update_data, false);
 }
@@ -798,6 +861,7 @@ function updateFlagLevel(section) {
   var bonus_dec = $('.level_form input[name=bonus_dec]', section)[0].value;
   var hint = $('.level_form input[name=hint]', section)[0].value;
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
+  var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
   var level_id = $('.level_form input[name=level_id]', section)[0].value;
 
   var update_data = {
@@ -812,6 +876,7 @@ function updateFlagLevel(section) {
     bonus_dec: bonus_dec,
     hint: hint,
     penalty: penalty,
+    wrong_answer_penalty: wrong_answer_penalty,
     level_id: level_id
   };
   sendAdminRequest(update_data, false);
@@ -957,6 +1022,34 @@ function toggleConfiguration(radio_id) {
   }
 }
 
+function toggleShortAnswer(section) {
+  var radio_name = section.attr('id');
+  var radio_parts = radio_name.split('--');
+  if (radio_parts[radio_parts.length-1] === 'off'){
+  //short_answer--off so turn multiple_choice on!
+    $('div[id="multiple_choice_block_1"]').removeClass('completely-hidden');
+    $('div[id="multiple_choice_block_2"]').removeClass('completely-hidden');
+    $('div[id="multiple_choice_block_1"]').addClass('form-el--required');
+    $('div[id="multiple_choice_block_2"]').addClass('form-el--required');
+    $('input[name="answer_short"]').replaceWith(
+      '<select name="answer_multi" class="not_configuration">' +
+        '<option value="Answer Choice 1" selected="selected">Answer Choice 1</option>' +
+        '<option value="Answer Choice 2">Answer Choice 2</option>' +
+        '<option value="Answer Choice 3">Answer Choice 3</option>' +
+        '<option value="Answer Choice 4">Answer Choice 4</option>' +
+      '</select>');
+
+  }
+  else{
+    $('div[id="multiple_choice_block_1"]').addClass('completely-hidden');
+    $('div[id="multiple_choice_block_2"]').addClass('completely-hidden');
+    $('div[id="multiple_choice_block_1"]').removeClass('form-el--required');
+    $('div[id="multiple_choice_block_2"]').removeClass('form-el--required');
+    $('select[name="answer_multi"]').replaceWith(
+      '<input name="answer_short" type="text" />');
+  }
+}
+
 function changeConfiguration(field, value) {
   var conf_data = {
     action: 'change_configuration',
@@ -1026,6 +1119,64 @@ function saveLevel($section: any, lockClass) {
   }
 }
 
+function editLevel($section, lockClass){
+  $section.removeClass(lockClass);
+  /* Do not do this. It is all handled in .toggle_answer_visibility
+  if ($('.level_form h3', $section).text().indexOf("Multiple Choice") >= 0) {
+    var input_box = $('input[name^="answer"]', $section)[0];
+    //if still a password input box, we need to replace it with a select.
+    if (input_box.type === 'password'){
+      var answer = input_box.value;
+      var name = input_box.name;
+      $(input_box).replaceWith(
+        '<select name="' + name + '" class="not_configuration">' +
+          '<option value="Answer Choice 1">Answer Choice 1</option>' +
+          '<option value="Answer Choice 2">Answer Choice 2</option>' +
+          '<option value="Answer Choice 3">Answer Choice 3</option>' +
+          '<option value="Answer Choice 4">Answer Choice 4</option>' +
+        '</select>');
+      var select_box = $('select[name^="answer"]', $section)[0];
+      $(select_box).val(answer);
+    }
+  }*/
+  $('input[type="text"], input[type="password"], select[name^="answer"], textarea', $section).prop('disabled', false);
+  // if multiple choice, re-disable the multiple choice field if a password.
+  if ($('.level_form h3', $section).text().indexOf("Multiple Choice") >= 0) {
+    $('input[type="password"]', $section).prop('disabled', true);
+  }
+  var entity_select = $('[name=entity_id]', $section)[0];
+  var category_select = $('[name=category_id]', $section)[0];
+  if (entity_select !== undefined) {
+    Dropkick(entity_select).disable(false);
+  }
+  if (category_select !== undefined) {
+    Dropkick(category_select).disable(false);
+  }
+}
+
+function addRadioListener(section){
+  var radio_name = section.attr('id');
+  //console.log("Radio button clicked. Name is %s", radio_name) //added logging on radio_name to console for debugging
+  if (radio_name.search('fb--teams') === 0) {
+    if (radio_name.search('all') > 0) {
+      toggleAll(radio_name);
+    } else {
+      toggleTeam(radio_name);
+    }
+  } else if (radio_name.search('fb--levels') === 0) {
+    if (radio_name.search('all') > 0) {
+      toggleAll(radio_name);
+    } else {
+      toggleLevel(radio_name);
+    }
+  } else if (radio_name.search('fb--conf') === 0) {
+    toggleConfiguration(radio_name);
+  }
+  else if (radio_name.search('fb--quiz--short_answer') === 0){
+    toggleShortAnswer(section);
+  }
+}
+
 module.exports = {
   init: function() {
     // Capture enter key presses to avoid unexpected actions
@@ -1047,7 +1198,6 @@ module.exports = {
 
       var $containingDiv,
           valid;
-
       // Route the actions
       if (action === 'save') {
         valid = validateAdminForm($self);
@@ -1104,16 +1254,7 @@ module.exports = {
       } else if (action === 'export-tokens') {
         exportTokens();
       } else if (action === 'edit') {
-        $section.removeClass(lockClass);
-        $('input[type="text"], input[type="password"], textarea', $section).prop('disabled', false);
-        var entity_select = $('[name=entity_id]', $section)[0];
-        var category_select = $('[name=category_id]', $section)[0];
-        if (entity_select !== undefined) {
-          Dropkick(entity_select).disable(false);
-        }
-        if (category_select !== undefined) {
-          Dropkick(category_select).disable(false);
-        }
+        editLevel($section, lockClass);
       } else if (action === 'delete') {
         $section.remove();
         deleteElement($section);
@@ -1168,26 +1309,11 @@ module.exports = {
       }
     });
 
-    // Radio buttons
-    $('input[type="radio"]').on('change', function() {
-      var $this = $(this);
-      var radio_name = $this.attr('id');
 
-      if (radio_name.search('fb--teams') === 0) {
-        if (radio_name.search('all') > 0) {
-          toggleAll(radio_name);
-        } else {
-          toggleTeam(radio_name);
-        }
-      } else if (radio_name.search('fb--levels') === 0) {
-        if (radio_name.search('all') > 0) {
-          toggleAll(radio_name);
-        } else {
-          toggleLevel(radio_name);
-        }
-      } else if (radio_name.search('fb--conf') === 0) {
-        toggleConfiguration(radio_name);
-      }
+    // Radio buttons Listener
+    $('input[type="radio"]').on('change', function() {
+      var $radioSection = $(this);
+      addRadioListener($radioSection);
     });
 
     // configuration fields
@@ -1431,14 +1557,68 @@ module.exports = {
     // show/hide answer
     $('.toggle_answer_visibility').on('click', function(event) {
       event.preventDefault();
-      if ($(this).prev('input').attr('type') === 'text') {
-        $(this).text('Show Answer');
-        $(this).prev('input').attr('type', 'password');
-      } else if ($(this).prev('input').attr('type') === 'password') {
-        $(this).text('Hide Answer');
-        $(this).prev('input').attr('type', 'text');
+      var $self = $(this),
+          $section = $self.closest('.admin-box');
+      //if multiple choice, change the input to a select box only when show answer selected
+      if ($('.level_form h3', $section).text().indexOf("Multiple Choice") >= 0) {
+        //so its a password which means you hit show answer
+        var isDisabled = $('input[name=title]', $section).is(':disabled');
+        //find out if disabled elements or not. If so, keep disabled.
+        if ($(this).prev('input').attr('type') === 'password'){
+          var answer = $(this).prev('input')[0].value;
+          var name = $(this).prev('input').attr('name');
+          $(this).prev('input').replaceWith(
+            '<select name="' + name + '" class="not_configuration">' +
+              '<option value="Answer Choice 1">Answer Choice 1</option>' +
+              '<option value="Answer Choice 2">Answer Choice 2</option>' +
+              '<option value="Answer Choice 3">Answer Choice 3</option>' +
+              '<option value="Answer Choice 4">Answer Choice 4</option>' +
+            '</select>');
+          //select the currently selected answer
+          $(this).prev('select').val(answer);
+          $(this).prev('select').prop('disabled', isDisabled);
+          $(this).text('Hide Answer');
+        } else { //you hit hide answer
+          var answer = $(this).prev('select')[0].value;
+          var name = $(this).prev('select').attr('name');
+          $(this).prev('select').replaceWith(
+            '<input name="' + name + '" type="password" />');
+          $(this).prev('input').val(answer);
+          //Always keep disabled so they are not trying to edit the input field while a textbox.
+          $(this).prev('input').prop('disabled', true);
+          $(this).text('Show Answer');
+        }
+      } else{ //normal non-multiple choice password case.
+        if ($(this).prev('input').attr('type') === 'text') {
+          $(this).text('Show Answer');
+          $(this).prev('input').attr('type', 'password');
+        } else if ($(this).prev('input').attr('type') === 'password') {
+          $(this).text('Hide Answer');
+          $(this).prev('input').attr('type', 'text');
+        }
       }
     });
+/* close to better working version of above, but can not figure out how to best
+hide the select box.
+    if ($(this).prev('input').attr('type') === 'text') {
+      $(this).text('Show Answer');
+      $(this).prev('input').attr('type', 'password');
+    } else if ($(this).prev('input').attr('type') === 'password') {
+      $(this).text('Hide Answer');
+      $(this).prev('input').attr('type', 'text');
+    } //at this point, the only case left is a multi_choice where its already a select
+    else if ($('.level_form h3', $section).text().indexOf("Multiple Choice") >= 0) {
+      var isDisabled = $(this).prev('select').is(':disabled');
+      $(this).prev('select').prop('disabled', !isDisabled);
+      if (isDisabled) {
+        $(this).prev('select').prop('password', !isDisabled);
+        $(this).text('Hide Answer');
+      } else {
+        $(this).prev('select').prop('password', !isDisabled);
+        $(this).text('Show Answer');
+      }
+    }
+    */
 
     // prompt reset database
     $('.js-reset-database').on('click', function(event) {
