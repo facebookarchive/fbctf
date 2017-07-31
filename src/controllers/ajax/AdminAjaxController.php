@@ -175,8 +175,6 @@ class AdminAjaxController extends AjaxController {
       case 'create_quiz':
         $bonus = $default_bonus->getValue();
         $bonus_dec = $default_bonusdec->getValue();
-        sprintf('In create_quiz');
-        sprintf($params);
         await Level::genCreateQuiz(
           must_have_string($params, 'title'),
           must_have_string($params, 'question'),

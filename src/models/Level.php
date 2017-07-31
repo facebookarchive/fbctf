@@ -26,13 +26,13 @@ class Level extends Model implements Importable, Exportable {
     private string $flag,
     private string $hint,
     private int $penalty,
-    private string $created_ts,
     private int $wrong_answer_penalty,
     private int $is_short_answer,
     private string $answer_choice_1,
     private string $answer_choice_2,
     private string $answer_choice_3,
     private string $answer_choice_4,
+    private string $created_ts,
   ) {}
 
   public function getId(): int {
@@ -135,12 +135,12 @@ class Level extends Model implements Importable, Exportable {
       must_have_idx($row, 'flag'),
       must_have_idx($row, 'hint'),
       intval(must_have_idx($row, 'penalty')),
-      intval(must_have_int($params, 'wrong_answer_penalty')),
-      intval(must_have_int($params, 'is_short_answer')),
-      must_have_string($params, 'answer_choice_1'),
-      must_have_string($params, 'answer_choice_2'),
-      must_have_string($params, 'answer_choice_3'),
-      must_have_string($params, 'answer_choice_4'),
+      intval(must_have_idx($row, 'wrong_answer_penalty')),
+      intval(must_have_idx($row, 'is_short_answer')),
+      must_have_string($row, 'answer_choice_1'),
+      must_have_string($row, 'answer_choice_2'),
+      must_have_string($row, 'answer_choice_3'),
+      must_have_string($row, 'answer_choice_4'),
       must_have_idx($row, 'created_ts'),
     );
   }
@@ -403,7 +403,9 @@ class Level extends Model implements Importable, Exportable {
       '(type, title, description, entity_id, category_id, points, bonus, bonus_dec, '.
       'bonus_fix, flag, hint, penalty, active, wrong_answer_penalty, is_short_answer, '.
       'answer_choice_1, answer_choice_2, answer_choice_3, answer_choice_4, created_ts) '.
-      'VALUES (%s, %s, %s, %d, %d, %d, %d, %d, %d, %s, %s, %d, %d, %d, %d, %s, %s, %s, %s, NOW())',
+      'VALUES (%s, %s, %s, %d, %d, %d, %d, %d, '.
+              '%d, %s, %s, %d, %d, %d, %d, '.
+              '%s, %s, %s, %s, NOW())',
       $type,
       $title,
       $description,
@@ -726,13 +728,13 @@ class Level extends Model implements Importable, Exportable {
      $flag,
      $hint,
      $penalty,
-     $level_id,
      $wrong_answer_penalty,
      $is_short_answer,
      $answer_choice_1,
      $answer_choice_2,
      $answer_choice_3,
      $answer_choice_4,
+     $level_id,
    );
 
    // Make sure entities are consistent

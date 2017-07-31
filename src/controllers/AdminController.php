@@ -1499,7 +1499,7 @@ class AdminController extends Controller {
                   <div
                     class=
                       "form-el--required col col-1-3 el--block-label el--full-text">
-                    <label>{tr('Wrong Answer Penalty (-)')}</label>
+                    <label>{tr('Wrong Answer Penalty')}</label>
                     <input name="wrong_answer_penalty" type="text" />
                   </div>
                 </div>
@@ -1701,7 +1701,7 @@ class AdminController extends Controller {
                   <div
                     class=
                       "form-el--required col col-1-3 el--block-label el--full-text">
-                    <label>{tr('Wrong Answer Penalty (-)')}</label>
+                    <label>{tr('Wrong Answer Penalty')}</label>
                     <input
                       name="wrong_answer_penalty"
                       type="text"
@@ -1845,8 +1845,24 @@ class AdminController extends Controller {
                   </div>
                 </div>
                 <div class="form-el fb-column-container col-gutters">
-                  <div class="col col-2-3 el--block-label el--full-text"></div>
-                  <div class="col col-1-3 el--block-label el--full-text">
+                  <div
+                    class=
+                      "form-el--required col col-1-3 el--block-label el--full-text">
+                    <label>{tr('Bonus')}</label>
+                    <input name="bonus" type="text" />
+                  </div>
+                  <div
+                    class=
+                      "form-el--required col col-1-3 el--block-label el--full-text">
+                    <!-- Suggested new label:
+                    <label>{tr('Bonus (-) per Answer')}</label>
+                    -->
+                    <label>{tr('-Dec')}</label>
+                    <input name="bonus_dec" type="text" />
+                  </div>
+                  <div
+                    class=
+                      "form-el--required col col-1-3 el--block-label el--full-text">
                     <label>{tr('Wrong Answer Penalty')}</label>
                     <input name="wrong_answer_penalty" type="text" />
                   </div>
@@ -2186,7 +2202,7 @@ class AdminController extends Controller {
                 <div class="form-el fb-column-container col-gutters">
                   <div
                     class=
-                      "form-el--required col el--block-label el--full-text">
+                      "form-el--required col col-2-3 el--block-label el--full-text">
                     <label>{tr('Flag')}</label>
                     <input
                       name="flag"
@@ -2198,19 +2214,20 @@ class AdminController extends Controller {
                       {tr('Show Answer')}
                     </a>
                   </div>
-                </div>
-                <div class="form-el fb-column-container col-gutters">
+
                   <div
                     class=
                       "form-el--required col col-1-3 el--block-label el--full-text">
-                    <label>{tr('Points')}</label>
-                    <input
-                      name="points"
-                      type="text"
-                      value={strval($flag->getPoints())}
-                      disabled={true}
-                    />
+                      <label>{tr('Points')}</label>
+                      <input
+                        name="points"
+                        type="text"
+                        value={strval($flag->getPoints())}
+                        disabled={true}
+                      />
                   </div>
+                </div>
+                <div class="form-el fb-column-container col-gutters">
                   <div
                     class=
                       "form-el--required col col-1-3 el--block-label el--full-text">
@@ -2230,6 +2247,17 @@ class AdminController extends Controller {
                       name="bonus_dec"
                       type="text"
                       value={strval($flag->getBonusDec())}
+                      disabled={true}
+                    />
+                  </div>
+                  <div
+                    class=
+                      "form-el--required col col-1-3 el--block-label el--full-text">
+                    <label>{tr('Wrong Answer Penalty')}</label>
+                    <input
+                      name="wrong_answer_penalty"
+                      type="text"
+                      value={strval($flag->getWrongAnswerPenalty())}
                       disabled={true}
                     />
                   </div>
