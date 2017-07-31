@@ -119,6 +119,37 @@ class Level extends Model implements Importable, Exportable {
     return $this->answer_choice_4;
   }
 
+  public async function genGenerateMultipleChoiceSelect(
+    int $selected,
+  ): Awaitable<:xhp> {
+    $select =
+      <select class="not_configuration" name="entity_id" disabled={true} />;
+
+    if ($selected === 0) {
+      $select->appendChild(
+        <option value="0" selected={true}>{tr('Auto')}</option>,
+      );
+    } else {
+      $country = await Country::gen(intval($selected));
+      $select->appendChild(
+        <option value={strval($country->getId())} selected={true}>
+          {$country->getName()}
+        </option>,
+      );
+    }
+
+    $countries = await Country::genAllAvailableCountries();
+    foreach ($countries as $country) {
+      $select->appendChild(
+        <option value={strval($country->getId())}>
+          {$country->getName()}
+        </option>,
+      );
+    }
+
+    return $select;
+  }
+
   private static function levelFromRow(Map<string, string> $row): Level {
     return new Level(
       intval(must_have_idx($row, 'id')),
@@ -831,6 +862,8 @@ class Level extends Model implements Importable, Exportable {
       $db = await self::genDb();
       $all_levels = Map {};
       $result = await $db->queryf('SELECT * FROM levels ORDER BY id');
+      //$array_log = print_r($result, true);
+      //error_log($array_log);
       foreach ($result->mapRows() as $row) {
         $all_levels->add(
           Pair {intval($row->get('id')), self::levelFromRow($row)},
@@ -862,6 +895,8 @@ class Level extends Model implements Importable, Exportable {
       $result = await $db->queryf(
         'SELECT * FROM levels WHERE active = 1 ORDER BY id',
       );
+      //$array_log = print_r($result, true);
+      //error_log($array_log);
       foreach ($result->mapRows() as $row) {
         $active_levels->add(
           Pair {intval($row->get('id')), self::levelFromRow($row)},
