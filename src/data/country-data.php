@@ -97,11 +97,11 @@ class CountryDataController extends DataController {
       $choiceB = "";
       $choiceC = "";
       $choiceD = "";
-      if($level->getIsShortAnswer()){
-        $choiceA = $level->getChoiceA();
-        $choiceB = $level->getChoiceB();
-        $choiceC = $level->getChoiceC();
-        $choiceD = $level->getChoiceD();
+      if(!$level->getIsShortAnswer()){
+        $choiceA = $level->getAnswerChoiceA();
+        $choiceB = $level->getAnswerChoiceB();
+        $choiceC = $level->getAnswerChoiceC();
+        $choiceD = $level->getAnswerChoiceD();
       }
 
       $country_data = (object) array(

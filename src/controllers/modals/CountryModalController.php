@@ -262,8 +262,8 @@ class CountryModalController extends ModalController {
                         id="multiple_choice_quiz_choice_A"
                         value="A"
                       />
-                      <label for="multiple_choice_quiz_choice_A">{tr('A. ')}</label>
-                      <textarea rows={1} class="choiceA-text" disabled={true}></textarea>
+                      <label for="multiple_choice_quiz_choice_A">{tr('A')}</label>.
+                      <span class="choiceA-text"></span>
                     </div>
                     <div class="radio-list">
                       <input
@@ -272,8 +272,8 @@ class CountryModalController extends ModalController {
                         id="multiple_choice_quiz_choice_B"
                         value="B"
                       />
-                      <label for="multiple_choice_quiz_choice_B">{tr('B. ')}</label>
-                      <textarea rows={1} class="choiceB-text" disabled={true}></textarea>
+                      <label for="multiple_choice_quiz_choice_B">{tr('B')}</label>.
+                      <span class="choiceB-text"></span>
                     </div>
                     <div class="radio-list">
                       <input
@@ -282,8 +282,8 @@ class CountryModalController extends ModalController {
                         id="multiple_choice_quiz_choice_C"
                         value="C"
                       />
-                      <label for="multiple_choice_quiz_choice_C">{tr('C. ')}</label>
-                      <textarea rows={1} class="choiceC-text" disabled={true}></textarea>
+                      <label for="multiple_choice_quiz_choice_C">{tr('C')}</label>.
+                      <span class="choiceC-text"></span>
                     </div>
                     <div class="radio-list">
                       <input
@@ -292,8 +292,8 @@ class CountryModalController extends ModalController {
                         id="multiple_choice_quiz_choice_D"
                         value="D"
                       />
-                      <label for="multiple_choice_quiz_choice_D">{tr('D. ')}</label>
-                      <textarea rows={1} class="choiceD-text" disabled={true}></textarea>
+                      <label for="multiple_choice_quiz_choice_D">{tr('D')}</label>.
+                      <span class="choiceD-text"></span>
                     </div>
                     <br />
                   </div>
