@@ -67,14 +67,15 @@ function resetDatabase() {
  */
 function sendAdminRequest(request_data: any, refresh_page) {
   var csrf_token = $('input[name=csrf_token]')[0].value;
-
   request_data.csrf_token = csrf_token;
+  console.log("Request data below:");
+  console.log(request_data);
   $.post(
     'index.php?p=admin&ajax=true',
     request_data
-  ).fail(function() {
+  ).fail(function(data) {
     // TODO: Make this a modal
-    console.log('ERROR');
+    console.log('SEND ADMIN REQUEST Fail Function');
   }).done(function(data) {
     var responseData = JSON.parse(data);
     if (responseData.result == 'OK') {
@@ -164,7 +165,6 @@ function addNewSection($clicked) {
 
   if (switchName) {
     newSwitchName = switchName.substr(0, switchName.lastIndexOf('--')) + '--' + sectionIndex;
-
     $('#' + switchName + '--on', $newSection).attr('id', newSwitchName + '--on');
     $('label[for="' + switchName + '--on"]', $newSection).attr('for', newSwitchName + '--on');
     $('#' + switchName + '--off', $newSection).attr('id', newSwitchName + '--off');
@@ -666,8 +666,22 @@ function createQuizLevel(section) {
   var answer = $('.level_form input[name=answer]', section)[0].value;
   var entity_id = $('.level_form select[name=entity_id] option:selected', section)[0].value;
   var points = $('.level_form input[name=points]', section)[0].value;
+  var bonus = $('.level_form input[name=bonus]', section)[0].value;
+  var bonus_dec = $('.level_form input[name=bonus_dec]', section)[0].value;
   var hint = $('.level_form input[name=hint]', section)[0].value;
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
+  var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
+  //var is_short_answer = $('input[name=fb--quiz--multiple_choice_quiz--off]:radio:checked').val();
+  if ($('input[name=fb--quiz--multiple_choice_quiz--off]:radio:checked').val() === 'No') {
+    var is_short_answer = "0";
+  } else {
+    var is_short_answer = "1";
+  }
+  //var multiple_choice = $('input[name=fb--quiz--multiple_choice_quiz--on]:radio:not(:checked)').val();
+  var answer_choice_1 = 'choice1';
+  var answer_choice_2 = 'choice2';
+  var answer_choice_3 = 'choice3';
+  var answer_choice_4 = 'choice4';
 
   var create_data = {
     action: 'create_quiz',
@@ -676,8 +690,16 @@ function createQuizLevel(section) {
     answer: answer,
     entity_id: entity_id,
     points: points,
+    bonus: bonus,
+    bonus_dec: bonus_dec,
     hint: hint,
-    penalty: penalty
+    penalty: penalty,
+    wrong_answer_penalty: wrong_answer_penalty,
+    is_short_answer: is_short_answer,
+    answer_choice_1: answer_choice_1,
+    answer_choice_2: answer_choice_2,
+    answer_choice_3: answer_choice_3,
+    answer_choice_4: answer_choice_4,
   };
   sendAdminRequest(create_data, true);
 }
@@ -690,8 +712,11 @@ function createFlagLevel(section) {
   var entity_id = $('.level_form select[name=entity_id] option:selected', section)[0].value;
   var category_id = $('.level_form select[name=category_id] option:selected', section)[0].value;
   var points = $('.level_form input[name=points]', section)[0].value;
+  var bonus = $('.level_form input[name=bonus]', section)[0].value;
+  var bonus_dec = $('.level_form input[name=bonus_dec]', section)[0].value;
   var hint = $('.level_form input[name=hint]', section)[0].value;
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
+  var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
 
   var create_data = {
     action: 'create_flag',
@@ -701,8 +726,11 @@ function createFlagLevel(section) {
     entity_id: entity_id,
     category_id: category_id,
     points: points,
+    bonus: bonus,
+    bonus_dec: bonus_dec,
     hint: hint,
-    penalty: penalty
+    penalty: penalty,
+    wrong_answer_penalty: wrong_answer_penalty,
   };
   sendAdminRequest(create_data, true);
 }
@@ -727,7 +755,7 @@ function createBaseLevel(section) {
     points: points,
     bonus: bonus,
     hint: hint,
-    penalty: penalty
+    penalty: penalty,
   };
   sendAdminRequest(create_data, true);
 }
@@ -759,6 +787,7 @@ function updateQuizLevel(section) {
   var bonus_dec = $('.level_form input[name=bonus_dec]', section)[0].value;
   var hint = $('.level_form input[name=hint]', section)[0].value;
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
+  var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
   var level_id = $('.level_form input[name=level_id]', section)[0].value;
 
   var update_data = {
@@ -772,6 +801,7 @@ function updateQuizLevel(section) {
     bonus_dec: bonus_dec,
     hint: hint,
     penalty: penalty,
+    wrong_answer_penalty: wrong_answer_penalty,
     level_id: level_id
   };
   sendAdminRequest(update_data, false);
@@ -789,6 +819,7 @@ function updateFlagLevel(section) {
   var bonus_dec = $('.level_form input[name=bonus_dec]', section)[0].value;
   var hint = $('.level_form input[name=hint]', section)[0].value;
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
+  var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
   var level_id = $('.level_form input[name=level_id]', section)[0].value;
 
   var update_data = {
@@ -803,6 +834,7 @@ function updateFlagLevel(section) {
     bonus_dec: bonus_dec,
     hint: hint,
     penalty: penalty,
+    wrong_answer_penalty: wrong_answer_penalty,
     level_id: level_id
   };
   sendAdminRequest(update_data, false);
@@ -1038,7 +1070,6 @@ module.exports = {
 
       var $containingDiv,
           valid;
-
       // Route the actions
       if (action === 'save') {
         valid = validateAdminForm($self);
@@ -1163,7 +1194,7 @@ module.exports = {
     $('input[type="radio"]').on('change', function() {
       var $this = $(this);
       var radio_name = $this.attr('id');
-
+      console.log(radio_name); //added logging on radio_name to console for debugging
       if (radio_name.search('fb--teams') === 0) {
         if (radio_name.search('all') > 0) {
           toggleAll(radio_name);
@@ -1178,6 +1209,8 @@ module.exports = {
         }
       } else if (radio_name.search('fb--conf') === 0) {
         toggleConfiguration(radio_name);
+      } else if (radio_name.search('fb--')){ //This is my extra if statement to execute on click
+        alert(radio_name);
       }
     });
 

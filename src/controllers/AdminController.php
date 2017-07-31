@@ -156,8 +156,8 @@ class AdminController extends Controller {
     $select = <select name="fb--conf--password_type"></select>;
     foreach ($types as $type) {
       $select->appendChild(
-        <option 
-          class="fb--conf--password_type" 
+        <option
+          class="fb--conf--password_type"
           value={strval($type->getField())}
           selected={($type->getField() === $config->getField())}>
           {$type->getDescription()}
@@ -469,9 +469,9 @@ class AdminController extends Controller {
       $custom_logo_xhp =
         <div class="form-el el--block-label el--full-text">
           <label for="">{tr('Logo')}</label>
-          <img 
-            id="custom-logo-image" 
-            class="icon--badge" 
+          <img
+            id="custom-logo-image"
+            class="icon--badge"
             src={$custom_logo_image->getValue()}
           />
           <br/>
@@ -1425,6 +1425,21 @@ class AdminController extends Controller {
             <input type="hidden" name="level_type" value="quiz" />
             <header class="admin-box-header">
               <h3>{tr('New Quiz Level')}</h3>
+              <div class="admin-section-toggle radio-inline">
+                <input
+                  type="radio"
+                  name="fb--levels--short_answer--toggle"
+                  id="fb--levels--short_answer--toggle--on"
+                  checked={true}
+                />
+                <label for="fb--levels--short_answer--toggle--on">{tr('Short Answer')}</label>
+                <input
+                  type="radio"
+                  name="fb--levels--short_answer--toggle"
+                  id="fb--levels--short_answer--toggle--off"
+                />
+                <label for="fb--levels--short_answer--toggle--off">{tr('Multiple Choice')}</label>
+              </div>
             </header>
             <div class="fb-column-container">
               <div class="col col-pad col-1-2">
@@ -1466,6 +1481,26 @@ class AdminController extends Controller {
                       "form-el--required col col-1-3 el--block-label el--full-text">
                     <label>{tr('Points')}</label>
                     <input name="points" type="text" />
+                  </div>
+                </div>
+                <div class="form-el fb-column-container col-gutters">
+                  <div
+                    class=
+                      "form-el--required col col-1-3 el--block-label el--full-text">
+                    <label>{tr('Bonus')}</label>
+                    <input name="bonus" type="text" />
+                  </div>
+                  <div
+                    class=
+                      "form-el--required col col-1-3 el--block-label el--full-text">
+                    <label>{tr('-Dec')}</label>
+                    <input name="bonus_dec" type="text" />
+                  </div>
+                  <div
+                    class=
+                      "form-el--required col col-1-3 el--block-label el--full-text">
+                    <label>{tr('Wrong Answer Penalty (-)')}</label>
+                    <input name="wrong_answer_penalty" type="text" />
                   </div>
                 </div>
                 <div class="form-el fb-column-container col-gutters">
@@ -1613,32 +1648,34 @@ class AdminController extends Controller {
                 </div>
               </div>
               <div class="col col-pad col-1-2">
-                <div
-                  class=
-                    "form-el form-el--required el--block-label el--full-text">
-                  <label>{tr('Answer')}</label>
-                  <input
-                    name="answer"
-                    type="password"
-                    value={$quiz->getFlag()}
-                    disabled={true}
-                  />
-                  <a href="" class="toggle_answer_visibility">
-                    {tr('Show Answer')}
-                  </a>
-                </div>
                 <div class="form-el fb-column-container col-gutters">
                   <div
                     class=
-                      "form-el--required col col-1-3 el--block-label el--full-text">
-                    <label>{tr('Points')}</label>
-                    <input
-                      name="points"
-                      type="text"
-                      value={strval($quiz->getPoints())}
-                      disabled={true}
-                    />
+                      "form-el--required col col-2-3 el--block-label el--full-text">
+                      <label>{tr('Answer')}</label>
+                      <input
+                        name="answer"
+                        type="password"
+                        value={$quiz->getFlag()}
+                        disabled={true}
+                      />
+                      <a href="" class="toggle_answer_visibility">
+                        {tr('Show Answer')}
+                      </a>
                   </div>
+                  <div
+                    class=
+                      "form-el--required col col-1-3 el--block-label el--full-text">
+                      <label>{tr('Points')}</label>
+                      <input
+                        name="points"
+                        type="text"
+                        value={strval($quiz->getPoints())}
+                        disabled={true}
+                      />
+                  </div>
+                </div>
+                <div class="form-el fb-column-container col-gutters">
                   <div
                     class=
                       "form-el--required col col-1-3 el--block-label el--full-text">
@@ -1658,6 +1695,17 @@ class AdminController extends Controller {
                       name="bonus_dec"
                       type="text"
                       value={strval($quiz->getBonusDec())}
+                      disabled={true}
+                    />
+                  </div>
+                  <div
+                    class=
+                      "form-el--required col col-1-3 el--block-label el--full-text">
+                    <label>{tr('Wrong Answer Penalty (-)')}</label>
+                    <input
+                      name="wrong_answer_penalty"
+                      type="text"
+                      value={strval($quiz->getWrongAnswerPenalty())}
                       disabled={true}
                     />
                   </div>
@@ -1797,6 +1845,13 @@ class AdminController extends Controller {
                   </div>
                 </div>
                 <div class="form-el fb-column-container col-gutters">
+                  <div class="col col-2-3 el--block-label el--full-text"></div>
+                  <div class="col col-1-3 el--block-label el--full-text">
+                    <label>{tr('Wrong Answer Penalty')}</label>
+                    <input name="wrong_answer_penalty" type="text" />
+                  </div>
+                </div>
+                <div class="form-el fb-column-container col-gutters">
                   <div class="col col-2-3 el--block-label el--full-text">
                     <label>{tr('Hint')}</label>
                     <input name="hint" type="text" />
@@ -1806,6 +1861,7 @@ class AdminController extends Controller {
                     <input name="penalty" type="text" />
                   </div>
                 </div>
+
               </div>
             </div>
             <div class="admin-buttons admin-row">

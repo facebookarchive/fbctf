@@ -27,33 +27,27 @@ class CountryDataController extends DataController {
       }
 
       $category = await Category::genSingleCategory($level->getCategoryId());
-      $points = $level -> getPoints();
-      $hint_cost = $level->getPenalty();
-
       if ($level->getHint() !== '') {
         // There is hint, can this team afford it?
         if ($level->getPenalty() > $my_team->getPoints()) { // Not enough points
           $hint_cost = -2;
           $hint = 'no';
         } else {
-          $hint = await HintLog::genPreviousHint( //check for a previous hint
+          $hint = await HintLog::genPreviousHint(
             $level->getId(),
             $my_team->getId(),
             false,
           );
-          $score = await ScoreLog::genPreviousScore( //Boolean - if there is a previous score or not (on this level only.)
+          $score = await ScoreLog::genPreviousScore(
             $level->getId(),
             $my_team->getId(),
             false,
           );
-
-          if ($hint) {
-            $points -= $hint_cost;
+          // Has this team requested this hint or scored this level before?
+          if ($hint || $score) {
             $hint_cost = 0;
-           }
-           // Has this team requested this hint or scored this level before?
-          if ($score) {
-            $hint_cost = 0;
+          } else {
+            $hint_cost = $level->getPenalty();
           }
           $hint = ($hint_cost === 0) ? $level->getHint() : 'yes';
         }
@@ -102,7 +96,7 @@ class CountryDataController extends DataController {
         'title' => $level->getTitle(),
         'intro' => $level->getDescription(),
         'type' => $level->getType(),
-        'points' => $points,
+        'points' => $level->getPoints(),
         'bonus' => $level->getBonus(),
         'category' => $category->getCategory(),
         'owner' => $owner,

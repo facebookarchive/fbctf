@@ -59,9 +59,6 @@ class Control extends Model {
     // Clear failures log
     await FailureLog::genResetFailures();
 
-    // Reset bonuses back to original value
-    await Level::genResetBonuses();
-
     // Clear bases log
     await self::genResetBases();
     await self::genClearScriptLog();
