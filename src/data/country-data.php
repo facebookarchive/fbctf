@@ -91,6 +91,19 @@ class CountryDataController extends DataController {
       } else {
         $owner = 'Uncaptured';
       }
+
+      //All possible Answer choices for this question
+      $choiceA = "";
+      $choiceB = "";
+      $choiceC = "";
+      $choiceD = "";
+      if($level->getIsShortAnswer()){
+        $choiceA = $level->getChoiceA();
+        $choiceB = $level->getChoiceB();
+        $choiceC = $level->getChoiceC();
+        $choiceD = $level->getChoiceD();
+      }
+
       $country_data = (object) array(
         'level_id' => $level->getId(),
         'title' => $level->getTitle(),
@@ -105,6 +118,11 @@ class CountryDataController extends DataController {
         'hint_cost' => $hint_cost,
         'attachments' => $attachments_list,
         'links' => $links_list,
+        'isShortAnswer' => $level->getIsShortAnswer(),
+        'choiceA' => $choiceA,
+        'choiceB' => $choiceB,
+        'choiceC' => $choiceC,
+        'choiceD' => $choiceD,
       );
       /* HH_FIXME[1002] */
       /* HH_FIXME[2011] */
