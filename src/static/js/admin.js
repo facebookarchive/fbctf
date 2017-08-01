@@ -987,14 +987,18 @@ function toggleShortAnswer(section) {
   //short_answer--off so turn multiple_choice on!
     $('div[id="multiple_choice_block_1"]').removeClass('completely-hidden');
     $('div[id="multiple_choice_block_2"]').removeClass('completely-hidden');
-    //$('div[id="multiple_choice_block_1"]').addClass('form-error');
-    //$('div[id="multiple_choice_block_2"]').addClass('form-error');
+    $('div[id="multiple_choice_block_1"]').removeClass('form-el');
+    $('div[id="multiple_choice_block_2"]').removeClass('form-el');
+    $('div[id="multiple_choice_block_1"]').addClass('form-el--required');
+    $('div[id="multiple_choice_block_2"]').addClass('form-el--required');
   }
   else{
     $('div[id="multiple_choice_block_1"]').addClass('completely-hidden');
     $('div[id="multiple_choice_block_2"]').addClass('completely-hidden');
-    //$('div[id="multiple_choice_block_1"]').removeClass('completely-hidden');
-    //$('div[id="multiple_choice_block_1"]').removeClass('completely-hidden');
+    $('div[id="multiple_choice_block_1"]').addClass('form-el');
+    $('div[id="multiple_choice_block_2"]').addClass('form-el');
+    $('div[id="multiple_choice_block_1"]').removeClass('form-el--required');
+    $('div[id="multiple_choice_block_2"]').removeClass('form-el--required');
 
   }
 }
