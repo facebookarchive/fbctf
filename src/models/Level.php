@@ -1160,8 +1160,22 @@ class Level extends Model implements Importable, Exportable {
             $penalty = 0;
           }
 
+          //Handle the wrong answer penalties
+          $total_wrong_answer_penalty = 0;
+
+          $all_failures = await FailureLog::genAllFailures();
+          $failures_cost = 0;
+          $wrong_answer_penalty = $level->getWrongAnswerPenalty();
+          foreach($all_failures as $failure){
+            if($level->getId() === $failure->getLevelId() and $team_id === $failure->getTeamId()){
+              $failures_cost += $wrong_answer_penalty;
+            }
+          }
+          $total_wrong_answer_penalty += $failures_cost;
+          //$total_wrong_answer_penalty  = max($level->getPoints() + $level->getBonus() - $penalty,$total_wrong_answer_penalty);
+
           // Calculate points to give
-          $points = $level->getPoints() + $level->getBonus() - $penalty;
+          $points = $level->getPoints() + $level->getBonus() - $penalty - $total_wrong_answer_penalty;
 
           // Adjust bonus
           await self::genAdjustBonus($level_id);

@@ -807,7 +807,7 @@ function setupInputListeners() {
         }, animationDuration);
       } else {
         setTimeout(function() {
-          launchCaptureModal(country, capturedBy);
+          launchCaptureModal(country);
         }, animationDuration);
       }
     } // function countryClick();
@@ -953,6 +953,14 @@ function setupInputListeners() {
           $('.answer_no_bases').addClass('completely-hidden');
         }
 
+        //Hide the correct things for MC vs SA
+        if(isShortAnswer === true){
+          $('.radio-list').addClass('completely-hidden');
+        }
+        else{
+          $('.answer_no_bases').addClass('completely-hidden');
+        }
+
         //
         // event listeners
         //
@@ -1006,11 +1014,13 @@ function setupInputListeners() {
           event.preventDefault();
 
           var score_level = $('input[name=level_id]', $container)[0].value;
-          if(isShortAnswer){
+          console.log(isShortAnswer);
+          if(isShortAnswer === true){
             var score_answer = $('input[name=answer]', $container)[0].value;
           }
           else{
-            var score_answer= $('input[name=multiple_choice_quiz]:radio:checked').val();
+            console.log("still trying to pull answer form mc block");
+            var score_answer = $('input[name=multiple_choice_quiz]:radio:checked').val();
           }
           var csrf_token = $('input[name=csrf_token]')[0].value;
           var score_data = {
@@ -1032,7 +1042,7 @@ function setupInputListeners() {
             var responseData = JSON.parse(data);
             if (responseData.result === 'OK') {
               console.log('OK');
-              if(isShortAnswer){
+              if(isShortAnswer === true){
                 $('input[name=answer]', $container).css("background-color", "#1f7a1f");
               }
               else{
@@ -1050,7 +1060,7 @@ function setupInputListeners() {
               setTimeout(function() {
                 $('.js-trigger-score', $container).text('SUBMIT');
 
-                if(isShortAnswer){
+                if(isShortAnswer === true){
                   $('input[name=answer]')[0].value = '';
                   $('input[name=answer]', $container).css("background-color", "");
                 }
