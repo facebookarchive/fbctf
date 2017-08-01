@@ -1428,17 +1428,17 @@ class AdminController extends Controller {
               <div class="admin-section-toggle radio-inline">
                 <input
                   type="radio"
-                  name="fb--levels--short_answer--toggle"
-                  id="fb--levels--short_answer--toggle--on"
+                  name="fb--quiz--short_answer--toggle"
+                  id="fb--quiz--short_answer--toggle--on"
                   checked={true}
                 />
-                <label for="fb--levels--short_answer--toggle--on">{tr('Short Answer')}</label>
+                <label for="fb--quiz--short_answer--toggle--on">{tr('Short Answer')}</label>
                 <input
                   type="radio"
-                  name="fb--levels--short_answer--toggle"
-                  id="fb--levels--short_answer--toggle--off"
+                  name="fb--quiz--short_answer--toggle"
+                  id="fb--quiz--short_answer--toggle--off"
                 />
-                <label for="fb--levels--short_answer--toggle--off">{tr('Multiple Choice')}</label>
+                <label for="fb--quiz--short_answer--toggle--off">{tr('Multiple Choice')}</label>
               </div>
             </header>
             <div class="fb-column-container">
@@ -1511,6 +1511,40 @@ class AdminController extends Controller {
                   <div class="col col-1-3 el--block-label el--full-text">
                     <label>{tr('Hint Penalty')}</label>
                     <input name="penalty" type="text" />
+                  </div>
+                </div>
+                <div id="multiple_choice_block_1"
+                  class="form-el fb-column-container col-gutters completely-hidden">
+                  <div class="col col-2-2 el--block-label el--full-text" >
+                    <label>{tr('Answer Choice 1')}</label>
+                    <input
+                      name="answer_choice_1"
+                      type="text"
+                    />
+                  </div>
+                  <div class="col col-1-2 el--block-label el--full-text">
+                    <label>{tr('Answer Choice 2')}</label>
+                    <input
+                      name="answer_choice_2"
+                      type="text"
+                    />
+                  </div>
+                </div>
+                <div id="multiple_choice_block_2"
+                  class="form-el fb-column-container col-gutters completely-hidden">
+                  <div class="col col-2-2 el--block-label el--full-text">
+                    <label>{tr('Answer Choice 3')}</label>
+                    <input
+                      name="answer_choice_3"
+                      type="text"
+                    />
+                  </div>
+                  <div class="col col-1-2 el--block-label el--full-text">
+                    <label>{tr('Answer Choice 4')}</label>
+                    <input
+                      name="answer_choice_4"
+                      type="text"
+                    />
                   </div>
                 </div>
               </div>
@@ -1590,6 +1624,23 @@ class AdminController extends Controller {
 
       $quiz_id = 'quiz_id'.strval($quiz->getId());
 
+      $quiz_short_answer_name =
+        'fb--quiz--level-'.strval($quiz->getId()).'-short_answer';
+      $quiz_short_answer_on_id =
+        'fb--quiz--level-'.strval($quiz->getId()).'-short_answer--on';
+      $quiz_short_answer_off_id =
+        'fb--quiz--level-'.strval($quiz->getId()).'-short_answer--off';
+      $quiz_short_answer_on = $quiz->getIsShortAnswer() === '1';
+      $quiz_short_answer_off = $quiz->getIsShortAnswer() === '0';
+      if ($quiz_short_answer_on === true) {
+        //hide the multiple choice answer boxes
+        $multiple_choice_class = "form-el fb-column-container col-gutters completely-hidden";
+      }
+      else {
+        // display them
+        $multiple_choice_class = "form-el fb-column-container col-gutters";
+      }
+
       $countries_select =
         await $this->genGenerateCountriesSelect($quiz->getEntityId());
 
@@ -1620,6 +1671,24 @@ class AdminController extends Controller {
                 />
                 <label for={$quiz_status_off_id}>{tr('Off')}</label>
               </div>
+              <!--
+              <div class="admin-section-toggle radio-inline">
+                <input
+                  type="radio"
+                  name={$quiz_short_answer_name}
+                  id={$quiz_short_answer_on_id}
+                  checked={$quiz_short_answer_on}
+                />
+                <label for={$quiz_short_answer_on_id}>{tr('Short Answer')}</label>
+                <input
+                  type="radio"
+                  name={$quiz_short_answer_name}
+                  id={$quiz_short_answer_off_id}
+                  checked={$quiz_short_answer_off}
+                />
+                <label for={$quiz_short_answer_off_id}>{tr('Multiple Choice')}</label>
+              </div>
+              -->
             </header>
             <div class="fb-column-container">
               <div class="col col-pad col-1-2">
@@ -1726,6 +1795,46 @@ class AdminController extends Controller {
                       name="penalty"
                       type="text"
                       value={strval($quiz->getPenalty())}
+                      disabled={true}
+                    />
+                  </div>
+                </div>
+                <div class={$multiple_choice_class}>
+                  <div class="col col-2-2 el--block-label el--full-text">
+                    <label>{tr('Answer Choice 1')}</label>
+                    <input
+                      name="answer_choice_1"
+                      type="text"
+                      value={strval($quiz->getAnswerChoice1())}
+                      disabled={true}
+                    />
+                  </div>
+                  <div class="col col-1-2 el--block-label el--full-text">
+                    <label>{tr('Answer Choice 2')}</label>
+                    <input
+                      name="answer_choice_2"
+                      type="text"
+                      value={strval($quiz->getAnswerChoice2())}
+                      disabled={true}
+                    />
+                  </div>
+                </div>
+                <div class={$multiple_choice_class}>
+                  <div class="col col-2-2 el--block-label el--full-text">
+                    <label>{tr('Answer Choice 3')}</label>
+                    <input
+                      name="answer_choice_3"
+                      type="text"
+                      value={strval($quiz->getAnswerChoice3())}
+                      disabled={true}
+                    />
+                  </div>
+                  <div class="col col-1-2 el--block-label el--full-text">
+                    <label>{tr('Answer Choice 4')}</label>
+                    <input
+                      name="answer_choice_4"
+                      type="text"
+                      value={strval($quiz->getAnswerChoice4())}
                       disabled={true}
                     />
                   </div>

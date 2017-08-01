@@ -68,8 +68,8 @@ function resetDatabase() {
 function sendAdminRequest(request_data: any, refresh_page) {
   var csrf_token = $('input[name=csrf_token]')[0].value;
   request_data.csrf_token = csrf_token;
-  //console.log("Request data below:");
-  //console.log(request_data);
+  console.log("Request data below:");
+  console.log(request_data);
   $.post(
     'index.php?p=admin&ajax=true',
     request_data
@@ -204,22 +204,17 @@ function addNewSection($clicked) {
     $title.text('Player ' + sectionIndex);
   }
 
-  console.log("in addNewSection");
-
-  //add listener for radio button
-  $('input[type="radio"]').on('change', function() {
-    console.log("Below is section in addNewSection");
-    var $section = $(this);
-    console.log($section);
-    console.log("Below is newSection");
-    console.log($newSection);
-  });
-
   $('input[type="text"], input[type="password"]', $newSection).val('');
 
   $sectionContainer.append($newSection);
 
   Slider.init(5);
+
+  //adding listener to the newly added short_answer toggle
+  $('input[type="radio"][name^="fb--quiz"]', $newSection).on('change', function() {
+    var $radioSection = $(this);
+    addRadioListener($radioSection);
+  });
 }
 
 /**
@@ -682,17 +677,11 @@ function createQuizLevel(section) {
   var hint = $('.level_form input[name=hint]', section)[0].value;
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
   var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
-  //var is_short_answer = $('input[name=fb--quiz--multiple_choice_quiz--off]:radio:checked').val();
-  if ($('input[name=fb--quiz--multiple_choice_quiz--off]:radio:checked').val() === 'No') {
-    var is_short_answer = "0";
-  } else {
-    var is_short_answer = "1";
-  }
-  //var multiple_choice = $('input[name=fb--quiz--multiple_choice_quiz--on]:radio:not(:checked)').val();
-  var answer_choice_1 = 'choice1';
-  var answer_choice_2 = 'choice2';
-  var answer_choice_3 = 'choice3';
-  var answer_choice_4 = 'choice4';
+  var is_short_answer = $('input[name=fb--quiz--short_answer--on]:radio:checked').val();
+  var answer_choice_1 = $('.level_form input[name=answer_choice_1]', section)[0].value;
+  var answer_choice_2 = $('.level_form input[name=answer_choice_2]', section)[0].value;
+  var answer_choice_3 = $('.level_form input[name=answer_choice_3]', section)[0].value;
+  var answer_choice_4 = $('.level_form input[name=answer_choice_4]', section)[0].value;
 
   var create_data = {
     action: 'create_quiz',
@@ -991,6 +980,25 @@ function toggleConfiguration(radio_id) {
   }
 }
 
+function toggleShortAnswer(section) {
+  var radio_name = section.attr('id');
+  var radio_parts = radio_name.split('--');
+  if (radio_parts[radio_parts.length-1] === 'off'){
+  //short_answer--off so turn multiple_choice on!
+    $('div[id="multiple_choice_block_1"]').removeClass('completely-hidden');
+    $('div[id="multiple_choice_block_2"]').removeClass('completely-hidden');
+    //$('div[id="multiple_choice_block_1"]').addClass('form-error');
+    //$('div[id="multiple_choice_block_2"]').addClass('form-error');
+  }
+  else{
+    $('div[id="multiple_choice_block_1"]').addClass('completely-hidden');
+    $('div[id="multiple_choice_block_2"]').addClass('completely-hidden');
+    //$('div[id="multiple_choice_block_1"]').removeClass('completely-hidden');
+    //$('div[id="multiple_choice_block_1"]').removeClass('completely-hidden');
+
+  }
+}
+
 function changeConfiguration(field, value) {
   var conf_data = {
     action: 'change_configuration',
@@ -1061,29 +1069,26 @@ function saveLevel($section: any, lockClass) {
 }
 
 function addRadioListener(section){
-  console.log(section);
-  $('input[type="radio"]').on('change', function() {
-    //var $this = $(section);
-    var radio_name = section.attr('id');
-    console.log(radio_name); //added logging on radio_name to console for debugging
-    if (radio_name.search('fb--teams') === 0) {
-      if (radio_name.search('all') > 0) {
-        toggleAll(radio_name);
-      } else {
-        toggleTeam(radio_name);
-      }
-    } else if (radio_name.search('fb--levels') === 0) {
-      if (radio_name.search('all') > 0) {
-        toggleAll(radio_name);
-      } else {
-        toggleLevel(radio_name);
-      }
-    } else if (radio_name.search('fb--conf') === 0) {
-      toggleConfiguration(radio_name);
-    } else if (radio_name.search('fb--')){ //This is my extra if statement to execute on click
-      alert(radio_name);
+  var radio_name = section.attr('id');
+  //console.log("Radio button clicked. Name is %s", radio_name) //added logging on radio_name to console for debugging
+  if (radio_name.search('fb--teams') === 0) {
+    if (radio_name.search('all') > 0) {
+      toggleAll(radio_name);
+    } else {
+      toggleTeam(radio_name);
     }
-  });
+  } else if (radio_name.search('fb--levels') === 0) {
+    if (radio_name.search('all') > 0) {
+      toggleAll(radio_name);
+    } else {
+      toggleLevel(radio_name);
+    }
+  } else if (radio_name.search('fb--conf') === 0) {
+    toggleConfiguration(radio_name);
+  }
+  else if (radio_name.search('fb--quiz--short_answer') === 0){
+    toggleShortAnswer(section);
+  }
 }
 
 module.exports = {
@@ -1229,30 +1234,9 @@ module.exports = {
 
 
     // Radio buttons Listener
-    var $this = $(this);
     $('input[type="radio"]').on('change', function() {
-      console.log("Below is section");
-      var $section = $(this);
-      console.log($section);
-      var radio_name = $section.attr('id');
-      //console.log(radio_name); //added logging on radio_name to console for debugging
-      if (radio_name.search('fb--teams') === 0) {
-        if (radio_name.search('all') > 0) {
-          toggleAll(radio_name);
-        } else {
-          toggleTeam(radio_name);
-        }
-      } else if (radio_name.search('fb--levels') === 0) {
-        if (radio_name.search('all') > 0) {
-          toggleAll(radio_name);
-        } else {
-          toggleLevel(radio_name);
-        }
-      } else if (radio_name.search('fb--conf') === 0) {
-        toggleConfiguration(radio_name);
-      } else if (radio_name.search('fb--')){ //This is my extra if statement to execute on click
-        alert(radio_name);
-      }
+      var $radioSection = $(this);
+      addRadioListener($radioSection);
     });
 
     // configuration fields
