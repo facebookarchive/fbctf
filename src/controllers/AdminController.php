@@ -1430,12 +1430,14 @@ class AdminController extends Controller {
                   type="radio"
                   name="fb--quiz--short_answer--toggle"
                   id="fb--quiz--short_answer--toggle--on"
+                  value="Short Answer On"
                   checked={true}
                 />
                 <label for="fb--quiz--short_answer--toggle--on">{tr('Short Answer')}</label>
                 <input
                   type="radio"
                   name="fb--quiz--short_answer--toggle"
+                  value="Short Answer Off"
                   id="fb--quiz--short_answer--toggle--off"
                 />
                 <label for="fb--quiz--short_answer--toggle--off">{tr('Multiple Choice')}</label>
