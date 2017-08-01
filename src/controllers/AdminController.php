@@ -108,16 +108,15 @@ class AdminController extends Controller {
     $select =
       <select class="not_configuration" name="category_id" disabled={true} />;
     $answers = array("Answer Choice 1", "Answer Choice 2", "Answer Choice 3", "Answer Choice 4");
-    foreach ($answer as $answers) {
-      $select->appendChild(
-        <option
-          id="answer_choices"
-          value={$answer}
-          selected={false}>
-          {tr({$answer})}
-        </option>,
-      );
-    }
+    //foreach ($answer as $answers) {
+    //  $select->appendChild(
+    //    <option
+    //      id="answer_choices"
+    //      value={$answer}
+    //      selected={false}
+    //    </option>,
+    //  );
+    //}
     return $select;
   }
 
