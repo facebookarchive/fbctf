@@ -74,7 +74,7 @@ class CountryDataController extends DataController {
       }
       $points -= $failures_cost;
       $points = max($points,0);
-      
+
       // All attachments for this level
       $attachments_list = array();
       $has_attachments = await Attachment::genHasAttachments($level->getId());
@@ -123,11 +123,16 @@ class CountryDataController extends DataController {
         $choiceD = "Short Answer";
       }
       else{
+        $random = mt_rand(0,3);
         $choiceA = $level->getAnswerChoice1();
         $choiceB = $level->getAnswerChoice2();
         $choiceC = $level->getAnswerChoice3();
         $choiceD = $level->getAnswerChoice4();
       }
+
+      //randomize order
+      $choices = array($choiceA,$choiceB,$choiceC,$choiceD);
+      shuffle($choices);
 
       $country_data = (object) array(
         'level_id' => $level->getId(),
@@ -144,6 +149,10 @@ class CountryDataController extends DataController {
         'attachments' => $attachments_list,
         'links' => $links_list,
         'isShortAnswer' => $level->getIsShortAnswer(),
+        'shuffledChoiceA' => $choices[0],
+        'shuffledChoiceB' => $choices[1],
+        'shuffledChoiceC' => $choices[2],
+        'shuffledChoiceD' => $choices[3],
         'choiceA' => $choiceA,
         'choiceB' => $choiceB,
         'choiceC' => $choiceC,

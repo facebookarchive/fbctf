@@ -1449,14 +1449,12 @@ class AdminController extends Controller {
                   type="radio"
                   name="fb--quiz--short_answer--toggle"
                   id="fb--quiz--short_answer--toggle--on"
-                  value="Short Answer On"
                   checked={true}
                 />
                 <label for="fb--quiz--short_answer--toggle--on">{tr('Short Answer')}</label>
                 <input
                   type="radio"
                   name="fb--quiz--short_answer--toggle"
-                  value="Short Answer Off"
                   id="fb--quiz--short_answer--toggle--off"
                 />
                 <label for="fb--quiz--short_answer--toggle--off">{tr('Multiple Choice')}</label>
@@ -1651,9 +1649,9 @@ class AdminController extends Controller {
         'fb--quiz--level-'.strval($quiz->getId()).'-short_answer--on';
       $quiz_short_answer_off_id =
         'fb--quiz--level-'.strval($quiz->getId()).'-short_answer--off';
-      $quiz_short_answer_on = $quiz->getIsShortAnswer();
-      $quiz_short_answer_off = $quiz->getIsShortAnswer();
-      if ($quiz_short_answer_on) {
+      $quiz_short_answer_on = $quiz->getIsShortAnswer() === '1';
+      $quiz_short_answer_off = $quiz->getIsShortAnswer() === '0';
+      if ($quiz_short_answer_on === true) {
         //hide the multiple choice answer boxes
         $multiple_choice_class = "form-el fb-column-container col-gutters completely-hidden";
         $quiz_type = " - Short Answer";

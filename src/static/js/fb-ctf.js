@@ -834,7 +834,7 @@ function setupInputListeners() {
             points = FB_CTF.data.COUNTRIES && FB_CTF.data.COUNTRIES[country] ? FB_CTF.data.COUNTRIES[country].points : 0;
 
         $('.capturing-team-name', $container).text(country);
-        $('.points-value', $container).text('+ ' + points + ' Pts I CHANGE THIS');
+        $('.points-value', $container).text('+ ' + points + ' Pts');
         $('.country-name', $container).text(country);
         console.log($container);
         $container.css({
@@ -899,6 +899,10 @@ function setupInputListeners() {
             attachments = data ? data.attachments : '',
             links = data ? data.links : '',
             isShortAnswer = data ? data.isShortAnswer : '',
+            shuffledChoiceA = data ? data.shuffledChoiceA : '',
+            shuffledChoiceB = data ? data.shuffledChoiceB : '',
+            shuffledChoiceC = data ? data.shuffledChoiceC : '',
+            shuffledChoiceD = data ? data.shuffledChoiceD : '',
             choiceA = data ? data.choiceA : '',
             choiceB = data ? data.choiceB : '',
             choiceC = data ? data.choiceC : '',
@@ -908,10 +912,10 @@ function setupInputListeners() {
         $('.country-title', $container).text(title);
         $('input[name=level_id]', $container).attr('value', level_id);
         $('.capture-text', $container).text(intro);
-        $('.choiceA-text', $container).text(choiceA);
-        $('.choiceB-text', $container).text(choiceB);
-        $('.choiceC-text', $container).text(choiceC);
-        $('.choiceD-text', $container).text(choiceD);
+        $('.choiceA-text', $container).text(shuffledChoiceA);
+        $('.choiceB-text', $container).text(shuffledChoiceB);
+        $('.choiceC-text', $container).text(shuffledChoiceC);
+        $('.choiceD-text', $container).text(shuffledChoiceD);
         if (attachments instanceof Array) {
           $.each(attachments, function() {
             var f = this.substr(this.lastIndexOf('/') + 1);
@@ -958,7 +962,7 @@ function setupInputListeners() {
           $('.radio-list').addClass('completely-hidden');
         }
         else{
-          $('.answer_no_bases').addClass('completely-hidden');
+          $('.form-set').addClass('completely-hidden');
         }
 
         //
@@ -1019,9 +1023,22 @@ function setupInputListeners() {
             var score_answer = $('input[name=answer]', $container)[0].value;
           }
           else{
-            console.log("still trying to pull answer form mc block");
             var score_answer = $('input[name=multiple_choice_quiz]:radio:checked').val();
           }
+
+          //undo the shuffling from country-data.php
+          if(isShortAnswer === false){
+            if(score_answer === "A"){score_answer = shuffledChoiceA;}
+            else if(score_answer === "B"){score_answer = shuffledChoiceB;}
+            else if(score_answer === "C"){score_answer = shuffledChoiceC;}
+            else{score_answer = shuffledChoiceD;}
+            
+            if(score_answer === choiceA){score_answer = "A";}
+            else if(score_answer === choiceB){score_answer = "B";}
+            else if(score_answer === choiceC){score_answer = "C";}
+            else{score_answer = "D";}
+          }
+
           var csrf_token = $('input[name=csrf_token]')[0].value;
           var score_data = {
             action: 'answer_level',
