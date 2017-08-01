@@ -68,8 +68,8 @@ function resetDatabase() {
 function sendAdminRequest(request_data: any, refresh_page) {
   var csrf_token = $('input[name=csrf_token]')[0].value;
   request_data.csrf_token = csrf_token;
-  console.log("Request data below:");
-  console.log(request_data);
+  //console.log("Request data below:");
+  //console.log(request_data);
   $.post(
     'index.php?p=admin&ajax=true',
     request_data

@@ -102,6 +102,25 @@ class AdminController extends Controller {
     return $select;
   }
 
+  private async function genGenerateAnswerChoices(
+    int $selected,
+  ): Awaitable<:xhp> {
+    $select =
+      <select class="not_configuration" name="category_id" disabled={true} />;
+    $answers = array("Answer Choice 1", "Answer Choice 2", "Answer Choice 3", "Answer Choice 4");
+    foreach ($answer as $answers) {
+      $select->appendChild(
+        <option
+          id="answer_choices"
+          value={$answer}
+          selected={false}>
+          {tr({$answer})}
+        </option>,
+      );
+    }
+    return $select;
+  }
+
   private async function genGenerateFilterCategoriesSelect(): Awaitable<:xhp> {
     $categories = await Category::genAllCategories();
     $select = <select class="not_configuration" name="category_filter" />;
@@ -1637,10 +1656,12 @@ class AdminController extends Controller {
       if ($quiz_short_answer_on) {
         //hide the multiple choice answer boxes
         $multiple_choice_class = "form-el fb-column-container col-gutters completely-hidden";
+        $quiz_type = " - Short Answer";
       }
       else {
         // display them
         $multiple_choice_class = "form-el fb-column-container col-gutters";
+        $quiz_type = " - Multiple Choice";
       }
 
       $countries_select =
@@ -1656,7 +1677,7 @@ class AdminController extends Controller {
               value={strval($quiz->getId())}
             />
             <header class="admin-box-header">
-              <h3>{tr('Quiz Level')} {$c}</h3>
+              <h3>{tr('Quiz Level ')} {$c} {$quiz_type}</h3>
               <div class="admin-section-toggle radio-inline">
                 <input
                   type="radio"
