@@ -26,6 +26,12 @@ class CountryDataController extends DataController {
         continue;
       }
 
+      $score = await ScoreLog::genPreviousScore(
+        $level->getId(),
+        $my_team->getId(),
+        false,
+      );
+
       $category = await Category::genSingleCategory($level->getCategoryId());
       $points = $level -> getPoints();
       $hint_cost = $level->getPenalty();
@@ -40,18 +46,13 @@ class CountryDataController extends DataController {
             $my_team->getId(),
             false,
           );
-          $score = await ScoreLog::genPreviousScore(
-            $level->getId(),
-            $my_team->getId(),
-            false,
-          );
-          // Has this team requested this hint or scored this level before?
+          // Has this team requested this hint before?
 
           if ($hint) {
             $points -= $hint_cost;
             $hint_cost = 0;
           }
-          // Has this team requested this hint or scored this level before?
+          // Has this team scored this level before?
           if ($score) {
             $hint_cost = 0;
           }
@@ -62,6 +63,18 @@ class CountryDataController extends DataController {
         $hint = 'no';
       }
 
+      //Handle the wrong answer penalties
+      $all_failures = await FailureLog::genAllFailures();
+      $failures_cost = 0;
+      $wrong_answer_penalty = $level->getWrongAnswerPenalty();
+      foreach($all_failures as $failure){
+        if($level->getId() === $failure->getLevelId() and $my_team->getId() === $failure->getTeamId()){
+          $failures_cost += $wrong_answer_penalty;
+        }
+      }
+      $points -= $failures_cost;
+      $points = max($points,0);
+      
       // All attachments for this level
       $attachments_list = array();
       $has_attachments = await Attachment::genHasAttachments($level->getId());
@@ -104,7 +117,6 @@ class CountryDataController extends DataController {
       $choiceC = "";
       $choiceD = "";
       if($level->getIsShortAnswer()){
-        error_log(getIsShortAnswer());
         $choiceA = "Short Answer";
         $choiceB = "Short Answer";
         $choiceC = "Short Answer";
