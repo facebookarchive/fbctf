@@ -68,8 +68,8 @@ function resetDatabase() {
 function sendAdminRequest(request_data: any, refresh_page) {
   var csrf_token = $('input[name=csrf_token]')[0].value;
   request_data.csrf_token = csrf_token;
-  console.log("Request data below:");
-  console.log(request_data);
+  //console.log("Request data below:");
+  //console.log(request_data);
   $.post(
     'index.php?p=admin&ajax=true',
     request_data
@@ -203,6 +203,17 @@ function addNewSection($clicked) {
   } else if (titleText.indexOf('player') > -1) {
     $title.text('Player ' + sectionIndex);
   }
+
+  console.log("in addNewSection");
+
+  //add listener for radio button
+  $('input[type="radio"]').on('change', function() {
+    console.log("Below is section in addNewSection");
+    var $section = $(this);
+    console.log($section);
+    console.log("Below is newSection");
+    console.log($newSection);
+  });
 
   $('input[type="text"], input[type="password"]', $newSection).val('');
 
@@ -1049,6 +1060,32 @@ function saveLevel($section: any, lockClass) {
   }
 }
 
+function addRadioListener(section){
+  console.log(section);
+  $('input[type="radio"]').on('change', function() {
+    //var $this = $(section);
+    var radio_name = section.attr('id');
+    console.log(radio_name); //added logging on radio_name to console for debugging
+    if (radio_name.search('fb--teams') === 0) {
+      if (radio_name.search('all') > 0) {
+        toggleAll(radio_name);
+      } else {
+        toggleTeam(radio_name);
+      }
+    } else if (radio_name.search('fb--levels') === 0) {
+      if (radio_name.search('all') > 0) {
+        toggleAll(radio_name);
+      } else {
+        toggleLevel(radio_name);
+      }
+    } else if (radio_name.search('fb--conf') === 0) {
+      toggleConfiguration(radio_name);
+    } else if (radio_name.search('fb--')){ //This is my extra if statement to execute on click
+      alert(radio_name);
+    }
+  });
+}
+
 module.exports = {
   init: function() {
     // Capture enter key presses to avoid unexpected actions
@@ -1190,11 +1227,15 @@ module.exports = {
       }
     });
 
-    // Radio buttons
+
+    // Radio buttons Listener
+    var $this = $(this);
     $('input[type="radio"]').on('change', function() {
-      var $this = $(this);
-      var radio_name = $this.attr('id');
-      console.log(radio_name); //added logging on radio_name to console for debugging
+      console.log("Below is section");
+      var $section = $(this);
+      console.log($section);
+      var radio_name = $section.attr('id');
+      //console.log(radio_name); //added logging on radio_name to console for debugging
       if (radio_name.search('fb--teams') === 0) {
         if (radio_name.search('all') > 0) {
           toggleAll(radio_name);

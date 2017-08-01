@@ -1149,7 +1149,6 @@ class Level extends Model implements Importable, Exportable {
 
           $level = await self::gen($level_id);
 
-
           // Check if team has already gotten this hint
           $hint = await HintLog::genPreviousHint($level_id, $team_id, false);
           if ($hint) {
