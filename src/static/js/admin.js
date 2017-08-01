@@ -668,8 +668,8 @@ function createLevel(section) {
 // Create quiz level
 function createQuizLevel(section) {
   var title = $('.level_form input[name=title]', section)[0].value;
+  //get the id which is the level #. This is needed to get the correct radio button
   var id = $('.level_form h3', section).text().split(' ')[2];
-  console.log(id);
   var question = $('.level_form textarea[name=question]', section)[0].value;
   var answer = $('.level_form input[name=answer]', section)[0].value;
   var entity_id = $('.level_form select[name=entity_id] option:selected', section)[0].value;
@@ -679,6 +679,7 @@ function createQuizLevel(section) {
   var hint = $('.level_form input[name=hint]', section)[0].value;
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
   var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
+  //use the id to select the correct radio button. If short answer on, set to 1 (its a tinyint in SQL)
   if ($('input[name=fb--quiz--short_answer--' + id + ']:radio:checked').val() === "Short Answer On"){
     var is_short_answer = 1;
   } else {

@@ -1632,9 +1632,9 @@ class AdminController extends Controller {
         'fb--quiz--level-'.strval($quiz->getId()).'-short_answer--on';
       $quiz_short_answer_off_id =
         'fb--quiz--level-'.strval($quiz->getId()).'-short_answer--off';
-      $quiz_short_answer_on = $quiz->getIsShortAnswer() === '1';
-      $quiz_short_answer_off = $quiz->getIsShortAnswer() === '0';
-      if ($quiz_short_answer_on === true) {
+      $quiz_short_answer_on = $quiz->getIsShortAnswer();
+      $quiz_short_answer_off = $quiz->getIsShortAnswer();
+      if ($quiz_short_answer_on) {
         //hide the multiple choice answer boxes
         $multiple_choice_class = "form-el fb-column-container col-gutters completely-hidden";
       }
