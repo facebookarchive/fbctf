@@ -119,7 +119,7 @@ function validateAdminForm($clicked) {
 
   $required.removeClass(errorClass).each(function() {
     var $self = $(this),
-        $requiredEl = $('input[type="text"], input[type="password"], textarea', $self),
+        $requiredEl = $('input[type="text"], input[type="password"], textarea, input[name="answer_choice_2"]', $self),
         $logoName = $('.logo-name', $self);
 
     // All the conditions that would make this element trigger an error

@@ -1514,7 +1514,7 @@ class AdminController extends Controller {
                   </div>
                 </div>
                 <div id="multiple_choice_block_1"
-                  class="form-el fb-column-container col-gutters completely-hidden">
+                  class="form-el--required fb-column-container col-gutters completely-hidden">
                   <div class="col col-2-2 el--block-label el--full-text" >
                     <label>{tr('Answer Choice 1')}</label>
                     <input
@@ -1531,7 +1531,7 @@ class AdminController extends Controller {
                   </div>
                 </div>
                 <div id="multiple_choice_block_2"
-                  class="form-el fb-column-container col-gutters completely-hidden">
+                  class="form-el--required fb-column-container col-gutters completely-hidden">
                   <div class="col col-2-2 el--block-label el--full-text">
                     <label>{tr('Answer Choice 3')}</label>
                     <input
