@@ -1181,6 +1181,8 @@ class Level extends Model implements Importable, Exportable {
 
           // Calculate points to give
           $points = $level->getPoints() + $level->getBonus() - $penalty - $total_wrong_answer_penalty;
+          // Make sure not negative.
+          $points = max($points, 0);
 
           // Adjust bonus
           await self::genAdjustBonus($level_id);
