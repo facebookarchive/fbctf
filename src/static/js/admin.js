@@ -68,8 +68,8 @@ function resetDatabase() {
 function sendAdminRequest(request_data: any, refresh_page) {
   var csrf_token = $('input[name=csrf_token]')[0].value;
   request_data.csrf_token = csrf_token;
-  //console.log("Request data below:");
-  //console.log(request_data);
+  console.log("Request data below:");
+  console.log(request_data);
   $.post(
     'index.php?p=admin&ajax=true',
     request_data
@@ -791,15 +791,26 @@ function updateLevel(section) {
 function updateQuizLevel(section) {
   var title = $('.level_form input[name=title]', section)[0].value;
   var question = $('.level_form textarea[name=question]', section)[0].value;
-  var answer = $('.level_form input[name=answer]', section)[0].value;
   var entity_id = $('.level_form select[name=entity_id] option:selected', section)[0].value;
   var points = $('.level_form input[name=points]', section)[0].value;
   var bonus = $('.level_form input[name=bonus]', section)[0].value;
   var bonus_dec = $('.level_form input[name=bonus_dec]', section)[0].value;
   var hint = $('.level_form input[name=hint]', section)[0].value;
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
-  var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
   var level_id = $('.level_form input[name=level_id]', section)[0].value;
+  var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
+  var answer_choice_1 = $('.level_form input[name=answer_choice_1]', section)[0].value;
+  var answer_choice_2 = $('.level_form input[name=answer_choice_2]', section)[0].value;
+  var answer_choice_3 = $('.level_form input[name=answer_choice_3]', section)[0].value;
+  var answer_choice_4 = $('.level_form input[name=answer_choice_4]', section)[0].value;
+  var title_string = $('.level_form h3', section).text();
+  var answer = $('.level_form input[name^=answer]', section)[0].value;
+  // check if the string 'Short Answer' is in the title to tell if short answer / multi.
+  if ($('.level_form h3', section).text().indexOf("Short Answer") >= 0) {
+    var is_short_answer = 1;
+  } else {
+    var is_short_answer = 0;
+  }
 
   var update_data = {
     action: 'update_quiz',
@@ -813,7 +824,12 @@ function updateQuizLevel(section) {
     hint: hint,
     penalty: penalty,
     wrong_answer_penalty: wrong_answer_penalty,
-    level_id: level_id
+    level_id: level_id,
+    is_short_answer: is_short_answer,
+    answer_choice_1: answer_choice_1,
+    answer_choice_2: answer_choice_2,
+    answer_choice_3: answer_choice_3,
+    answer_choice_4: answer_choice_4,
   };
   sendAdminRequest(update_data, false);
 }
