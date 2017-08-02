@@ -225,6 +225,11 @@ class Level extends Model implements Importable, Exportable {
       if (!$exist && $entity_exist && $category_exist) {
         $entity = await Country::genCountry($entity_iso_code);
         $category = await Category::genSingleCategoryByName($c);
+        if (must_have_idx($level, 'is_short_answer')){
+          $is_short_answer = 1;
+        } else {
+          $is_short_answer = 0;
+        }
         $level_id = await self::genCreate(
           $type,
           $title,
@@ -239,7 +244,7 @@ class Level extends Model implements Importable, Exportable {
           must_have_string($level, 'hint'),
           must_have_int($level, 'penalty'),
           must_have_int($level, 'wrong_answer_penalty'),
-          must_have_int($level, 'is_short_answer'),
+          $is_short_answer,
           must_have_string($level, 'answer_choice_1'),
           must_have_string($level, 'answer_choice_2'),
           must_have_string($level, 'answer_choice_3'),

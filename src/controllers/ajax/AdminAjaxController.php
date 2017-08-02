@@ -242,8 +242,8 @@ class AdminAjaxController extends AjaxController {
           must_have_int($params, 'bonus_dec'),
           must_have_string($params, 'hint'),
           intval(must_have_idx($params, 'penalty')),
-          must_have_int($params, 'level_id'),
           intval(must_have_idx($params, 'wrong_answer_penalty')),
+          must_have_int($params, 'level_id'),
         );
         return Utils::ok_response('Updated succesfully', 'admin');
       case 'create_base':
@@ -257,6 +257,7 @@ class AdminAjaxController extends AjaxController {
           must_have_int($params, 'bonus'),
           must_have_string($params, 'hint'),
           intval(must_have_idx($params, 'penalty')),
+          intval(must_have_idx($params, 'wrong_answer_penalty')),
         );
         return Utils::ok_response('Created succesfully', 'admin');
       case 'update_base':
@@ -269,6 +270,7 @@ class AdminAjaxController extends AjaxController {
           must_have_int($params, 'bonus'),
           must_have_string($params, 'hint'),
           intval(must_have_idx($params, 'penalty')),
+          intval(must_have_idx($params, 'wrong_answer_penalty')),
           must_have_int($params, 'level_id'),
         );
         return Utils::ok_response('Updated succesfully', 'admin');
