@@ -68,8 +68,8 @@ function resetDatabase() {
 function sendAdminRequest(request_data: any, refresh_page) {
   var csrf_token = $('input[name=csrf_token]')[0].value;
   request_data.csrf_token = csrf_token;
-  console.log("Request data below:");
-  console.log(request_data);
+  //console.log("Request data below:");
+  //console.log(request_data);
   $.post(
     'index.php?p=admin&ajax=true',
     request_data
@@ -804,7 +804,13 @@ function updateQuizLevel(section) {
   var answer_choice_3 = $('.level_form input[name=answer_choice_3]', section)[0].value;
   var answer_choice_4 = $('.level_form input[name=answer_choice_4]', section)[0].value;
   var title_string = $('.level_form h3', section).text();
-  var answer = $('.level_form input[name^=answer]', section)[0].value;
+  //need to check for a select since its no longer an input in most cases.
+  if ($('.level_form select[name^=answer]', section)[0] != null){
+    var answer = $('.level_form select[name^=answer]', section)[0].value;
+  } else {
+  // if re-hidden it will be back to an input so check if null and pull input value.
+    var answer = $('.level_form input[name^=answer]', section)[0].value;
+  }
   // check if the string 'Short Answer' is in the title to tell if short answer / multi.
   if ($('.level_form h3', section).text().indexOf("Short Answer") >= 0) {
     var is_short_answer = 1;
@@ -1106,15 +1112,13 @@ function saveLevel($section: any, lockClass) {
 
 function editLevel($section, lockClass){
   $section.removeClass(lockClass);
+  /* Do not do this. It is all handled in .toggle_answer_visibility
   if ($('.level_form h3', $section).text().indexOf("Multiple Choice") >= 0) {
     var input_box = $('input[name^="answer"]', $section)[0];
-    console.log(input_box);
-    console.log(input_box.name);
-    console.log(input_box.type);
+    //if still a password input box, we need to replace it with a select.
     if (input_box.type === 'password'){
       var answer = input_box.value;
       var name = input_box.name;
-      //var isDisabled = $(this).prev('input').is(':disabled');
       $(input_box).replaceWith(
         '<select name="' + name + '" class="not_configuration">' +
           '<option value="Answer Choice 1">Answer Choice 1</option>' +
@@ -1122,14 +1126,14 @@ function editLevel($section, lockClass){
           '<option value="Answer Choice 3">Answer Choice 3</option>' +
           '<option value="Answer Choice 4">Answer Choice 4</option>' +
         '</select>');
-      //select the currently selected answer
       var select_box = $('select[name^="answer"]', $section)[0];
-      console.log(select_box);
-      select_box.value(answer);
-      select_box.prop('disabled', false);
+      $(select_box).val(answer);
     }
-  } else {
-    $('input[type="text"], input[type="password"], textarea', $section).prop('disabled', false);
+  }*/
+  $('input[type="text"], input[type="password"], select[name^="answer"], textarea', $section).prop('disabled', false);
+  // if multiple choice, re-disable the multiple choice field if a password.
+  if ($('.level_form h3', $section).text().indexOf("Multiple Choice") >= 0) {
+    $('input[type="password"]', $section).prop('disabled', true);
   }
   var entity_select = $('[name=entity_id]', $section)[0];
   var category_select = $('[name=category_id]', $section)[0];
@@ -1537,14 +1541,12 @@ module.exports = {
           $section = $self.closest('.admin-box');
       //if multiple choice, change the input to a select box only when show answer selected
       if ($('.level_form h3', $section).text().indexOf("Multiple Choice") >= 0) {
+        //so its a password which means you hit show answer
+        var isDisabled = $('input[name=title]', $section).is(':disabled');
+        //find out if disabled elements or not. If so, keep disabled.
         if ($(this).prev('input').attr('type') === 'password'){
           var answer = $(this).prev('input')[0].value;
           var name = $(this).prev('input').attr('name');
-          console.log("Previous answer is:");
-          console.log(answer);
-          console.log("name:");
-          console.log(name);
-          var isDisabled = $(this).prev('input').is(':disabled');
           $(this).prev('input').replaceWith(
             '<select name="' + name + '" class="not_configuration">' +
               '<option value="Answer Choice 1">Answer Choice 1</option>' +
@@ -1556,21 +1558,17 @@ module.exports = {
           $(this).prev('select').val(answer);
           $(this).prev('select').prop('disabled', isDisabled);
           $(this).text('Hide Answer');
-        } else {
+        } else { //you hit hide answer
           var answer = $(this).prev('select')[0].value;
           var name = $(this).prev('select').attr('name');
-          var isDisabled = $(this).prev('select').is(':disabled');
-          console.log("Previous answer is:");
-          console.log(answer);
-          console.log("name:");
-          console.log(name);
           $(this).prev('select').replaceWith(
             '<input name="' + name + '" type="password" />');
           $(this).prev('input').val(answer);
-          $(this).prev('input').prop('disabled', isDisabled);
+          //Always keep disabled so they are not trying to edit the input field while a textbox.
+          $(this).prev('input').prop('disabled', true);
           $(this).text('Show Answer');
         }
-      } else{
+      } else{ //normal non-multiple choice password case.
         if ($(this).prev('input').attr('type') === 'text') {
           $(this).text('Show Answer');
           $(this).prev('input').attr('type', 'password');
@@ -1580,6 +1578,27 @@ module.exports = {
         }
       }
     });
+/* close to better working version of above, but can not figure out how to best
+hide the select box.
+    if ($(this).prev('input').attr('type') === 'text') {
+      $(this).text('Show Answer');
+      $(this).prev('input').attr('type', 'password');
+    } else if ($(this).prev('input').attr('type') === 'password') {
+      $(this).text('Hide Answer');
+      $(this).prev('input').attr('type', 'text');
+    } //at this point, the only case left is a multi_choice where its already a select
+    else if ($('.level_form h3', $section).text().indexOf("Multiple Choice") >= 0) {
+      var isDisabled = $(this).prev('select').is(':disabled');
+      $(this).prev('select').prop('disabled', !isDisabled);
+      if (isDisabled) {
+        $(this).prev('select').prop('password', !isDisabled);
+        $(this).text('Hide Answer');
+      } else {
+        $(this).prev('select').prop('password', !isDisabled);
+        $(this).text('Show Answer');
+      }
+    }
+    */
 
     // prompt reset database
     $('.js-reset-database').on('click', function(event) {
