@@ -149,7 +149,6 @@ class AdminController extends Controller {
     return $select;
   }
 
-  // TODO: Translate password types
   private async function genStrongPasswordsSelect(): Awaitable<:xhp> {
     $types = await Configuration::genAllPasswordTypes();
     $config = await Configuration::genCurrentPasswordType();
@@ -2903,11 +2902,11 @@ class AdminController extends Controller {
       if ($country->getEnabled()) {
         $highlighted_action = 'disable_country';
         $highlighted_color = 'highlighted--red country-enabled';
-        $current_status = 'DISABLED';
+        $current_status = 'Disabled';
       } else {
         $highlighted_action = 'enable_country';
         $highlighted_color = 'highlighted--green country-disabled';
-        $current_status = 'ENABLED';
+        $current_status = 'Enabled';
       }
 
       if (!$using_country) {
@@ -2916,7 +2915,7 @@ class AdminController extends Controller {
             class={$highlighted_color}
             href="#"
             data-action={str_replace('_', '-', $highlighted_action)}>
-            {$current_status}
+            {tr($current_status})}
           </a>;
       } else {
         $status_action = <a class={$highlighted_color}></a>;

@@ -143,7 +143,7 @@ $translations = array(
   'All' =>
     'Todos',
   'Leaderboard' =>
-    'Tabla de Posiciones',
+    'Ranking',
   'Announcements' =>
     'Anuncios',
   'Teams' =>
@@ -153,7 +153,7 @@ $translations = array(
   'Activity' =>
     'Actividad',
   'Game Clock' =>
-    'Reloj del Juego',
+    'Reloj de Juego',
   //Translations for AdminController
   'Auto' =>
     'Auto',
@@ -205,6 +205,8 @@ $translations = array(
     'Contraseñas Seguras',
   'Team Selection' =>
     'Selección de Equipo',
+  'Password Types' =>
+    'Politica de contraseñas',
   'Game' =>
     'Juego',
   'Scoring' =>
@@ -219,6 +221,18 @@ $translations = array(
     'Ciclos Base',
   'Default Bonus Dec' =>
     'Bonus Dec por defecto',
+  'Game Schedule' =>
+    'Calendario',
+  'Game Start Year' =>
+    'Año de inicio',
+  'Game End Year' =>
+    'Año de fin',
+  'Day' =>
+    'Día',
+  'Month' =>
+    'Mes',
+  'Minute' =>
+    'Minuto',
   'Timer' =>
     'Temporizador',
   'Server Time' =>
@@ -282,7 +296,7 @@ $translations = array(
   'Hint' =>
     'Pista',
   'Hint Penalty' =>
-    'Penalidad de la Pista',
+    'Penalización',
   'EDIT' =>
     'EDITAR',
   'All Quiz Levels' =>
@@ -424,7 +438,7 @@ $translations = array(
   'Score' =>
     'Puntuación',
   'Change Password' =>
-    'Cambiar Password',
+    'Cambiar Contraseña',
   'Admin Level' =>
     'Administrar Nivel',
   'Visibility' =>
@@ -499,7 +513,7 @@ $translations = array(
   'Your Rank' =>
     'Tu Posición',
   'Your Score' =>
-    'Tu Puntaje',
+    'Tu Puntación',
   'Everyone' =>
     'Todos',
   'Your Team' =>
@@ -555,7 +569,7 @@ $translations = array(
   'cancel_' =>
     'cancelar_',
   'Are you sure you want to cancel? You have unsaved changes that will be reverted.' =>
-    'Está seguro que desea cancelar? Los cambios sin guardar se perderán.',
+    '¿Está seguro que desea cancelar? Los cambios sin guardar se perderán.',
   'choose_logo' =>
     'elegir_logo',
   'captured_' =>
@@ -613,31 +627,31 @@ $translations = array(
   'Tool bars are located on all edges of the gameboard. Tap a category to expand and close each tool bar.' =>
     'Las barras de herramientas se encuentran en todos los bordes del panel de juego. Pulsa en una categoría para ampliar y cerrar cada barra de herramientas.',
   'Tool_Bars' =>
-    'Tool_Bars',
+    'Paneles',
   'Tap the "Game Clock" to keep track of time during gameplay. Don’t let time get the best of you.' =>
-    'Pulsa el "Reloj del Juego" para hacer seguimiento del tiempo. No dejes que el tiempo te gane.',
+    'Pulsa el "Reloj de juego" para hacer seguimiento del tiempo. No dejes que el tiempo te gane.',
   'Game_Clock' =>
-    'Game_Clock',
+    'Reloj de juego ',
   'Countries marked with an ' =>
     'Países marcados con una ',
   'are captured by you.' =>
-    'son capturados por vos.',
+    ' son capturados por ti.',
   ' are owned by others.' =>
     ' le pertenecen a otros.',
   'Captures' =>
     'Capturas',
   'Tap Plus[+] to Zoom In. Tap Minus[-] to Zoom Out.' =>
-    'Pulsa Más[+] para Acercarte. Pulsa Menos[-] para Alejarte.',
+    'Pulsa más [+] para acercarte. Pulsa menos [-] para alejarte.',
   'Click and Drag to move left, right, up and down.' =>
-    'Presiona y Arrastra para moverte por la izquierda, derecha, arriba o abajo',
+    'Presiona y arrastra para moverte por la izquierda, derecha, arriba o abajo',
   'Zoom' =>
     'Zoom',
   'Tap Forward Slash [/] to activate computer commands. A list of commands can be found under "Rules".' =>
-    'Presiona Slash [/] para activar los comandos del juego. La lista completa de comandos puede ser encontrada en "Reglas".',
+    'Presiona contrabarra [/] para activar los comandos del juego. La lista completa de comandos puede ser encontrada en "Reglas".',
   'Command_Line' =>
     'Command_Line',
   'Click "Nav" to access main navigation links like Rules of Play, Registration, Blog, Jobs & more.' =>
-    'Presiona "Nav" para acceder a los links principales como Reglas del Juego, Registro, Blog, Trabajo y más.',
+    'Presiona "Navegación" para acceder a los links principales como \'Reglas del juego\', \'Cerrar sesión\' y otros.',
   'Track your competition by clicking "scorboard" to access real-time game statistics and graphs.' =>
     'Haz un seguimiento del juego haciendo clic en "scoreboard" para acceder a estadísticas y gráficas en tiempo real.',
   'Have fun, be the best and conquer the world.' =>
@@ -653,11 +667,11 @@ $translations = array(
   'Powered By Facebook' =>
     'Powered By Facebook',
   'Active Directory / LDAP' =>
-    'Active Directory / LDAP',
+    'Directorio Activo / LDAP',
   'LDAP Server' =>
-    'LDAP Server',
+    'LDAP Servidor',
   'LDAP Port' =>
-    'LDAP Port',
+    'LDAP Puerto',
   'LDAP Domain' =>
-    'LDAP Domain',
+    'LDAP Dominio',
 );
