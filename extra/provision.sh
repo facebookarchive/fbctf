@@ -40,9 +40,12 @@
 # We want the provision script to fail as soon as there are any errors
 set -e
 
-DB="fbctf"
-U="ctf"
-P="ctf"
+# Database credentials.
+DB_NAME="fbctf"
+DB_USER="ctf"
+
+#Default passwords, used in development mode only
+DB_PASWWORD="ctf"
 P_ROOT="root"
 
 # Default values
@@ -182,6 +185,12 @@ if [[ "$UPDATE" == true ]] ; then
     exit 0
 fi
 
+# Override default database passwords
+if [[ $MODE = "prod" ]]; then
+    P_ROOT=$(get_random_string 12)
+    DB_PASSWORD=$(get_random_string 12)
+fi
+
 AVAILABLE_RAM=`free -mt | grep Total | awk '{print $2}'`
 
 if [ $AVAILABLE_RAM -lt 1024 ]; then
@@ -283,7 +292,7 @@ install_unison
 log "Remember install the same version of unison (2.48.3) in your host machine"
 
 # Database creation
-import_empty_db "root" "$P_ROOT" "$DB" "$CTF_PATH" "$MODE"
+import_empty_db "root" "$P_ROOT" "$DB_NAME" "$DB_USER" "$DB_PASSWORD" "$CTF_PATH" "$MODE"
 
 # Make attachments folder world writable
 sudo chmod 777 "$CTF_PATH/src/data/attachments"
@@ -293,6 +302,7 @@ sudo mkdir -p "$CTF_PATH/src/data/customlogos"
 sudo chmod 777 "$CTF_PATH/src/data/customlogos"
 
 # Display the final message, depending on the context
+log  "Don't miss root database password: $P_ROOT"
 if [[ -d "/vagrant" ]]; then
   log 'fbctf deployment is complete! Ready in https://10.10.10.5'
 else

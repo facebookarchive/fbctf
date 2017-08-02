@@ -269,13 +269,14 @@ function install_composer() {
 }
 
 function import_empty_db() {
-  local __u="ctf"
-  local __p="ctf"
   local __user=$1
   local __pwd=$2
   local __db=$3
-  local __path=$4
-  local __mode=$5
+  local __u=$4
+  local __p=$5
+  local __path=$6
+  local __mode=$7
+
 
   log "Creating DB - $__db"
   mysql -u "$__user" --password="$__pwd" -e "CREATE DATABASE IF NOT EXISTS \`$__db\`;"
@@ -356,4 +357,8 @@ function update_repo() {
   composer.phar install
 
   run_grunt "$__ctf_path" "$__mode"
+}
+
+function get_random_string() {
+    cat /dev/urandom | tr -dc A-Za-z0-9 | head -c $1
 }
