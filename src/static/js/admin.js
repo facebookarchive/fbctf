@@ -798,8 +798,23 @@ function updateQuizLevel(section) {
   var bonus_dec = $('.level_form input[name=bonus_dec]', section)[0].value;
   var hint = $('.level_form input[name=hint]', section)[0].value;
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
-  var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
   var level_id = $('.level_form input[name=level_id]', section)[0].value;
+  var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
+  var answer_choice_1 = $('.level_form input[name=answer_choice_1]', section)[0].value;
+  var answer_choice_2 = $('.level_form input[name=answer_choice_2]', section)[0].value;
+  var answer_choice_3 = $('.level_form input[name=answer_choice_3]', section)[0].value;
+  var answer_choice_4 = $('.level_form input[name=answer_choice_4]', section)[0].value;
+  console.log(level_id);
+  if ($('input[name=fb--quiz--short_answer--' + level_id + ']:radio:checked').val() === "Short Answer On"){
+    var is_short_answer = 1;
+    //grab the answer value from the input box
+    var answer = $('.level_form input[name=answer_short]', section)[0].value;
+  } else {
+    var is_short_answer = 0;
+    //if multi, you need to grab the answer value from the select box
+    var answer = $('.level_form select[name=answer_multi]', section)[0].value;
+  }
+
 
   var update_data = {
     action: 'update_quiz',
@@ -813,7 +828,12 @@ function updateQuizLevel(section) {
     hint: hint,
     penalty: penalty,
     wrong_answer_penalty: wrong_answer_penalty,
-    level_id: level_id
+    level_id: level_id,
+    is_short_answer: is_short_answer,
+    answer_choice_1: answer_choice_1,
+    answer_choice_2: answer_choice_2,
+    answer_choice_3: answer_choice_3,
+    answer_choice_4: answer_choice_4,
   };
   sendAdminRequest(update_data, false);
 }
