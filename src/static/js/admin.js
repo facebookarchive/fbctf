@@ -68,8 +68,8 @@ function resetDatabase() {
 function sendAdminRequest(request_data: any, refresh_page) {
   var csrf_token = $('input[name=csrf_token]')[0].value;
   request_data.csrf_token = csrf_token;
-  //console.log("Request data below:");
-  //console.log(request_data);
+  console.log("Request data below:");
+  console.log(request_data);
   $.post(
     'index.php?p=admin&ajax=true',
     request_data
@@ -791,7 +791,6 @@ function updateLevel(section) {
 function updateQuizLevel(section) {
   var title = $('.level_form input[name=title]', section)[0].value;
   var question = $('.level_form textarea[name=question]', section)[0].value;
-  var answer = $('.level_form input[name=answer]', section)[0].value;
   var entity_id = $('.level_form select[name=entity_id] option:selected', section)[0].value;
   var points = $('.level_form input[name=points]', section)[0].value;
   var bonus = $('.level_form input[name=bonus]', section)[0].value;
@@ -804,17 +803,14 @@ function updateQuizLevel(section) {
   var answer_choice_2 = $('.level_form input[name=answer_choice_2]', section)[0].value;
   var answer_choice_3 = $('.level_form input[name=answer_choice_3]', section)[0].value;
   var answer_choice_4 = $('.level_form input[name=answer_choice_4]', section)[0].value;
-  console.log(level_id);
-  if ($('input[name=fb--quiz--short_answer--' + level_id + ']:radio:checked').val() === "Short Answer On"){
+  var title_string = $('.level_form h3', section).text();
+  var answer = $('.level_form input[name^=answer]', section)[0].value;
+  // check if the string 'Short Answer' is in the title to tell if short answer / multi.
+  if ($('.level_form h3', section).text().indexOf("Short Answer") >= 0) {
     var is_short_answer = 1;
-    //grab the answer value from the input box
-    var answer = $('.level_form input[name=answer_short]', section)[0].value;
   } else {
     var is_short_answer = 0;
-    //if multi, you need to grab the answer value from the select box
-    var answer = $('.level_form select[name=answer_multi]', section)[0].value;
   }
-
 
   var update_data = {
     action: 'update_quiz',
