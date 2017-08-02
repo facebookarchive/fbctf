@@ -17,6 +17,10 @@ RUN apt-get update \
   rsync \
   curl \
   ca-certificates \
+  build-essential \
+  libssl-dev \
+  libffi-dev \
+  python-dev \
   && chown www-data:www-data $HOME \
   && ./extra/provision.sh -m $MODE -c $TYPE -k $KEY -C $CRT -D $DOMAIN -e $EMAIL -s `pwd` --docker \
   && rm -f /var/run/hhvm/sock \
