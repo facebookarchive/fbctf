@@ -1448,6 +1448,7 @@ class AdminController extends Controller {
                   type="radio"
                   name="fb--quiz--short_answer--toggle"
                   id="fb--quiz--short_answer--toggle--on"
+                  value="Short Answer On"
                   checked={true}
                 />
                 <label for="fb--quiz--short_answer--toggle--on">{tr('Short Answer')}</label>
@@ -1455,6 +1456,7 @@ class AdminController extends Controller {
                   type="radio"
                   name="fb--quiz--short_answer--toggle"
                   id="fb--quiz--short_answer--toggle--off"
+                  value="Short Answer Off"
                 />
                 <label for="fb--quiz--short_answer--toggle--off">{tr('Multiple Choice')}</label>
               </div>
@@ -1492,7 +1494,7 @@ class AdminController extends Controller {
                     class=
                       "form-el--required col col-2-3 el--block-label el--full-text">
                     <label>{tr('Answer')}</label>
-                    <input name="answer" type="text" />
+                    <input name="answer_short" type="text" />
                   </div>
                   <div
                     class=
@@ -1642,15 +1644,17 @@ class AdminController extends Controller {
 
       $quiz_id = 'quiz_id'.strval($quiz->getId());
 
+      $quiz_answer_name = "answer".strval($quiz->getId());
+
       $quiz_short_answer_name =
         'fb--quiz--level-'.strval($quiz->getId()).'-short_answer';
       $quiz_short_answer_on_id =
         'fb--quiz--level-'.strval($quiz->getId()).'-short_answer--on';
       $quiz_short_answer_off_id =
         'fb--quiz--level-'.strval($quiz->getId()).'-short_answer--off';
-      $quiz_short_answer_on = $quiz->getIsShortAnswer() === '1';
-      $quiz_short_answer_off = $quiz->getIsShortAnswer() === '0';
-      if ($quiz_short_answer_on === true) {
+      $quiz_short_answer_on = ($quiz->getIsShortAnswer());
+      $quiz_short_answer_off = !($quiz->getIsShortAnswer());
+      if ($quiz_short_answer_on) {
         //hide the multiple choice answer boxes
         $multiple_choice_class = "form-el fb-column-container col-gutters completely-hidden";
         $quiz_type = " - Short Answer";
@@ -1743,7 +1747,7 @@ class AdminController extends Controller {
                       "form-el--required col col-2-3 el--block-label el--full-text">
                       <label>{tr('Answer')}</label>
                       <input
-                        name="answer"
+                        name={$quiz_answer_name}
                         type="password"
                         value={$quiz->getFlag()}
                         disabled={true}

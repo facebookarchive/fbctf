@@ -668,8 +668,9 @@ function createLevel(section) {
 // Create quiz level
 function createQuizLevel(section) {
   var title = $('.level_form input[name=title]', section)[0].value;
+  //get the id which is the level #. This is needed to get the correct radio button
+  var id = $('.level_form h3', section).text().split(' ')[2];
   var question = $('.level_form textarea[name=question]', section)[0].value;
-  var answer = $('.level_form input[name=answer]', section)[0].value;
   var entity_id = $('.level_form select[name=entity_id] option:selected', section)[0].value;
   var points = $('.level_form input[name=points]', section)[0].value;
   var bonus = $('.level_form input[name=bonus]', section)[0].value;
@@ -677,7 +678,17 @@ function createQuizLevel(section) {
   var hint = $('.level_form input[name=hint]', section)[0].value;
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
   var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
-  var is_short_answer = $('input[name=fb--quiz--short_answer--on]:radio:checked').val();
+  //use the id to select the correct radio button. If short answer on, set to 1 (its a tinyint in SQL)
+  if ($('input[name=fb--quiz--short_answer--' + id + ']:radio:checked').val() === "Short Answer On"){
+    var is_short_answer = 1;
+    //grab the answer value from the input box
+    var answer = $('.level_form input[name=answer_short]', section)[0].value;
+  } else {
+    var is_short_answer = 0;
+    //if multi, you need to grab the answer value from the select box
+    var answer = $('.level_form select[name=answer_multi]', section)[0].value;
+  }
+
   var answer_choice_1 = $('.level_form input[name=answer_choice_1]', section)[0].value;
   var answer_choice_2 = $('.level_form input[name=answer_choice_2]', section)[0].value;
   var answer_choice_3 = $('.level_form input[name=answer_choice_3]', section)[0].value;
@@ -987,19 +998,23 @@ function toggleShortAnswer(section) {
   //short_answer--off so turn multiple_choice on!
     $('div[id="multiple_choice_block_1"]').removeClass('completely-hidden');
     $('div[id="multiple_choice_block_2"]').removeClass('completely-hidden');
-    $('div[id="multiple_choice_block_1"]').removeClass('form-el');
-    $('div[id="multiple_choice_block_2"]').removeClass('form-el');
     $('div[id="multiple_choice_block_1"]').addClass('form-el--required');
     $('div[id="multiple_choice_block_2"]').addClass('form-el--required');
+    $('input[name="answer_short"]').replaceWith(
+      '<select name="answer_multi" class="not_configuration">' +
+        '<option value="Answer Choice 1" selected="selected">Answer Choice 1</option>' +
+        '<option value="Answer Choice 2">Answer Choice 2</option>' +
+        '<option value="Answer Choice 3">Answer Choice 3</option>' +
+        '<option value="Answer Choice 4">Answer Choice 4</option>' +
+      '</select>');
   }
   else{
     $('div[id="multiple_choice_block_1"]').addClass('completely-hidden');
     $('div[id="multiple_choice_block_2"]').addClass('completely-hidden');
-    $('div[id="multiple_choice_block_1"]').addClass('form-el');
-    $('div[id="multiple_choice_block_2"]').addClass('form-el');
     $('div[id="multiple_choice_block_1"]').removeClass('form-el--required');
     $('div[id="multiple_choice_block_2"]').removeClass('form-el--required');
-
+    $('select[name="answer_multi"]').replaceWith(
+      '<input name="answer_short" type="text" />');
   }
 }
 
