@@ -898,6 +898,8 @@ function setupInputListeners() {
             owner = data ? data.owner : '',
             attachments = data ? data.attachments : '',
             links = data ? data.links : '',
+            wrong_answer_penalty = data ? data.wrong_answer_penalty : '',
+            numIncorrectGuesses = data ? data.numIncorrectGuesses : '',
             isShortAnswer = data ? data.isShortAnswer : '',
             shuffledChoiceA = data ? data.shuffledChoiceA : '',
             shuffledChoiceB = data ? data.shuffledChoiceB : '',
@@ -916,6 +918,8 @@ function setupInputListeners() {
         $('.choiceB-text', $container).text(shuffledChoiceB);
         $('.choiceC-text', $container).text(shuffledChoiceC);
         $('.choiceD-text', $container).text(shuffledChoiceD);
+        $('.wrong-answer-penalty', $container).text("Wrong Answer Penalty: " + wrong_answer_penalty);
+        $('.number-incorrect-guesses', $container).text("Number of Incorrect Guesses: " + numIncorrectGuesses);
         if (attachments instanceof Array) {
           $.each(attachments, function() {
             var f = this.substr(this.lastIndexOf('/') + 1);

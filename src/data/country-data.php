@@ -67,9 +67,11 @@ class CountryDataController extends DataController {
       $all_failures = await FailureLog::genAllFailures();
       $failures_cost = 0;
       $wrong_answer_penalty = $level->getWrongAnswerPenalty();
+      $numIncorrectGuesses = 0;
       foreach($all_failures as $failure){
         if($level->getId() === $failure->getLevelId() and $my_team->getId() === $failure->getTeamId()){
           $failures_cost += $wrong_answer_penalty;
+          $numIncorrectGuesses += 1;
         }
       }
       $points -= $failures_cost;
@@ -148,6 +150,8 @@ class CountryDataController extends DataController {
         'hint_cost' => $hint_cost,
         'attachments' => $attachments_list,
         'links' => $links_list,
+        'wrong_answer_penalty' => $wrong_answer_penalty,
+        'numIncorrectGuesses' => $numIncorrectGuesses,
         'isShortAnswer' => $level->getIsShortAnswer(),
         'shuffledChoiceA' => $choices[0],
         'shuffledChoiceB' => $choices[1],

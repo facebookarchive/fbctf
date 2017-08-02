@@ -157,6 +157,15 @@ class CountryModalController extends ModalController {
                     </a>
                   </div>
                 </div>
+                <br />
+                <div class="fb-column-container">
+                  <div class="col col-1-2">
+                    <span class="wrong-answer-penalty"></span>
+                  </div>
+                  <div class="col col-1-2">
+                    <span class="number-incorrect-guesses"></span>
+                  </div>
+                </div>
               </form>
               <div class="capture-hints-and-help">
                 <div class="capture-hint">
