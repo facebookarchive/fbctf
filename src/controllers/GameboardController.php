@@ -40,12 +40,13 @@ class GameboardController extends Controller {
                 <ul class="subnav">
                   <!--
                     <li><a href="/index.php?p=view">{tr('View Mode')}</a></li>
-                    <li><a href="#" class="js-account-modal">{tr('Account')}</a></li>
                   -->
                   <li>
                     <a href="#" class="fb-init-tutorial">{tr('Tutorial')}</a>
                   </li>
-                  
+                  <li>
+                    <a href="#" class="js-account-modal">{tr('Account')}</a>
+                  </li>
                   {$admin_link}
                   <li>
                     <a href="/index.php?page=rules" target="_blank">
