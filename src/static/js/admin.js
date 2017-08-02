@@ -1007,6 +1007,13 @@ function toggleShortAnswer(section) {
         '<option value="Answer Choice 3">Answer Choice 3</option>' +
         '<option value="Answer Choice 4">Answer Choice 4</option>' +
       '</select>');
+    /*$('input[name="answer_short"]').replaceWith(
+      '<select name="answer_multi" class="not_configuration">' +
+        '<option value="Answer Choice 1" selected="selected">Answer Choice 1</option>' +
+        '<option value="Answer Choice 2">Answer Choice 2</option>' +
+        '<option value="Answer Choice 3">Answer Choice 3</option>' +
+        '<option value="Answer Choice 4">Answer Choice 4</option>' +
+      '</select>');*/
   }
   else{
     $('div[id="multiple_choice_block_1"]').addClass('completely-hidden');

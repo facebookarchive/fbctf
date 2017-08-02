@@ -1032,11 +1032,11 @@ function setupInputListeners() {
             else if(score_answer === "B"){score_answer = shuffledChoiceB;}
             else if(score_answer === "C"){score_answer = shuffledChoiceC;}
             else{score_answer = shuffledChoiceD;}
-            
-            if(score_answer === choiceA){score_answer = "A";}
-            else if(score_answer === choiceB){score_answer = "B";}
-            else if(score_answer === choiceC){score_answer = "C";}
-            else{score_answer = "D";}
+
+            if(score_answer === choiceA){score_answer = "Answer Choice 1";}
+            else if(score_answer === choiceB){score_answer = "Answer Choice 2";}
+            else if(score_answer === choiceC){score_answer = "Answer Choice 3";}
+            else{score_answer = "Answer Choice 4";}
           }
 
           var csrf_token = $('input[name=csrf_token]')[0].value;
