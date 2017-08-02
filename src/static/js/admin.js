@@ -1110,6 +1110,43 @@ function saveLevel($section: any, lockClass) {
   }
 }
 
+function editLevel($section, lockClass){
+  $section.removeClass(lockClass);
+  if ($('.level_form h3', $section).text().indexOf("Multiple Choice") >= 0) {
+    var input_box = $('input[name^="answer"]', $section)[0];
+    console.log(input_box);
+    console.log(input_box.name);
+    console.log(input_box.type);
+    if (input_box.type === 'password'){
+      var answer = input_box.value;
+      var name = input_box.name;
+      //var isDisabled = $(this).prev('input').is(':disabled');
+      $(input_box).replaceWith(
+        '<select name="' + name + '" class="not_configuration">' +
+          '<option value="Answer Choice 1">Answer Choice 1</option>' +
+          '<option value="Answer Choice 2">Answer Choice 2</option>' +
+          '<option value="Answer Choice 3">Answer Choice 3</option>' +
+          '<option value="Answer Choice 4">Answer Choice 4</option>' +
+        '</select>');
+      //select the currently selected answer
+      var select_box = $('select[name^="answer"]', $section)[0];
+      console.log(select_box);
+      select_box.value(answer);
+      select_box.prop('disabled', false);
+    }
+  } else {
+    $('input[type="text"], input[type="password"], textarea', $section).prop('disabled', false);
+  }
+  var entity_select = $('[name=entity_id]', $section)[0];
+  var category_select = $('[name=category_id]', $section)[0];
+  if (entity_select !== undefined) {
+    Dropkick(entity_select).disable(false);
+  }
+  if (category_select !== undefined) {
+    Dropkick(category_select).disable(false);
+  }
+}
+
 function addRadioListener(section){
   var radio_name = section.attr('id');
   //console.log("Radio button clicked. Name is %s", radio_name) //added logging on radio_name to console for debugging
@@ -1210,16 +1247,7 @@ module.exports = {
       } else if (action === 'export-tokens') {
         exportTokens();
       } else if (action === 'edit') {
-        $section.removeClass(lockClass);
-        $('input[type="text"], input[type="password"], textarea', $section).prop('disabled', false);
-        var entity_select = $('[name=entity_id]', $section)[0];
-        var category_select = $('[name=category_id]', $section)[0];
-        if (entity_select !== undefined) {
-          Dropkick(entity_select).disable(false);
-        }
-        if (category_select !== undefined) {
-          Dropkick(category_select).disable(false);
-        }
+        editLevel($section, lockClass);
       } else if (action === 'delete') {
         $section.remove();
         deleteElement($section);
@@ -1511,12 +1539,51 @@ module.exports = {
     // show/hide answer
     $('.toggle_answer_visibility').on('click', function(event) {
       event.preventDefault();
-      if ($(this).prev('input').attr('type') === 'text') {
-        $(this).text('Show Answer');
-        $(this).prev('input').attr('type', 'password');
-      } else if ($(this).prev('input').attr('type') === 'password') {
-        $(this).text('Hide Answer');
-        $(this).prev('input').attr('type', 'text');
+      var $self = $(this),
+          $section = $self.closest('.admin-box');
+      //if multiple choice, change the input to a select box only when show answer selected
+      if ($('.level_form h3', $section).text().indexOf("Multiple Choice") >= 0) {
+        if ($(this).prev('input').attr('type') === 'password'){
+          var answer = $(this).prev('input')[0].value;
+          var name = $(this).prev('input').attr('name');
+          console.log("Previous answer is:");
+          console.log(answer);
+          console.log("name:");
+          console.log(name);
+          var isDisabled = $(this).prev('input').is(':disabled');
+          $(this).prev('input').replaceWith(
+            '<select name="' + name + '" class="not_configuration">' +
+              '<option value="Answer Choice 1">Answer Choice 1</option>' +
+              '<option value="Answer Choice 2">Answer Choice 2</option>' +
+              '<option value="Answer Choice 3">Answer Choice 3</option>' +
+              '<option value="Answer Choice 4">Answer Choice 4</option>' +
+            '</select>');
+          //select the currently selected answer
+          $(this).prev('select').val(answer);
+          $(this).prev('select').prop('disabled', isDisabled);
+          $(this).text('Hide Answer');
+        } else {
+          var answer = $(this).prev('select')[0].value;
+          var name = $(this).prev('select').attr('name');
+          var isDisabled = $(this).prev('select').is(':disabled');
+          console.log("Previous answer is:");
+          console.log(answer);
+          console.log("name:");
+          console.log(name);
+          $(this).prev('select').replaceWith(
+            '<input name="' + name + '" type="password" />');
+          $(this).prev('input').val(answer);
+          $(this).prev('input').prop('disabled', isDisabled);
+          $(this).text('Show Answer');
+        }
+      } else{
+        if ($(this).prev('input').attr('type') === 'text') {
+          $(this).text('Show Answer');
+          $(this).prev('input').attr('type', 'password');
+        } else if ($(this).prev('input').attr('type') === 'password') {
+          $(this).text('Hide Answer');
+          $(this).prev('input').attr('type', 'text');
+        }
       }
     });
 

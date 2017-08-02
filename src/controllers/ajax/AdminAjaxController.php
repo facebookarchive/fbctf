@@ -206,7 +206,7 @@ class AdminAjaxController extends AjaxController {
           intval(must_have_idx($params, 'penalty')),
           must_have_int($params, 'level_id'),
           intval(must_have_int($params, 'wrong_answer_penalty')),
-          must_have_int($params, 'is_short_answer'),
+          intval(must_have_int($params, 'is_short_answer')),
           must_have_string($params, 'answer_choice_1'),
           must_have_string($params, 'answer_choice_2'),
           must_have_string($params, 'answer_choice_3'),
