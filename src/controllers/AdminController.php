@@ -2915,7 +2915,7 @@ class AdminController extends Controller {
             class={$highlighted_color}
             href="#"
             data-action={str_replace('_', '-', $highlighted_action)}>
-            {tr($current_status}}
+            {tr($current_status)}
           </a>;
       } else {
         $status_action = <a class={$highlighted_color}></a>;
