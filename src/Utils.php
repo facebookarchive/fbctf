@@ -9,7 +9,7 @@ function must_have_idx<Tk, Tv>(?KeyedContainer<Tk, Tv> $arr, Tk $idx): Tv {
   $result = idx($arr, $idx);
   invariant(
     $result !== null,
-    sprintf('Index %s not found in container', $idx),
+    sprintf("Index %s not found in container $arr", $idx),
   );
   return $result;
 }

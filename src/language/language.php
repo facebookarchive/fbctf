@@ -33,9 +33,9 @@ function tr(string $word): string {
     /* HH_IGNORE_ERROR[2050] */
     return $lang[$word];
   } else {
-    error_log(
+    /*error_log(
       "\nWarning: '{$word}' has no translation in the selected language. Using the English version instead.",
-    );
+    );*/
     return $word;
   }
 }

@@ -62,7 +62,7 @@ class FailureLog extends Model {
     await $db->queryf('DELETE FROM failures_log WHERE id > 0');
   }
 
-  // Get all scores.
+  // Get all failures.
   public static async function genAllFailures(): Awaitable<array<FailureLog>> {
     $db = await self::genDb();
     $result =
