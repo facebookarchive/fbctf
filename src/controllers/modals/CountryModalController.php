@@ -68,8 +68,10 @@ class CountryModalController extends ModalController {
         //       *  text and show the value of the data-hover attribute
         //       -->
         $scoring = await Configuration::gen('scoring');
+        // $level_id = $scoring->getId();
+        // $level = Level::gen($level_id);
+        $short_answer_quiz = 1; //assign flag from DB here.
         if ($scoring->getValue() === '1') {
-
           return
             <div class="fb-modal-content">
               <div class="modal-title">
@@ -90,7 +92,49 @@ class CountryModalController extends ModalController {
                 </textarea>
                 <br />
                 <div class="capture-links"></div>
-                <br />
+                <div class="form-el fb-row-container row-fixed">
+                  <div class="radio-list">
+                    <input
+                      type="radio"
+                      name="multiple_choice_quiz"
+                      id="multiple_choice_quiz_choice_A"
+                      value="A"
+                    />
+                    <label for="multiple_choice_quiz_choice_A">{tr('A')}</label>.
+                    <span class="choiceA-text"></span>
+                  </div>
+                  <div class="radio-list">
+                    <input
+                      type="radio"
+                      name="multiple_choice_quiz"
+                      id="multiple_choice_quiz_choice_B"
+                      value="B"
+                    />
+                    <label for="multiple_choice_quiz_choice_B">{tr('B')}</label>.
+                    <span class="choiceB-text"></span>
+                  </div>
+                  <div class="radio-list">
+                    <input
+                      type="radio"
+                      name="multiple_choice_quiz"
+                      id="multiple_choice_quiz_choice_C"
+                      value="C"
+                    />
+                    <label for="multiple_choice_quiz_choice_C">{tr('C')}</label>.
+                    <span class="choiceC-text"></span>
+                  </div>
+                  <div class="radio-list">
+                    <input
+                      type="radio"
+                      name="multiple_choice_quiz"
+                      id="multiple_choice_quiz_choice_D"
+                      value="D"
+                    />
+                    <label for="multiple_choice_quiz_choice_D">{tr('D')}</label>.
+                    <span class="choiceD-text"></span>
+                  </div>
+                  <br />
+                </div>
                 <fieldset class="form-set">
                   <div class="answer_no_bases form-el el--text">
                     <input
@@ -111,6 +155,15 @@ class CountryModalController extends ModalController {
                     <a class="fb-cta cta--yellow js-trigger-score">
                       {tr('Submit')}
                     </a>
+                  </div>
+                </div>
+                <br />
+                <div class="fb-column-container">
+                  <div class="col col-1-2">
+                    <span class="wrong-answer-penalty"></span>
+                  </div>
+                  <div class="col col-1-2">
+                    <span class="number-incorrect-guesses"></span>
                   </div>
                 </div>
               </form>

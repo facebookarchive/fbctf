@@ -143,7 +143,7 @@
     }
 
     &.col-1-2 {
-      @include flex(0 1 50%);
+      @include flex(0 1 47%);
     }
 
     &.col-1-3 {
@@ -163,7 +163,7 @@
     }
 
     & > .col.col-1-2 {
-      flex-basis: 48%;
+      flex-basis: 47%;
     }
   }
 

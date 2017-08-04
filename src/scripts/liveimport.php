@@ -199,6 +199,13 @@ class LiveSyncImport {
         Team::generateHash(random_bytes(100)),
         '',
         intval($level->penalty),
+        intval($level->wrong_answer_penalty),
+        intval($level->is_short_answer),
+        strval($level->answer_choice_1),
+        strval($level->answer_choice_2),
+        strval($level->answer_choice_3),
+        strval($level->answer_choice_4),
+
       );
       $level_active = (intval($level->active) === 1) ? true : false;
       await Level::genSetStatus($level_id, $level_active);
