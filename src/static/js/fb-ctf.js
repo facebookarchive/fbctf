@@ -765,7 +765,7 @@ function setupInputListeners() {
      *   - the country that is being captured
      */
     function captureCountry(country) {
-      console.log(country);
+      //console.log(country);
       var $selectCountry = $('.countries .land[title="' + country + '"]', $mapSvg),
           capturedBy = getCapturedByMarkup($selectCountry.closest('g').data('captured')),
           showAnimation = !(is_ie || LIST_VIEW),
@@ -908,7 +908,8 @@ function setupInputListeners() {
             choiceA = data ? data.choiceA : '',
             choiceB = data ? data.choiceB : '',
             choiceC = data ? data.choiceC : '',
-            choiceD = data ? data.choiceD : '';
+            choiceD = data ? data.choiceD : '',
+            scored = data ? data.scored : false;
 
         $('.country-name', $container).text(country);
         $('.country-title', $container).text(title);
@@ -920,6 +921,14 @@ function setupInputListeners() {
         $('.choiceD-text', $container).text(shuffledChoiceD);
         $('.wrong-answer-penalty', $container).text("Wrong Answer Penalty: " + wrong_answer_penalty);
         $('.number-incorrect-guesses', $container).text("Number of Incorrect Guesses: " + numIncorrectGuesses);
+        //If already answered, disable the ability to submit again and change input to already answered.
+        if (scored){
+          $('.answer_no_bases', $container).find("input").attr("placeholder", "Already Answered").attr('disabled', true);
+          //there might be a better way to do this action, but I find the submit button, change the color and remove the js-trigger-score.
+          $('.form-el--multiple-actions', $container).find(".answer_no_bases").find("a").removeClass('cta--yellow').removeClass('js-trigger-score');
+          $('.form-el--multiple-actions', $container).find(".answer_no_bases").find("a").addClass('cta--yellowe').text("Already Solved");
+        }
+
         if (attachments instanceof Array) {
           $.each(attachments, function() {
             var f = this.substr(this.lastIndexOf('/') + 1);
@@ -1022,7 +1031,8 @@ function setupInputListeners() {
           event.preventDefault();
 
           var score_level = $('input[name=level_id]', $container)[0].value;
-          console.log(isShortAnswer);
+
+          //TODO: We need to handle if the score is blank or an answer not selected.
           if(isShortAnswer === true){
             var score_answer = $('input[name=answer]', $container)[0].value;
           }
@@ -1035,12 +1045,12 @@ function setupInputListeners() {
             if(score_answer === "A"){score_answer = shuffledChoiceA;}
             else if(score_answer === "B"){score_answer = shuffledChoiceB;}
             else if(score_answer === "C"){score_answer = shuffledChoiceC;}
-            else{score_answer = shuffledChoiceD;}
+            else if(score_answer === "D"){score_answer = shuffledChoiceD;}
 
             if(score_answer === choiceA){score_answer = "Answer Choice 1";}
             else if(score_answer === choiceB){score_answer = "Answer Choice 2";}
             else if(score_answer === choiceC){score_answer = "Answer Choice 3";}
-            else{score_answer = "Answer Choice 4";}
+            else if(score_answer === choiceD){score_answer = "Answer Choice 4";}
           }
 
           var csrf_token = $('input[name=csrf_token]')[0].value;
@@ -1051,7 +1061,7 @@ function setupInputListeners() {
             csrf_token: csrf_token
           };
 
-          console.log(score_data);
+          //console.log(score_data);
 
           $.post(
             'index.php?p=game&ajax=true',
