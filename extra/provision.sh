@@ -311,7 +311,14 @@ fi
         log "Updating npm"
         sudo npm install -g npm@lts
 
-        package nodejs-legacy
+        log "Removing node.js legacy version"
+        sudo DEBIAN_FRONTEND=noninteractive apt-get remove --purge nodejs -y
+
+        log "Downloading updated node.js version"
+        curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+
+        log "Installing node.js"
+        package nodejs
 
         log "Installing all required npm node_modules"
         sudo npm install --prefix "$CTF_PATH"
