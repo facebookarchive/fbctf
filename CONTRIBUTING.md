@@ -7,12 +7,14 @@ Complete your CLA here: <https://code.facebook.com/cla>
 
 ## Submitting a PR
 
+**All Pull Requests should be made against `dev` (even _bug fixes_).**
+
 Before submitting a large PR for a new feature or improvement, please create an issue first. This will allow us to discuss the feature before much development effort is put into it. After we've agreed that the feature would fit in the scope of the project, or if the change is small enough to not require an issue, follow these steps to create a PR:
 
 - Make a new branch
 
 ```
-git checkout -b my-fix master
+git checkout -b my-fix dev
 ```
 
 - Make your changes, including test cases if applicable. Make sure to follow the coding guidelines described below.
