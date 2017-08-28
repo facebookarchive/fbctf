@@ -214,7 +214,6 @@ package_repo_update
 
 package git
 package curl
-package wget
 package rsync
 
 # Check for available memory, should be over 1GB
@@ -307,18 +306,8 @@ fi
         fi
 
         package ca-certificates
-        package npm
-        log "Updating npm"
-        sudo npm install -g npm@lts
 
-        log "Removing node.js legacy version"
-        sudo DEBIAN_FRONTEND=noninteractive apt-get remove --purge nodejs -y
-
-        log "Downloading updated node.js version"
-        curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-
-        log "Installing node.js"
-        package nodejs
+        install_nodejs
 
         log "Installing all required npm node_modules"
         sudo npm install --prefix "$CTF_PATH"
