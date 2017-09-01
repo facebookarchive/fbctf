@@ -2,7 +2,7 @@ var $ = require('jquery');
 
 function teamNameFormError() {
   $('.el--text')[0].classList.add('form-error');
-  $('.fb-form input[name="teamname"]').on('change', function() {
+  $('.fb-form input[name="team_name"]').on('change', function() {
     $('.el--text')[0].classList.remove('form-error');
   });
 }
@@ -43,7 +43,7 @@ function teamLogoFormError() {
 
 function verifyTeamName(context) {
   if (context === 'register') {
-    var teamName = String($('.fb-form input[name="teamname"]')[0].value);
+    var teamName = String($('.fb-form input[name="team_name"]')[0].value);
     if (teamName.length === 0) {
       teamNameFormError();
       return false;
