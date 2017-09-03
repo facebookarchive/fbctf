@@ -274,7 +274,9 @@ function setupInputListeners() {
         $listview,
         $mapSvg,
         $map,
-        $countryHover;
+        $countryHover,
+        reload = true,
+        reload_team = true;
 
 
     /**
@@ -516,44 +518,72 @@ function setupInputListeners() {
         }, FB_CTF.data.CONF.refreshConf);
 
         // Countries and other modules
+        var count = 0;
         setInterval(function() {
-          if (FB_CTF.data.CONF.gameboard === '1') {
-            // Map
-            getCountryData();
-            refreshMapData();
-            // Announcements
-            if (Widget.getWidgetStatus('Announcements') === 'open') {
-              loadAnnouncementsModule();
+          if (reload == true || count > 1){
+            reload = false;
+            if (FB_CTF.data.CONF.gameboard === '1') {
+              // Map
+              getCountryData();
+              refreshMapData();
+              // Announcements
+              if (Widget.getWidgetStatus('Announcements') === 'open') {
+                loadAnnouncementsModule();
+              }
+              // Filter
+              if (Widget.getWidgetStatus('Filter') === 'open') {
+                loadSavedFilterModule();
+              }
+              // Activity
+              if (Widget.getWidgetStatus('Activity') === 'open') {
+                loadActivityModule();
+              }
+            } else {
+              clearMapData();
+              clearAnnouncements();
+              clearActivity();
             }
-            // Filter
-            if (Widget.getWidgetStatus('Filter') === 'open') {
-              loadSavedFilterModule();
-            }
-            // Activity
-            if (Widget.getWidgetStatus('Activity') === 'open') {
-              loadActivityModule();
-            }
-          } else {
-            clearMapData();
-            clearAnnouncements();
-            clearActivity();
+          }
+
+          if (reload == false){
+            count += 1;
+          }
+
+          // reset counter
+          if (count > 1){
+            count = 0;
+            reload = true;
           }
         }, FB_CTF.data.CONF.refreshMap);
 
         // Teams
+        var teams_count = 0;
         setInterval(function() {
-          if (FB_CTF.data.CONF.gameboard === '1') {
-            // Teams
-            loadTeamData();
-            if (Widget.getWidgetStatus('Teams') === 'open') {
-              loadTeamsModule();
+          if (reload_team == true || teams_count > 1){
+            reload_team = false;
+            if (FB_CTF.data.CONF.gameboard === '1') {
+              // Teams
+              loadTeamData();
+              if (Widget.getWidgetStatus('Teams') === 'open') {
+                loadTeamsModule();
+              }
+              if (Widget.getWidgetStatus('Leaderboard') === 'open') {
+                loadLeaderboardModule();
+              }
+            } else {
+              clearTeams();
+              clearLeaderboard();
             }
-            if (Widget.getWidgetStatus('Leaderboard') === 'open') {
-              loadLeaderboardModule();
-            }
-          } else {
-            clearTeams();
-            clearLeaderboard();
+          }
+
+          if (reload_team == false){
+            teams_count += 1;
+          }
+
+          // reset team counter
+          if (teams_count > 1){
+            teams_count = 0;
+            reload_team = true;
           }
         }, FB_CTF.data.CONF.refreshMap);
 
@@ -1433,6 +1463,7 @@ function setupInputListeners() {
       return $.get(loadPath, function(data) {
         FB_CTF.data.TEAMS = data;
         var df = $.Deferred();
+        reload_team = true;
         return df.resolve(FB_CTF.data.TEAMS);
       }, 'json').error(function(jqhxr, status, error) {
         console.error("There was a problem retrieving the team data.");
@@ -1440,6 +1471,8 @@ function setupInputListeners() {
         console.log(status);
         console.log(error);
         console.error("/error");
+        console.error("Team data request failed");
+        reload_team = false;
       });
     }
 
@@ -1498,6 +1531,7 @@ function setupInputListeners() {
       return $.get(loadPath, function(data) {
         FB_CTF.data.CONF = data;
         var df = $.Deferred();
+        reload = true;
         return df.resolve(FB_CTF.data.CONF);
       }, 'json').error(function(jqhxr, status, error) {
         console.error("There was a problem retrieving the conf data.");
@@ -1505,6 +1539,7 @@ function setupInputListeners() {
         console.log(status);
         console.log(error);
         console.error("/error");
+        reload = false;
       });
     }
 
@@ -1546,12 +1581,14 @@ function setupInputListeners() {
             $('#' + key)[0].parentNode.setAttribute('data-captured', value.datacaptured);
           }
         });
+        reload = true;
       }, 'json').error(function(jqhxr, status, error) {
         console.error("There was a problem retrieving the map data.");
         console.log(loadPath);
         console.log(status);
         console.log(error);
         console.error("/error");
+        reload = false;
       });
     }
 
@@ -1568,12 +1605,14 @@ function setupInputListeners() {
           $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
           $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
         });
+        reload = true;
       }, 'json').error(function(jqhxr, status, error) {
         console.error("There was a problem retrieving the map data.");
         console.log(loadPath);
         console.log(status);
         console.log(error);
         console.error("/error");
+        reload = false;
       });
     }
 
@@ -1591,6 +1630,7 @@ function setupInputListeners() {
       return $.get(loadPath, function(data) {
         FB_CTF.data.COUNTRIES = data;
         var df = $.Deferred();
+        reload = true;
         return df.resolve(FB_CTF.data.COUNTRIES);
       }, 'json').error(function(jqxhr, status, error) {
         console.error("There was a problem retrieving the game data.");
@@ -1598,6 +1638,7 @@ function setupInputListeners() {
         console.log(status);
         console.log(error);
         console.error("/error");
+        reload = false;
       });
     }
 
