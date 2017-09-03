@@ -180,9 +180,9 @@ CREATE TABLE `sessions` (
   `cookie` varchar(200) NOT NULL,
   `data` text NOT NULL,
   `team_id` int(11) NOT NULL,
-  `created_ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `last_access_ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `last_page_access` varchar(200) NOT NULL DEFAULT '',
+  `created_ts` timestamp NOT NULL DEFAULT 0,
+  `last_access_ts` timestamp NOT NULL,
+  `last_page_access` varchar(200) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `cookie` (`cookie`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
