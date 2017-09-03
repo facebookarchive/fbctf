@@ -758,7 +758,8 @@ class Level extends Model implements Importable, Exportable {
      $ent_id = $entity_id;
    }
 
-   $result = await $db->queryf(
+   $result =
+     await $db->queryf(
        'UPDATE levels SET title = %s, description = %s, entity_id = %d, category_id = %d, points = %d, '.
        'bonus = %d, bonus_dec = %d, bonus_fix = %d, flag = %s, hint = %s, penalty = %d, '.
        'wrong_answer_penalty = %d, is_short_answer = %d, answer_choice_1 = %s, '.

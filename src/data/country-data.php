@@ -125,11 +125,20 @@ class CountryDataController extends DataController {
         $choiceD = "Short Answer";
       }
       else{
-        $random = mt_rand(0,3);
+        //$random = mt_rand(0,3);
         $choiceA = $level->getAnswerChoice1();
         $choiceB = $level->getAnswerChoice2();
         $choiceC = $level->getAnswerChoice3();
         $choiceD = $level->getAnswerChoice4();
+      }
+      //Handle if scored, ignore points calculated above and just set to value scored.
+      //The reason for this is to get the bonus that is calculated when scored.
+      if ($score) {
+        $team_score = await ScoreLog::genLevelScoreByTeam(
+          $my_team->getId(),
+          $level->getId(),
+        );
+        $points = $team_score->getPoints();
       }
 
       //randomize order
@@ -161,6 +170,7 @@ class CountryDataController extends DataController {
         'choiceB' => $choiceB,
         'choiceC' => $choiceC,
         'choiceD' => $choiceD,
+        'scored' => $score,
       );
       /* HH_FIXME[1002] */
       /* HH_FIXME[2011] */

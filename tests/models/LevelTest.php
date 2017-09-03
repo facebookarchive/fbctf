@@ -32,10 +32,10 @@ class LevelTest extends FBCTFTest {
       2, // penalty
       3, //wrong_answer_penalty,
       1, //is_short_answer (flags are short answer)
-      "", //multiple_choice_1
-      "", //multiple_choice_2
-      "", //multiple_choice_3
-      "", //multiple_choice_4
+      "A", //multiple_choice_1
+      "B", //multiple_choice_2
+      "C", //multiple_choice_3
+      "D", //multiple_choice_4
     ));
 
     $this->assertEquals(4, $id);
@@ -58,10 +58,10 @@ class LevelTest extends FBCTFTest {
     $this->assertEquals(2, $l->getPenalty());
     $this->assertEquals(3, $l->getWrongAnswerPenalty());
     $this->assertTrue($l->getIsShortAnswer());
-    $this->assertEquals("", $l->getAnswerChoice1());
-    $this->assertEquals("", $l->getAnswerChoice2());
-    $this->assertEquals("", $l->getAnswerChoice3());
-    $this->assertEquals("", $l->getAnswerChoice4());
+    $this->assertEquals("A", $l->getAnswerChoice1());
+    $this->assertEquals("B", $l->getAnswerChoice2());
+    $this->assertEquals("C", $l->getAnswerChoice3());
+    $this->assertEquals("D", $l->getAnswerChoice4());
   }
 
   public function testCreateFlag(): void {
@@ -76,7 +76,7 @@ class LevelTest extends FBCTFTest {
       1, // bonus_dec
       'hint 2', // hint
       2, // penalty
-      3, // wrong_answer_penalty
+      5, //wrong_answer_penalty,
     ));
 
     $this->assertEquals(4, $id);
@@ -97,7 +97,7 @@ class LevelTest extends FBCTFTest {
     $this->assertEquals('flag 2', $l->getFlag());
     $this->assertEquals('hint 2', $l->getHint());
     $this->assertEquals(2, $l->getPenalty());
-    $this->assertEquals(3, $l->getWrongAnswerPenalty());
+    $this->assertEquals(5, $l->getWrongAnswerPenalty());
   }
 
   public function testUpdate(): void {
