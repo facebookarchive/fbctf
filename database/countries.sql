@@ -12,7 +12,9 @@ CREATE TABLE `countries` (
   `enabled` tinyint(1) DEFAULT 0,
   `d` text DEFAULT NULL,
   `transform` text DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `iso_code` (`iso_code`),
+  KEY `enabled` (`enabled`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

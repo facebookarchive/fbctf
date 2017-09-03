@@ -17,8 +17,10 @@ class Db {
   private function __construct() {
     $this->config = parse_ini_file($this->settings_file);
     $options = array(
-      'idle_timeout_micros' => 200000,
+      'idle_timeout_micros' => 2000000,
       'expiration_policy' => 'IdleTime',
+      'per_key_connection_limit' => 20,
+      'pool_connection_limit' => 20
     );
     $this->pool = new AsyncMysqlConnectionPool($options);
   }
