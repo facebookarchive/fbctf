@@ -84,7 +84,7 @@ function sendAdminRequest(request_data: any, refresh_page) {
     request_data
   ).fail(function(data) {
     // TODO: Make this a modal
-    console.log('ERROR');
+    console.log('SEND ADMIN REQUEST Fail Function');
   }).done(function(data) {
     var responseData = JSON.parse(data);
     if (responseData.result == 'OK') {
@@ -128,7 +128,7 @@ function validateAdminForm($clicked) {
 
   $required.removeClass(errorClass).each(function() {
     var $self = $(this),
-        $requiredEl = $('input[type="text"], input[type="password"], textarea', $self),
+        $requiredEl = $('input[type="text"], input[type="password"], textarea, input[name="answer_choice_2"]', $self),
         $logoName = $('.logo-name', $self);
 
     // All the conditions that would make this element trigger an error

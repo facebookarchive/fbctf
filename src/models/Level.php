@@ -758,36 +758,42 @@ class Level extends Model implements Importable, Exportable {
      $ent_id = $entity_id;
    }
 
-   await $db->queryf(
-     'UPDATE levels SET title = %s, description = %s, entity_id = %d, category_id = %d, points = %d, '.
-     'bonus = %d, bonus_dec = %d, bonus_fix = %d, flag = %s, hint = %s, penalty = %d, '.
-     'wrong_answer_penalty = %d, is_short_answer = %d, answer_choice_1 = %s, '.
-     'answer_choice_2 = %s, answer_choice_3 = %s, answer_choice_4 = %s WHERE id = %d LIMIT 1',
-     $title,
-     $description,
-     $ent_id,
-     $category_id,
-     $points,
-     $bonus,
-     $bonus_dec,
-     $bonus_fix,
-     $flag,
-     $hint,
-     $penalty,
-     $wrong_answer_penalty,
-     $is_short_answer,
-     $answer_choice_1,
-     $answer_choice_2,
-     $answer_choice_3,
-     $answer_choice_4,
-     $level_id,
-   );
+   $result = await $db->queryf(
+       'UPDATE levels SET title = %s, description = %s, entity_id = %d, category_id = %d, points = %d, '.
+       'bonus = %d, bonus_dec = %d, bonus_fix = %d, flag = %s, hint = %s, penalty = %d, '.
+       'wrong_answer_penalty = %d, is_short_answer = %d, answer_choice_1 = %s, '.
+       'answer_choice_2 = %s, answer_choice_3 = %s, answer_choice_4 = %s WHERE id = %d LIMIT 1',
+       $title,
+       $description,
+       $ent_id,
+       $category_id,
+       $points,
+       $bonus,
+       $bonus_dec,
+       $bonus_fix,
+       $flag,
+       $hint,
+       $penalty,
+       $wrong_answer_penalty,
+       $is_short_answer,
+       $answer_choice_1,
+       $answer_choice_2,
+       $answer_choice_3,
+       $answer_choice_4,
+       $level_id,
+     );
 
    // Make sure entities are consistent
    await Country::genUsedAdjust();
 
-   self::invalidateMCRecords(); // Invalidate Memcached Level data.
-   Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
+   if ($result->numRowsAffected() > 0) {
+     $country_id = await self::genCountryIdForLevel($level_id);
+     await ActivityLog::genAdminLog("updated", "Country", $country_id);
+     $country = await Country::gen($country_id);
+     await Announcement::genCreateAuto($country->getName()." updated!");
+     self::invalidateMCRecords(); // Invalidate Memcached Level data.
+     ActivityLog::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached ActivityLog data.
+   }
  }
 
   // Delete level.
