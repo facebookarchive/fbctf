@@ -1452,109 +1452,124 @@ class Level extends Model implements Importable, Exportable {
   }
 
   // Check if a level already exists by type, title and entity.
-  public static async function genAlreadyExist(
-    string $type,
-    string $title,
-    string $entity_iso_code,
-  ): Awaitable<bool> {
-    $db = await self::genDb();
+   public static async function genAlreadyExist(
+     string $type,
+     string $title,
+     string $entity_iso_code,
+   ): Awaitable<bool> {
+     $db = await self::genDb();
+     $result =
+       await $db->queryf(
+         'SELECT COUNT(*) FROM levels WHERE type = %s AND title = %s AND entity_id IN (SELECT id FROM countries WHERE iso_code = %s)',
+         $type,
+         $title,
+         $entity_iso_code,
+       );
+     if ($result->numRows() > 0) {
+       invariant($result->numRows() === 1, 'Expected exactly one result');
+       return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
+     } else {
+       return false;
+     }
+   }
 
-    $result =
-      await $db->queryf(
-        'SELECT COUNT(*) FROM levels WHERE type = %s AND title = %s AND entity_id IN (SELECT id FROM countries WHERE iso_code = %s)',
-        $type,
-        $title,
-        $entity_iso_code,
-      );
+   // Check if a level already exists by type, title and entity.
+   public static async function genAlreadyExistById(
+     int $level_id,
+   ): Awaitable<bool> {
+     $db = await self::genDb();
+     $result = await $db->queryf(
+       'SELECT COUNT(*) FROM levels WHERE id = %d',
+       $level_id,
+     );
+     if ($result->numRows() > 0) {
+       invariant($result->numRows() === 1, 'Expected exactly one result');
+       return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
+     } else {
+       return false;
+     }
+   }
 
-    if ($result->numRows() > 0) {
-      invariant($result->numRows() === 1, 'Expected exactly one result');
-      return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
-    } else {
-      return false;
-    }
-  }
+   // Check if a level already exists by type, title and entity.
+   public static async function genCountryIdForLevel(
+     int $level_id,
+   ): Awaitable<int> {
+     $level = await self::gen($level_id);
+     return $level->getEntityId();
+   }
 
-  public static async function getLevelIdByTypeTitleCountry(
-    string $type,
-    string $title,
-    string $entity_iso_code,
-  ): Awaitable<int> {
-    $db = await self::genDb();
+   public static async function getLevelIdByTypeTitleCountry(
+     string $type,
+     string $title,
+     string $entity_iso_code,
+   ): Awaitable<int> {
+     $db = await self::genDb();
+     $result =
+       await $db->queryf(
+         'SELECT id FROM levels WHERE type = %s AND title = %s AND entity_id IN (SELECT id FROM countries WHERE iso_code = %s)',
+         $type,
+         $title,
+         $entity_iso_code,
+       );
+     invariant($result->numRows() === 1, 'Expected exactly one result');
+     return intval(must_have_idx($result->mapRows()[0], 'id'));
+   }
 
-    $result =
-      await $db->queryf(
-        'SELECT id FROM levels WHERE type = %s AND title = %s AND entity_id IN (SELECT id FROM countries WHERE iso_code = %s)',
-        $type,
-        $title,
-        $entity_iso_code,
-      );
+   public static async function genAlreadyExistUnknownCountry(
+     string $type,
+     string $title,
+     string $description,
+     int $points,
+   ): Awaitable<bool> {
+     $db = await self::genDb();
+     $result =
+       await $db->queryf(
+         'SELECT COUNT(*) FROM levels WHERE type = %s AND title = %s AND description = %s AND points = %d',
+         $type,
+         $title,
+         $description,
+         $points,
+       );
+     if ($result->numRows() > 0) {
+       invariant($result->numRows() === 1, 'Expected exactly one result');
+       return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
+     } else {
+       return false;
+     }
+   }
 
-    invariant($result->numRows() === 1, 'Expected exactly one result');
-    return intval(must_have_idx($result->mapRows()[0], 'id'));
-  }
+   public static async function genLevelIdUnknownCountry(
+     string $type,
+     string $title,
+     string $description,
+     int $points,
+   ): Awaitable<int> {
+     $db = await self::genDb();
+     $result =
+       await $db->queryf(
+         'SELECT id FROM levels WHERE type = %s AND title = %s AND description = %s AND points = %d',
+         $type,
+         $title,
+         $description,
+         $points,
+       );
+     invariant($result->numRows() === 1, 'Expected exactly one result');
+     return intval(must_have_idx($result->mapRows()[0], 'id'));
+   }
 
-  public static async function genAlreadyExistUnknownCountry(
-    string $type,
-    string $title,
-    string $description,
-    int $points,
-  ): Awaitable<bool> {
-    $db = await self::genDb();
-
-    $result =
-      await $db->queryf(
-        'SELECT COUNT(*) FROM levels WHERE type = %s AND title = %s AND description = %s AND points = %d',
-        $type,
-        $title,
-        $description,
-        $points,
-      );
-
-    if ($result->numRows() > 0) {
-      invariant($result->numRows() === 1, 'Expected exactly one result');
-      return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
-    } else {
-      return false;
-    }
-  }
-
-  public static async function genLevelIdUnknownCountry(
-    string $type,
-    string $title,
-    string $description,
-    int $points,
-  ): Awaitable<int> {
-    $db = await self::genDb();
-
-    $result =
-      await $db->queryf(
-        'SELECT id FROM levels WHERE type = %s AND title = %s AND description = %s AND points = %d',
-        $type,
-        $title,
-        $description,
-        $points,
-      );
-
-    invariant($result->numRows() === 1, 'Expected exactly one result');
-    return intval(must_have_idx($result->mapRows()[0], 'id'));
-  }
-
-  public static async function genLevelUnknownCountry(
-    string $type,
-    string $title,
-    string $description,
-    int $points,
-  ): Awaitable<Level> {
-
-    $level_id = await self::genLevelIdUnknownCountry(
-      $type,
-      $title,
-      $description,
-      $points,
-    );
-
-    $level = await self::gen($level_id);
-    return $level;
-  }
-}
+   public static async function genLevelUnknownCountry(
+     string $type,
+     string $title,
+     string $description,
+     int $points,
+   ): Awaitable<Level> {
+     $level_id = await self::genLevelIdUnknownCountry(
+       $type,
+       $title,
+       $description,
+       $points,
+     );
+     $level = await self::gen($level_id);
+     return $level;
+   }
+ }
