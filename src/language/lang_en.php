@@ -209,6 +209,8 @@ $translations = array(
     'Registration Type',
   'Strong Passwords' =>
     'Strong Passwords',
+  'Password Types' =>
+    'Password Types',
   'Team Selection' =>
     'Team Selection',
   'Game' =>
@@ -225,6 +227,16 @@ $translations = array(
     'Bases Cycle (s)',
   'Default Bonus Dec' =>
     'Default Bonus Dec',
+  'Game Schedule' =>
+    'Game Schedule',
+  'Game Start Year' =>
+    'Game Start Year',
+  'Game End Year' =>
+    'Game End Year',
+  'Day' =>
+    'Day',
+  'Minute' =>
+    'Minute',
   'Timer' =>
     'Timer',
   'Server Time' =>
