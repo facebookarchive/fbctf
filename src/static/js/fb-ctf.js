@@ -605,7 +605,8 @@ function setupInputListeners() {
      *
      * @param capturedBy (string)
      *   - the capturing team
-     */
+
+    //commented out the whole function since never used.
     function getCapturedByMarkup(capturedBy) {
       if (capturedBy === undefined) {
         return "Uncaptured";
@@ -614,7 +615,7 @@ function setupInputListeners() {
       var capturedClass = (capturedBy === FB_CTF.data.CONF.currentTeam) ? 'your-name' : 'opponent-name';
       var span = $('<span/>').attr('class', capturedClass).text(capturedBy);
       return span;
-    }
+    }/*
 
     /**
      * automatically scroll through the content on the sidebar
@@ -767,7 +768,8 @@ function setupInputListeners() {
     function captureCountry(country) {
       //console.log(country);
       var $selectCountry = $('.countries .land[title="' + country + '"]', $mapSvg),
-          capturedBy = getCapturedByMarkup($selectCountry.closest('g').data('captured')),
+          //removed capturedBy because not used.
+          //capturedBy = getCapturedByMarkup($selectCountry.closest('g').data('captured')),
           showAnimation = !(is_ie || LIST_VIEW),
           animationDuration = !showAnimation ? 0 : 600;
 
@@ -1033,11 +1035,12 @@ function setupInputListeners() {
           var score_level = $('input[name=level_id]', $container)[0].value;
 
           //TODO: We need to handle if the score is blank or an answer not selected.
+          var score_answer = "";
           if(isShortAnswer === true){
-            var score_answer = $('input[name=answer]', $container)[0].value;
+            score_answer = $('input[name=answer]', $container)[0].value;
           }
           else{
-            var score_answer = $('input[name=multiple_choice_quiz]:radio:checked').val();
+            score_answer = $('input[name=multiple_choice_quiz]:radio:checked').val();
           }
 
           //undo the shuffling from country-data.php

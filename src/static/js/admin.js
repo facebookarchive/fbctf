@@ -85,6 +85,8 @@ function sendAdminRequest(request_data: any, refresh_page) {
   ).fail(function(data) {
     // TODO: Make this a modal
     console.log('SEND ADMIN REQUEST Fail Function');
+    var responseData = JSON.parse(data);
+    console.log(responseData.result);
   }).done(function(data) {
     var responseData = JSON.parse(data);
     if (responseData.result == 'OK') {
@@ -688,14 +690,16 @@ function createQuizLevel(section) {
   var penalty = $('.level_form input[name=penalty]', section)[0].value;
   var wrong_answer_penalty = $('.level_form input[name=wrong_answer_penalty]', section)[0].value;
   //use the id to select the correct radio button. If short answer on, set to 1 (its a tinyint in SQL)
+  var is_short_answer = 0;
+  var answer = "";
   if ($('input[name=fb--quiz--short_answer--' + id + ']:radio:checked').val() === "Short Answer On"){
-    var is_short_answer = 1;
+    is_short_answer = 1;
     //grab the answer value from the input box
-    var answer = $('.level_form input[name=answer_short]', section)[0].value;
+    answer = $('.level_form input[name=answer_short]', section)[0].value;
   } else {
-    var is_short_answer = 0;
+    //set is_short_answer = 1 // this is already done
     //if multi, you need to grab the answer value from the select box
-    var answer = $('.level_form select[name=answer_multi]', section)[0].value;
+    answer = $('.level_form select[name=answer_multi]', section)[0].value;
   }
 
   var answer_choice_1 = $('.level_form input[name=answer_choice_1]', section)[0].value;
@@ -719,7 +723,7 @@ function createQuizLevel(section) {
     answer_choice_1: answer_choice_1,
     answer_choice_2: answer_choice_2,
     answer_choice_3: answer_choice_3,
-    answer_choice_4: answer_choice_4,
+    answer_choice_4: answer_choice_4
   };
   sendAdminRequest(create_data, true);
 }
@@ -750,7 +754,7 @@ function createFlagLevel(section) {
     bonus_dec: bonus_dec,
     hint: hint,
     penalty: penalty,
-    wrong_answer_penalty: wrong_answer_penalty,
+    wrong_answer_penalty: wrong_answer_penalty
   };
   sendAdminRequest(create_data, true);
 }
@@ -775,7 +779,7 @@ function createBaseLevel(section) {
     points: points,
     bonus: bonus,
     hint: hint,
-    penalty: penalty,
+    penalty: penalty
   };
   sendAdminRequest(create_data, true);
 }
@@ -812,19 +816,19 @@ function updateQuizLevel(section) {
   var answer_choice_2 = $('.level_form input[name=answer_choice_2]', section)[0].value;
   var answer_choice_3 = $('.level_form input[name=answer_choice_3]', section)[0].value;
   var answer_choice_4 = $('.level_form input[name=answer_choice_4]', section)[0].value;
-  var title_string = $('.level_form h3', section).text();
+  //var title_string = $('.level_form h3', section).text();
   //need to check for a select since its no longer an input in most cases.
+  var answer = "";
   if ($('.level_form select[name^=answer]', section)[0] != null){
-    var answer = $('.level_form select[name^=answer]', section)[0].value;
+    answer = $('.level_form select[name^=answer]', section)[0].value;
   } else {
   // if re-hidden it will be back to an input so check if null and pull input value.
-    var answer = $('.level_form input[name^=answer]', section)[0].value;
+    answer = $('.level_form input[name^=answer]', section)[0].value;
   }
   // check if the string 'Short Answer' is in the title to tell if short answer / multi.
+  var is_short_answer = 0;
   if ($('.level_form h3', section).text().indexOf("Short Answer") >= 0) {
-    var is_short_answer = 1;
-  } else {
-    var is_short_answer = 0;
+    is_short_answer = 1;
   }
 
   var update_data = {
@@ -844,7 +848,7 @@ function updateQuizLevel(section) {
     answer_choice_1: answer_choice_1,
     answer_choice_2: answer_choice_2,
     answer_choice_3: answer_choice_3,
-    answer_choice_4: answer_choice_4,
+    answer_choice_4: answer_choice_4
   };
   sendAdminRequest(update_data, false);
 }
@@ -1564,9 +1568,11 @@ module.exports = {
         //so its a password which means you hit show answer
         var isDisabled = $('input[name=title]', $section).is(':disabled');
         //find out if disabled elements or not. If so, keep disabled.
+        var answer = "";
+        var name = "";
         if ($(this).prev('input').attr('type') === 'password'){
-          var answer = $(this).prev('input')[0].value;
-          var name = $(this).prev('input').attr('name');
+          answer = $(this).prev('input')[0].value;
+          name = $(this).prev('input').attr('name');
           $(this).prev('input').replaceWith(
             '<select name="' + name + '" class="not_configuration">' +
               '<option value="Answer Choice 1">Answer Choice 1</option>' +
@@ -1579,8 +1585,8 @@ module.exports = {
           $(this).prev('select').prop('disabled', isDisabled);
           $(this).text('Hide Answer');
         } else { //you hit hide answer
-          var answer = $(this).prev('select')[0].value;
-          var name = $(this).prev('select').attr('name');
+          answer = $(this).prev('select')[0].value;
+          name = $(this).prev('select').attr('name');
           $(this).prev('select').replaceWith(
             '<input name="' + name + '" type="password" />');
           $(this).prev('input').val(answer);

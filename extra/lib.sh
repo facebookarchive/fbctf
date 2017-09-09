@@ -29,12 +29,12 @@ function ok_log() {
 function dl() {
   local __url=$1
   local __dest=$2
+  sudo curl --retry 5 --retry-delay 15 -sSL "$__url" -o "$__dest"
+}
 
-  if [ -n "$(which wget)" ]; then
-    sudo wget -q "$__url" -O "$__dest"
-  else
-    sudo curl -s "$__url" -o "$__dest"
-  fi
+function dl_pipe() {
+  local __url=$1
+  curl --retry 5 --retry-delay 15 -sSL "$__url"
 }
 
 function package_repo_update() {
@@ -53,7 +53,7 @@ function package() {
 
 function install_unison() {
   cd /
-  curl -sL https://www.archlinux.org/packages/extra/x86_64/unison/download/ | sudo tar Jx
+  dl_pipe "https://www.archlinux.org/packages/extra/x86_64/unison/download/" | sudo tar Jx
 }
 
 function repo_osquery() {
@@ -280,10 +280,21 @@ function install_composer() {
   local __path=$1
 
   cd $__path
-  curl -sS https://getcomposer.org/installer | php
+  dl_pipe "https://getcomposer.org/installer" | php
   hhvm composer.phar install
   sudo mv composer.phar /usr/bin
   sudo chmod +x /usr/bin/composer.phar
+}
+
+function install_nodejs() {
+  log "Removing node.js legacy version"
+  sudo DEBIAN_FRONTEND=noninteractive apt-get remove --purge nodejs -y
+
+  log "Downloading and setting node.js version 6.x repo information"
+  dl_pipe "https://deb.nodesource.com/setup_6.x" | sudo -E bash -
+
+  log "Installing node.js"
+  package nodejs
 }
 
 function import_empty_db() {

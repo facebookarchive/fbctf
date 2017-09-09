@@ -214,7 +214,6 @@ package_repo_update
 
 package git
 package curl
-package wget
 package rsync
 
 # Check for available memory, should be over 1GB
@@ -307,11 +306,8 @@ fi
         fi
 
         package ca-certificates
-        package npm
-        log "Updating npm"
-        sudo npm install -g npm@lts
 
-        package nodejs-legacy
+        install_nodejs
 
         log "Installing all required npm node_modules"
         sudo npm install --prefix "$CTF_PATH"

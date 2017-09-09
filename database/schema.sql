@@ -48,7 +48,7 @@ CREATE TABLE `levels` (
   `hint` text NOT NULL,
   `penalty` int(11) NOT NULL,
   `wrong_answer_penalty` int(11) NOT NULL DEFAULT 0,
-  `is_short_answer` tinyint(1) DEFAULT NULL,
+  `is_short_answer` tinyint(1) NOT NULL DEFAULT 1,
   `answer_choice_1` text DEFAULT NULL,
   `answer_choice_2` text DEFAULT NULL,
   `answer_choice_3` text DEFAULT NULL,
