@@ -1,11 +1,13 @@
-# We use language generic because that's the only thing that's supported for the
-# trusty distro
-language: generic
+# We are now using Docker to test builds with Travis - this removes our dependency on Ubuntu 14.04
 sudo: required
-dist: trusty
+language: generic
 
-group: deprecated-2017Q2
+services:
+ - docker
 
-install: ./extra/provision.sh -m dev -s $TRAVIS_BUILD_DIR -d $TRAVIS_BUILD_DIR
+install:
+ - docker build --build-arg MODE=dev -t="fbctf_in_travis" .
 
-script: ./extra/run_tests.sh $TRAVIS_BUILD_DIR
+script:
+ - docker run -d -p 80:80 -p 443:443 --name="fbctf_in_travis" fbctf_in_travis
+ - docker exec fbctf_in_travis /var/www/fbctf/extra/run_tests.sh /var/www/fbctf/
