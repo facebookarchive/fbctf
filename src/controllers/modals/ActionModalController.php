@@ -266,20 +266,83 @@ class ActionModalController extends ModalController {
           <h4>
             {tr('account_')}<span class="highlighted">{tr('Settings')}</span>
           </h4>;
+        $oauth_header = '';
+        if (Configuration::genFacebookOAuthSettingsExists() === true) {
+          $linked = \HH\Asio\join(
+            Team::genTeamOAuthTokenExists(
+              'facebook_oauth',
+              SessionUtils::sessionTeam(),
+            ),
+          );
+          $button_text = tr('Facebook');
+          $button =
+            <a
+              name="facebook-oauth-button"
+              href="#"
+              class="fb-cta cta--yellow js-trigger-facebook-oauth">
+              {tr('Link Your')}<br />{tr($button_text)}<br />{tr('Account')}
+            </a>;
+          if ($linked === true) {
+            $button =
+              <a
+                name="facebook-oauth-button"
+                href="#"
+                class="fb-cta cta--yellowe">
+                {tr($button_text)}<br />{tr('Account Is Linked')}
+              </a>;
+          }
+          $oauth_header =
+            <p>
+              {tr(
+                'You may link your FBCTF account on this instance with your other providers.  Note that this will provide your email address to the administrators of this FBCTF instance.',
+              )}
+            </p>;
+          $facebook_oauth_content =
+            <div class="facebook-link-form">
+              <div class="action-actionable">
+                {$button}
+              </div>
+              <br />
+              <span class="facebook-link-response highlighted--blue"></span>
+              <br />
+            </div>;
+        } else {
+          $facebook_oauth_content = '';
+        }
         if (Configuration::genGoogleOAuthFileExists() === true) {
+          $linked = \HH\Asio\join(
+            Team::genTeamOAuthTokenExists(
+              'google_oauth',
+              SessionUtils::sessionTeam(),
+            ),
+          );
+          $button_text = tr('Google');
+          $button =
+            <a
+              name="google-oauth-button"
+              href="#"
+              class="fb-cta cta--yellow js-trigger-google-oauth">
+              {tr('Link Your')}<br />{tr($button_text)}<br />{tr('Account')}
+            </a>;
+          if ($linked === true) {
+            $button =
+              <a
+                name="google-oauth-button"
+                href="#"
+                class="fb-cta cta--yellowe">
+                {tr($button_text)}<br />{tr('Account Is Linked')}
+              </a>;
+          }
+          $oauth_header =
+            <p>
+              {tr(
+                'You may link your FBCTF account on this instance with your other providers.  Note that this will provide your email address to the administrators of this FBCTF instance.',
+              )}
+            </p>;
           $google_oauth_content =
             <div class="google-link-form">
-              <p>
-                {tr(
-                  'Link your account with Google.  You may link your FBCTF account on this instance with your Google account.  Note that this will provide your email address to the administrators of this FBCTF instance.',
-                )}
-              </p>
               <div class="action-actionable">
-                <a
-                  href="#"
-                  class="fb-cta cta--yellow js-trigger-google-oauth">
-                  {tr('Link Your Google Account')}
-                </a>
+                {$button}
               </div>
               <br />
               <span class="google-link-response highlighted--blue"></span>
@@ -288,16 +351,56 @@ class ActionModalController extends ModalController {
         } else {
           $google_oauth_content = '';
         }
+
+        $team =
+          \HH\Asio\join(MultiTeam::genTeam(SessionUtils::sessionTeam()));
+        $team_name = $team->getName();
+
         $content =
           <div class="action-main">
-            {$google_oauth_content}
-            <br />
+            {tr('Change your team name.')}
+            <form class="fb-form-no-padding team-name-form">
+              <input name="set_team_name" type="hidden" value="" />
+              <div class="form-el el--text">
+                <input
+                  placeholder={tr('Set your team name')}
+                  name="teamname"
+                  type="text"
+                  value={$team_name}
+                  autocomplete="off"
+                />
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value={SessionUtils::CSRFToken()}
+                />
+              </div>
+              <div class="action-actionable">
+                <a
+                  class=
+                    "fb-cta cta--yellow js-trigger-account-team-name-save">
+                  {tr('Update')}
+                </a>
+              </div>
+              <br />
+              <span class="team-name-form-response highlighted--blue"></span>
+            </form>
+            {$oauth_header}
+            <div class="fb-column-container">
+              <div class="col col-pad col-1-2">
+                {$facebook_oauth_content}
+              </div>
+              <div class="col col-pad col-2-2">
+                {$google_oauth_content}
+              </div>
+            </div>
             <p>
               {tr(
                 'Setup your FBCTF Live Sync credentials.  These credentials must be the SAME on all other FBCTF instances that you are linking.  DO NOT use your account password.',
               )}
             </p>
-            <form class="fb-form account-link-form">
+            <br />
+            <form class="fb-form-no-padding account-link-form">
               <input name="set_livesync_password" type="hidden" value="" />
               <div class="form-el el--text">
                 <input
@@ -323,10 +426,8 @@ class ActionModalController extends ModalController {
                   {tr('Submit')}
                 </a>
               </div>
-              <br />
               <span class="account-link-form-response highlighted--blue">
               </span>
-              <br />
             </form>
             <div class="action-actionable">
               <a href="#" class="fb-cta cta--red js-close-modal">

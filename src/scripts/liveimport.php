@@ -362,6 +362,10 @@ class LiveSyncImport {
     $teams_array = array();
     $teams = await self::genTeamDefaults($teams);
     foreach ($teams as $team_livesync_key => $team_data) {
+      list($type, $username, $key) = explode(':', $team_livesync_key);
+      if ($type === 'general') {
+        continue;
+      }
       $team_exists =
         await Team::genLiveSyncKeyExists(strval($team_livesync_key));
       if ($team_exists === true) {
@@ -431,7 +435,7 @@ class LiveSyncImport {
     int $hint,
     bool $debug,
   ): Awaitable<bool> {
-    $team = await Team::genTeam($team_id);
+    $team = await MultiTeam::genTeam($team_id);
     $team_name = $team->getName();
     $hint_used = false;
     if ($hint === 1) {
@@ -475,7 +479,7 @@ class LiveSyncImport {
     bool $debug,
   ): Awaitable<void> {
     if ($capture === 1) {
-      $team = await Team::genTeam($team_id);
+      $team = await MultiTeam::genTeam($team_id);
       $team_name = $team->getName();
       $level_capture = await Level::genScoreLevel($level_id, $team_id);
       if ($level_capture === true) {
@@ -518,7 +522,7 @@ class LiveSyncImport {
     bool $debug,
   ): Awaitable<void> {
     if (($hint === 1) && ($hint_used === true)) {
-      $team = await Team::genTeam($team_id);
+      $team = await MultiTeam::genTeam($team_id);
       $team_name = $team->getName();
       await Team::genUpdate(
         strval($team_name),
@@ -542,7 +546,7 @@ class LiveSyncImport {
       if (intval($team_data['capture']) === 0) {
         continue;
       }
-      $team = await Team::genTeam($team_id);
+      $team = await MultiTeam::genTeam($team_id);
       $team_name = $team->getName();
       $current_bonus =
         $level->bonus - (intval($level->bonus_dec) * $level_captured);

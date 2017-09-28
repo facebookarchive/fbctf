@@ -97,7 +97,7 @@ class ActivityLog extends Model {
           case "Team":
             $team_exists = await Team::genTeamExistById(intval($id));
             if ($team_exists === true) {
-              $team = await Team::genTeam(intval($id));
+              $team = await MultiTeam::genTeam(intval($id));
               $variables[] = $team->getName();
             } else {
               return '';

@@ -4,7 +4,7 @@ class AdminController extends Controller {
   <<__Override>>
   protected function getTitle(): string {
     $custom_org = \HH\Asio\join(Configuration::gen('custom_org'));
-    return tr($custom_org->getValue()). ' '. tr('CTF'). ' | '. tr('Admin');
+    return tr($custom_org->getValue()).' '.tr('CTF').' | '.tr('Admin');
   }
 
   <<__Override>>
@@ -157,8 +157,8 @@ class AdminController extends Controller {
     $select = <select name="fb--conf--password_type"></select>;
     foreach ($types as $type) {
       $select->appendChild(
-        <option 
-          class="fb--conf--password_type" 
+        <option
+          class="fb--conf--password_type"
           value={strval($type->getField())}
           selected={($type->getField() === $config->getField())}>
           {$type->getDescription()}
@@ -298,7 +298,12 @@ class AdminController extends Controller {
       'login' => Configuration::gen('login'),
       'login_select' => Configuration::gen('login_select'),
       'login_strongpasswords' => Configuration::gen('login_strongpasswords'),
+      'login_facebook' => Configuration::gen('login_facebook'),
+      'login_google' => Configuration::gen('login_google'),
       'registration_names' => Configuration::gen('registration_names'),
+      'registration_facebook' => Configuration::gen('registration_facebook'),
+      'registration_google' => Configuration::gen('registration_google'),
+      'registration_prefix' => Configuration::gen('registration_prefix'),
       'ldap' => Configuration::gen('ldap'),
       'ldap_server' => Configuration::gen('ldap_server'),
       'ldap_port' => Configuration::gen('ldap_port'),
@@ -330,7 +335,13 @@ class AdminController extends Controller {
     $login = $results['login'];
     $login_select = $results['login_select'];
     $login_strongpasswords = $results['login_strongpasswords'];
+    $login_facebook = $results['login_facebook'];
+    $login_google = $results['login_google'];
     $registration_names = $results['registration_names'];
+    $registration_facebook = $results['registration_facebook'];
+    $registration_google = $results['registration_google'];
+    $registration_prefix = $results['registration_prefix'];
+    $login_google = $results['login_google'];
     $ldap = $results['ldap'];
     $ldap_server = $results['ldap_server'];
     $ldap_port = $results['ldap_port'];
@@ -352,13 +363,20 @@ class AdminController extends Controller {
     $custom_org = $results['custom_org'];
     $custom_byline = $results['custom_byline'];
     $custom_logo_image = $results['custom_logo_image'];
-
     $registration_on = $registration->getValue() === '1';
     $registration_off = $registration->getValue() === '0';
     $login_on = $login->getValue() === '1';
     $login_off = $login->getValue() === '0';
     $login_select_on = $login_select->getValue() === '1';
     $login_select_off = $login_select->getValue() === '0';
+    $login_facebook_on = $login_facebook->getValue() === '1';
+    $login_facebook_off = $login_facebook->getValue() === '0';
+    $login_google_on = $login_google->getValue() === '1';
+    $login_google_off = $login_google->getValue() === '0';
+    $registration_facebook_on = $registration_facebook->getValue() === '1';
+    $registration_facebook_off = $registration_facebook->getValue() === '0';
+    $registration_google_on = $registration_google->getValue() === '1';
+    $registration_google_off = $registration_google->getValue() === '0';
     $ldap_on = $ldap->getValue() === '1';
     $ldap_off = $ldap->getValue() === '0';
     $strong_passwords_on = $login_strongpasswords->getValue() === '1';
@@ -476,15 +494,15 @@ class AdminController extends Controller {
       $custom_logo_xhp =
         <div class="form-el el--block-label el--full-text">
           <label for="">{tr('Logo')}</label>
-          <img 
-            id="custom-logo-image" 
-            class="icon--badge" 
+          <img
+            id="custom-logo-image"
+            class="icon--badge"
             src={$custom_logo_image->getValue()}
           />
-          <br/>
-           <h6>
+          <br />
+          <h6>
             <a class="icon-text" href="#" id="custom-logo-link">
-            {tr('Change')}
+              {tr('Change')}
             </a>
           </h6>
           <input
@@ -652,6 +670,119 @@ class AdminController extends Controller {
                   </div>
                   <div class="col col-pad col-2-3">
                     {$strong_passwords}
+                  </div>
+                </div>
+              </section>
+              <section class="admin-box">
+                <header class="admin-box-header">
+                  <h3>{tr('Integration')}</h3>
+                </header>
+                <div class="fb-column-container">
+                  <div class="col col-pad col-1-4">
+                    <div class="form-el el--block-label">
+                      <label>{tr('Facebook Login')}</label>
+                      <div class="admin-section-toggle radio-inline">
+                        <input
+                          type="radio"
+                          name="fb--conf--login_facebook"
+                          id="fb--conf--login_facebook--on"
+                          checked={$login_facebook_on}
+                        />
+                        <label for="fb--conf--login_facebook--on">
+                          {tr('On')}
+                        </label>
+                        <input
+                          type="radio"
+                          name="fb--conf--login_facebook"
+                          id="fb--conf--login_facebook--off"
+                          checked={$login_facebook_off}
+                        />
+                        <label for="fb--conf--login_facebook--off">
+                          {tr('Off')}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="form-el el--block-label">
+                      <label>{tr('Facebook Registration')}</label>
+                      <div class="admin-section-toggle radio-inline">
+                        <input
+                          type="radio"
+                          name="fb--conf--registration_facebook"
+                          id="fb--conf--registration_facebook--on"
+                          checked={$registration_facebook_on}
+                        />
+                        <label for="fb--conf--registration_facebook--on">
+                          {tr('On')}
+                        </label>
+                        <input
+                          type="radio"
+                          name="fb--conf--registration_facebook"
+                          id="fb--conf--registration_facebook--off"
+                          checked={$registration_facebook_off}
+                        />
+                        <label for="fb--conf--registration_facebook--off">
+                          {tr('Off')}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col col-pad col-2-4">
+                    <div class="form-el el--block-label">
+                      <label>{tr('Google Login')}</label>
+                      <div class="admin-section-toggle radio-inline">
+                        <input
+                          type="radio"
+                          name="fb--conf--login_google"
+                          id="fb--conf--login_google--on"
+                          checked={$login_google_on}
+                        />
+                        <label for="fb--conf--login_google--on">
+                          {tr('On')}
+                        </label>
+                        <input
+                          type="radio"
+                          name="fb--conf--login_google"
+                          id="fb--conf--login_google--off"
+                          checked={$login_google_off}
+                        />
+                        <label for="fb--conf--login_google--off">
+                          {tr('Off')}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="form-el el--block-label">
+                      <label>{tr('Google Registration')}</label>
+                      <div class="admin-section-toggle radio-inline">
+                        <input
+                          type="radio"
+                          name="fb--conf--registration_google"
+                          id="fb--conf--registration_google--on"
+                          checked={$registration_google_on}
+                        />
+                        <label for="fb--conf--registration_google--on">
+                          {tr('On')}
+                        </label>
+                        <input
+                          type="radio"
+                          name="fb--conf--registration_google"
+                          id="fb--conf--registration_google--off"
+                          checked={$registration_google_off}
+                        />
+                        <label for="fb--conf--registration_google--off">
+                          {tr('Off')}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col col-pad col-3-4">
+                    <div class="form-el el--block-label el--full-text">
+                      <label>{tr('Automatic Team Name Prefix')}</label>
+                      <input
+                        type="text"
+                        value={$registration_prefix->getValue()}
+                        name="fb--conf--registration_prefix"
+                      />
+                    </div>
                   </div>
                 </div>
               </section>

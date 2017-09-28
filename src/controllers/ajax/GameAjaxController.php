@@ -10,6 +10,7 @@ class GameAjaxController extends AjaxController {
         'csrf_token' => FILTER_UNSAFE_RAW,
         'livesync_username' => FILTER_UNSAFE_RAW,
         'livesync_password' => FILTER_UNSAFE_RAW,
+        'teamname' => FILTER_UNSAFE_RAW,
         'action' => array(
           'filter' => FILTER_VALIDATE_REGEXP,
           'options' => array('regexp' => '/^[\w-]+$/'),
@@ -89,6 +90,16 @@ class GameAjaxController extends AjaxController {
         }
       case 'open_level':
         return Utils::ok_response('Success', 'admin');
+      case 'set_team_name':
+        $updated_team_name = await Team::genSetTeamName(
+          SessionUtils::sessionTeam(),
+          must_have_string($params, 'teamname'),
+        );
+        if ($updated_team_name === true) {
+          return Utils::ok_response('Success', 'game');
+        } else {
+          return Utils::error_response('Failed', 'game');
+        }
       case 'set_livesync_password':
         $livesync_password_update = await Team::genSetLiveSyncPassword(
           SessionUtils::sessionTeam(),
