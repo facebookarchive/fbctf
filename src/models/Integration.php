@@ -65,7 +65,7 @@ class Integration extends Model {
     $app_secret = Configuration::genFacebookOAuthSettingsAppSecret();
     $client = new Facebook\Facebook(
       [
-        'app_id' => $app_id, // Replace {app-id} with your app id
+        'app_id' => $app_id,
         'app_secret' => $app_secret,
         'default_graph_version' => 'v2.2',
       ],
