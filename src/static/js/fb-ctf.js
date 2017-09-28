@@ -275,8 +275,15 @@ function setupInputListeners() {
         $mapSvg,
         $map,
         $countryHover,
-        reload = true,
-        reload_team = true;
+        refresh_active_config = false,
+        refresh_active_country = false,
+        refresh_active_map = false,
+        refresh_active_announcment = false,
+        refresh_active_activity = false,
+        refresh_active_team_data = false,
+        refresh_active_team_module = false,
+        refresh_active_leaderboard = false,
+        refresh_active_clear_map = false;
 
 
     /**
@@ -518,72 +525,44 @@ function setupInputListeners() {
         }, FB_CTF.data.CONF.refreshConf);
 
         // Countries and other modules
-        var count = 0;
         setInterval(function() {
-          if (reload == true || count > 1){
-            reload = false;
-            if (FB_CTF.data.CONF.gameboard === '1') {
-              // Map
-              getCountryData();
-              refreshMapData();
-              // Announcements
-              if (Widget.getWidgetStatus('Announcements') === 'open') {
-                loadAnnouncementsModule();
-              }
-              // Filter
-              if (Widget.getWidgetStatus('Filter') === 'open') {
-                loadSavedFilterModule();
-              }
-              // Activity
-              if (Widget.getWidgetStatus('Activity') === 'open') {
-                loadActivityModule();
-              }
-            } else {
-              clearMapData();
-              clearAnnouncements();
-              clearActivity();
+          if (FB_CTF.data.CONF.gameboard === '1') {
+            // Map
+            getCountryData();
+            refreshMapData();
+            // Announcements
+            if (Widget.getWidgetStatus('Announcements') === 'open') {
+              loadAnnouncementsModule();
             }
-          }
-
-          if (reload == false){
-            count += 1;
-          }
-
-          // reset counter
-          if (count > 1){
-            count = 0;
-            reload = true;
+            // Filter
+             if (Widget.getWidgetStatus('Filter') === 'open') {
+              loadSavedFilterModule();
+            }
+            // Activity
+            if (Widget.getWidgetStatus('Activity') === 'open') {
+              loadActivityModule();
+            }
+          } else {
+            clearMapData();
+            clearAnnouncements();
+            clearActivity();
           }
         }, FB_CTF.data.CONF.refreshMap);
 
         // Teams
-        var teams_count = 0;
         setInterval(function() {
-          if (reload_team == true || teams_count > 1){
-            reload_team = false;
-            if (FB_CTF.data.CONF.gameboard === '1') {
-              // Teams
-              loadTeamData();
-              if (Widget.getWidgetStatus('Teams') === 'open') {
-                loadTeamsModule();
-              }
-              if (Widget.getWidgetStatus('Leaderboard') === 'open') {
-                loadLeaderboardModule();
-              }
-            } else {
-              clearTeams();
-              clearLeaderboard();
+          if (FB_CTF.data.CONF.gameboard === '1') {
+            // Teams
+            loadTeamData();
+            if (Widget.getWidgetStatus('Teams') === 'open') {
+              loadTeamsModule();
             }
-          }
-
-          if (reload_team == false){
-            teams_count += 1;
-          }
-
-          // reset team counter
-          if (teams_count > 1){
-            teams_count = 0;
-            reload_team = true;
+            if (Widget.getWidgetStatus('Leaderboard') === 'open') {
+              loadLeaderboardModule();
+            }
+          } else {
+            clearTeams();
+            clearLeaderboard();
           }
         }, FB_CTF.data.CONF.refreshMap);
 
@@ -1424,20 +1403,31 @@ function setupInputListeners() {
      * load the teams module
      */
     function loadTeamsModule() {
-      var teamsModulePath = 'inc/gameboard/modules/teams.php';
-      var teamsTargetSelector = 'aside[data-module="teams"]';
+      if (refresh_active_team_module === false) {
+        refresh_active_team_module = true;  
+        var teamsModulePath = 'inc/gameboard/modules/teams.php';
+        var teamsTargetSelector = 'aside[data-module="teams"]';
 
-      return loadModuleGeneric(teamsModulePath, teamsTargetSelector);
+        return loadModuleGeneric(teamsModulePath, teamsTargetSelector, function() {
+          refresh_active_team_module = false;
+        });
+      }
     }
 
     /**
      * load the leaderboard module
      */
     function loadLeaderboardModule() {
-      var leaderboardModulePath = 'inc/gameboard/modules/leaderboard.php';
-      var leaderboardSelector = 'aside[data-module="leaderboard"]';
+      if (refresh_active_leaderboard === false) {
+        refresh_active_leaderboard = true;
 
-      return loadModuleGeneric(leaderboardModulePath, leaderboardSelector);
+        var leaderboardModulePath = 'inc/gameboard/modules/leaderboard.php';
+        var leaderboardSelector = 'aside[data-module="leaderboard"]';
+
+        return loadModuleGeneric(leaderboardModulePath, leaderboardSelector, function() {
+          refresh_active_leaderboard = false;
+        });
+      }
     }
 
     /**
@@ -1458,32 +1448,40 @@ function setupInputListeners() {
      * load the team data
      */
     function loadTeamData() {
-      var loadPath = 'data/teams.php';
+      if (refresh_active_team_data === false) {
+        refresh_active_team_data = true;
+        var loadPath = 'data/teams.php';
 
-      return $.get(loadPath, function(data) {
-        FB_CTF.data.TEAMS = data;
-        var df = $.Deferred();
-        reload_team = true;
-        return df.resolve(FB_CTF.data.TEAMS);
-      }, 'json').error(function(jqhxr, status, error) {
-        console.error("There was a problem retrieving the team data.");
-        console.log(loadPath);
-        console.log(status);
-        console.log(error);
-        console.error("/error");
-        console.error("Team data request failed");
-        reload_team = false;
-      });
+        return $.get(loadPath, function(data) {
+          FB_CTF.data.TEAMS = data;
+          var df = $.Deferred();
+          return df.resolve(FB_CTF.data.TEAMS);
+        }, 'json').error(function(jqhxr, status, error) {
+          console.error("There was a problem retrieving the team data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+          console.error("Team data request failed");
+        }).done(function() {
+          refresh_active_team_data = false;
+        });
+      }
     }
 
     /**
      * load the announcements module
      */
     function loadAnnouncementsModule() {
-      var announcementsModulePath = 'inc/gameboard/modules/announcements.php';
-      var announcementsTargetSelector = 'aside[data-module="announcements"]';
+      if (refresh_active_announcment === false) {
+        refresh_active_announcment = true;
+        var announcementsModulePath = 'inc/gameboard/modules/announcements.php';
+        var announcementsTargetSelector = 'aside[data-module="announcements"]';
 
-      return loadModuleGeneric(announcementsModulePath, announcementsTargetSelector);
+        return loadModuleGeneric(announcementsModulePath, announcementsTargetSelector, function() {
+          refresh_active_announcment = false;
+        });
+      }
     }
 
     /**
@@ -1516,104 +1514,120 @@ function setupInputListeners() {
      * load the activity module
      */
     function loadActivityModule() {
-      var activityModulePath = 'inc/gameboard/modules/activity.php';
-      var activityTargetSelector = 'aside[data-module="activity"]';
+      if (refresh_active_activity === false) {
+        refresh_active_activity = true;
+        var activityModulePath = 'inc/gameboard/modules/activity.php';
+        var activityTargetSelector = 'aside[data-module="activity"]';
 
-      return loadModuleGeneric(activityModulePath, activityTargetSelector);
+        return loadModuleGeneric(activityModulePath, activityTargetSelector, function() {
+          refresh_active_activity = false;
+        });
+      }
     }
 
     /**
      * load the configuration data
      */
     function loadConfData() {
-      var loadPath = 'data/configuration.php';
+      if (refresh_active_config === false) {
+        refresh_active_config = true;
+        var loadPath = 'data/configuration.php';
 
-      return $.get(loadPath, function(data) {
-        FB_CTF.data.CONF = data;
-        var df = $.Deferred();
-        reload = true;
-        return df.resolve(FB_CTF.data.CONF);
-      }, 'json').error(function(jqhxr, status, error) {
-        console.error("There was a problem retrieving the conf data.");
-        console.log(loadPath);
-        console.log(status);
-        console.log(error);
-        console.error("/error");
-        reload = false;
-      });
+        return $.get(loadPath, function(data) {
+          FB_CTF.data.CONF = data;
+          var df = $.Deferred();
+          return df.resolve(FB_CTF.data.CONF);
+        }, 'json').error(function(jqhxr, status, error) {
+          console.error("There was a problem retrieving the conf data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+        }).done(function() {
+          refresh_active_config = false;
+        });
+      }
     }
 
     /**
      * refresh the map data
      */
     function refreshMapData() {
-      var loadPath = 'data/map-data.php';
+      if (refresh_active_map === false) {
+        refresh_active_map = true;
 
-      return $.get(loadPath, function(data) {
-        $.each(data, function(key, value) {
-          // First we clear all
-          $('#' + key)[0].classList.remove('active');
-          $('#' + key)[0].parentNode.removeAttribute('data-captured');
-          $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
-          $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
+        var loadPath = 'data/map-data.php';
 
-          // Active country
-          if (value.status === 'active') {
-            if (!$('#' + key).hasClass('active')) {
-              $('#' + key)[0].classList.add('active');
+        return $.get(loadPath, function(data) {
+          $.each(data, function(key, value) {
+            // First we clear all
+            $('#' + key)[0].classList.remove('active');
+            $('#' + key)[0].parentNode.removeAttribute('data-captured');
+            $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
+            $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
+
+            // Active country
+            if (value.status === 'active') {
+              if (!$('#' + key).hasClass('active')) {
+                $('#' + key)[0].classList.add('active');
+              }
             }
-          }
-          /*else { // Inactive country
-           $('#' + key)[0].classList.remove('active');
-           $('#' + key)[0].parentNode.removeAttribute('data-captured');
-           $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
-           $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
-           }*/
-          if (value.captured == 'you') {
-            //$('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
-            $('#' + key)[0].parentNode.children[1].classList.add("captured--you");
-            //$('#' + key)[0].parentNode.removeAttribute('data-captured');
-            $('#' + key)[0].parentNode.setAttribute('data-captured', value.datacaptured);
-          } else if (value.captured == 'opponent') {
-            //$('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
-            $('#' + key)[0].parentNode.children[1].classList.add("captured--opponent");
-            //$('#' + key)[0].parentNode.removeAttribute('data-captured');
-            $('#' + key)[0].parentNode.setAttribute('data-captured', value.datacaptured);
-          }
+            /*else { // Inactive country
+             $('#' + key)[0].classList.remove('active');
+             $('#' + key)[0].parentNode.removeAttribute('data-captured');
+             $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
+             $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
+             }*/
+            if (value.captured == 'you') {
+              //$('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
+              $('#' + key)[0].parentNode.children[1].classList.add("captured--you");
+              //$('#' + key)[0].parentNode.removeAttribute('data-captured');
+              $('#' + key)[0].parentNode.setAttribute('data-captured', value.datacaptured);
+            } else if (value.captured == 'opponent') {
+              //$('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
+              $('#' + key)[0].parentNode.children[1].classList.add("captured--opponent");
+              //$('#' + key)[0].parentNode.removeAttribute('data-captured');
+              $('#' + key)[0].parentNode.setAttribute('data-captured', value.datacaptured);
+            }
+          });
+        }, 'json').error(function(jqhxr, status, error) {
+          console.error("There was a problem retrieving the map data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+        }).done(function() {
+          refresh_active_map = false;
         });
-        reload = true;
-      }, 'json').error(function(jqhxr, status, error) {
-        console.error("There was a problem retrieving the map data.");
-        console.log(loadPath);
-        console.log(status);
-        console.log(error);
-        console.error("/error");
-        reload = false;
-      });
+      }
     }
 
     /**
      * clear the map data
      */
     function clearMapData() {
-      var loadPath = 'data/map-data.php';
+      if (refresh_active_clear_map === false) {
+        refresh_active_clear_map = true;
 
-      return $.get(loadPath, function(data) {
-        $.each(data, function(key) {
-          $('#' + key)[0].classList.remove('active');
-          $('#' + key)[0].parentNode.removeAttribute('data-captured');
-          $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
-          $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
+        var loadPath = 'data/map-data.php';
+
+        return $.get(loadPath, function(data) {
+          $.each(data, function(key) {
+            $('#' + key)[0].classList.remove('active');
+            $('#' + key)[0].parentNode.removeAttribute('data-captured');
+            $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
+            $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
+          });
+        }, 'json').error(function(jqhxr, status, error) {
+          console.error("There was a problem retrieving the map data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+        }).done(function() {
+          refresh_active_clear_map = false;
         });
-        reload = true;
-      }, 'json').error(function(jqhxr, status, error) {
-        console.error("There was a problem retrieving the map data.");
-        console.log(loadPath);
-        console.log(status);
-        console.log(error);
-        console.error("/error");
-        reload = false;
-      });
+      }
     }
 
 
@@ -1625,21 +1639,24 @@ function setupInputListeners() {
      *   - indicate that this jqxhr request is all done
      */
     function getCountryData() {
-      var loadPath = 'data/country-data.php';
+      if (refresh_active_country === false) {
+        refresh_active_country = true;
+        var loadPath = 'data/country-data.php';
 
-      return $.get(loadPath, function(data) {
-        FB_CTF.data.COUNTRIES = data;
-        var df = $.Deferred();
-        reload = true;
-        return df.resolve(FB_CTF.data.COUNTRIES);
-      }, 'json').error(function(jqxhr, status, error) {
-        console.error("There was a problem retrieving the game data.");
-        console.log(loadPath);
-        console.log(status);
-        console.log(error);
-        console.error("/error");
-        reload = false;
-      });
+        return $.get(loadPath, function(data) {
+          FB_CTF.data.COUNTRIES = data;
+          var df = $.Deferred();
+          return df.resolve(FB_CTF.data.COUNTRIES);
+        }, 'json').error(function(jqxhr, status, error) {
+          console.error("There was a problem retrieving the game data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+        }).done(function() {
+          refresh_active_country = false;
+        });
+      }
     }
 
     /**
@@ -1897,25 +1914,31 @@ function setupInputListeners() {
         modalId = 'command-line',
         modalParams = 'p=command-line&modal=command-line',
         $cmdPromptList,
-        $cmdResultsList;
+        $cmdResultsList,
+        refresh_active_command = false;
 
     /**
      * load the commands data
      */
     function loadCommandsData() {
-      var loadPath = 'data/command-line.php';
+      if (refresh_active_command === false) {
+        refresh_active_command = true;
+        var loadPath = 'data/command-line.php';
 
-      return $.get(loadPath, function(data) {
-        FB_CTF.data.COMMAND = data;
-        var df = $.Deferred();
-        return df.resolve(FB_CTF.data.COMMAND);
-      }, 'json').error(function(jqhxr, status, error) {
-        console.error("There was a problem retrieving the commands data.");
-        console.log(loadPath);
-        console.log(status);
-        console.log(error);
-        console.error("/error");
-      });
+        return $.get(loadPath, function(data) {
+          FB_CTF.data.COMMAND = data;
+          var df = $.Deferred();
+          return df.resolve(FB_CTF.data.COMMAND);
+        }, 'json').error(function(jqhxr, status, error) {
+          console.error("There was a problem retrieving the commands data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+        }).done(function() {
+          refresh_active_command = false;
+        });
+      }
     }
 
     /**
