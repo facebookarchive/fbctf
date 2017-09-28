@@ -1,6 +1,7 @@
 <?hh // strict
 
 abstract class Model {
+
   protected static Db $db = MUST_MODIFY;
   protected static Memcached $mc = MUST_MODIFY;
   protected static string $MC_KEY = MUST_MODIFY;
@@ -30,28 +31,80 @@ abstract class Model {
   }
 
   protected static function setMCRecords(string $key, mixed $records): void {
-    $mc = self::getMc();
-    $mc->set(
-      static::$MC_KEY.static::$MC_KEYS->get($key),
-      $records,
-      static::$MC_EXPIRE,
+    $cache_key = static::$MC_KEY.static::$MC_KEYS->get($key);
+
+    /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */
+    if (is_null($GLOBALS['GLOBAL_CACHE']) === true) {
+      /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */
+      $GLOBALS['GLOBAL_CACHE'] = new Cache();
+    }
+
+    invariant(
+      /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */ $GLOBALS['GLOBAL_CACHE'] instanceof Cache,
+      'GLOBAL_CACHE should of type Map and not null',
     );
+
+    $mc = self::getMc();
+    $mc->set($cache_key, $records, static::$MC_EXPIRE);
+
+    /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */
+    $GLOBALS['GLOBAL_CACHE']->setCache($cache_key, $records);
   }
 
   protected static function getMCRecords(string $key): mixed {
-    $mc = self::getMc();
-    $mc_result = $mc->get(static::$MC_KEY.static::$MC_KEYS->get($key));
-    return $mc_result;
+    $cache_key = static::$MC_KEY.static::$MC_KEYS->get($key);
+
+    /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */
+    if (is_null($GLOBALS['GLOBAL_CACHE']) === true) {
+      /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */
+      $GLOBALS['GLOBAL_CACHE'] = new Cache();
+    }
+
+    invariant(
+      /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */ $GLOBALS['GLOBAL_CACHE'] instanceof Cache,
+      'GLOBAL_CACHE should of type Map and not null',
+    );
+
+    /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */
+    $global_cache_result = $GLOBALS['GLOBAL_CACHE']->getCache($cache_key);
+    if ($global_cache_result !== false) {
+      return $global_cache_result;
+    } else {
+      $mc = self::getMc();
+      $mc_result = $mc->get($cache_key);
+      if ($mc_result !== false) {
+        /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */
+        $GLOBALS['GLOBAL_CACHE']->setCache($cache_key, $mc_result);
+      }
+      return $mc_result;
+    }
   }
 
   public static function invalidateMCRecords(?string $key = null): void {
+    /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */
+    if (is_null($GLOBALS['GLOBAL_CACHE']) === true) {
+      /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */
+      $GLOBALS['GLOBAL_CACHE'] = new Cache();
+    }
+
+    invariant(
+      /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */ $GLOBALS['GLOBAL_CACHE'] instanceof Cache,
+      'GLOBAL_CACHE should of type Map and not null',
+    );
+
     $mc = self::getMc();
     if ($key === null) {
       foreach (static::$MC_KEYS as $key_name => $mc_key) {
-        $mc->delete(static::$MC_KEY.static::$MC_KEYS->get($key_name));
+        $cache_key = static::$MC_KEY.static::$MC_KEYS->get($key_name);
+        $mc->delete($cache_key);
+        /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */
+        $GLOBALS['GLOBAL_CACHE']->deleteCache($cache_key);
       }
     } else {
-      $mc->delete(static::$MC_KEY.static::$MC_KEYS->get($key));
+      $cache_key = static::$MC_KEY.static::$MC_KEYS->get($key);
+      $mc->delete($cache_key);
+      /* HH_IGNORE_ERROR[2050]:  Usage of `global` was causing HH_ERROR 1002 and parsing errors, using the $GLOBALS superglobal instead. */
+      $GLOBALS['GLOBAL_CACHE']->deleteCache($cache_key);
     }
   }
 }
