@@ -98,7 +98,7 @@ class ClockModuleController {
       return
         <div>
           <header class="module-header">
-            <h6>Game Clock</h6>
+            <h6>{tr('Game Clock')}</h6>
           </header>
           <div class="module-content module-scrollable">
             <div class="game-clock fb-numbers">
@@ -111,8 +111,8 @@ class ClockModuleController {
               </span>
             </div>
             <div class="game-progress fb-progress-bar">
-              <span class="label label--left">[Start]</span>
-              <span class="label label--right">[End]</span>
+              <span class="label label--left">[{tr('Start')}]</span>
+              <span class="label label--right">[{tr('End')}]</span>
               {$indicator}
             </div>
           </div>
@@ -121,7 +121,7 @@ class ClockModuleController {
       return
         <div>
           <header class="module-header">
-            <h6>Game Clock</h6>
+            <h6>{tr('Game Clock')}</h6>
           </header>
           <div class="module-content module-scrollable">
             <div class="game-clock fb-numbers">
@@ -132,8 +132,8 @@ class ClockModuleController {
               <span class="clock-milliseconds">{$milliseconds}</span>
             </div>
             <div class="game-progress fb-progress-bar">
-              <span class="label label--left">[Start]</span>
-              <span class="label label--right">[End]</span>
+              <span class="label label--left">[{tr('Start')}]</span>
+              <span class="label label--right">[{tr('End')}]</span>
               {$indicator}
             </div>
           </div>
