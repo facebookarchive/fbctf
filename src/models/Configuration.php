@@ -96,10 +96,11 @@ class Configuration extends Model {
   public static async function genCurrentPasswordType(
   ): Awaitable<Configuration> {
     $db = await self::genDb();
-    $db_result = await $db->queryf(
-      'SELECT * FROM password_types WHERE field = (SELECT value FROM configuration WHERE field = %s) LIMIT 1',
-      'password_type'
-    );
+    $db_result =
+      await $db->queryf(
+        'SELECT * FROM password_types WHERE field = (SELECT value FROM configuration WHERE field = %s) LIMIT 1',
+        'password_type',
+      );
 
     invariant($db_result->numRows() === 1, 'Expected exactly one result');
     $result = firstx($db_result->mapRows())->toArray();
@@ -130,6 +131,39 @@ class Configuration extends Model {
       must_have_idx($row, 'value'),
       must_have_idx($row, 'description'),
     );
+  }
+
+  public static function genFacebookOAuthSettingsExists(): bool {
+    $settings_file = '../../settings.ini';
+    $config = parse_ini_file($settings_file);
+
+    if ((array_key_exists('FACEBOOK_OAUTH_APP_ID', $config) === true) &&
+        (array_key_exists('FACEBOOK_OAUTH_APP_SECRET', $config) === true)) {
+      return true;
+    }
+    return false;
+  }
+
+  public static function genFacebookOAuthSettingsAppId(): string {
+    $settings_file = '../../settings.ini';
+    $config = parse_ini_file($settings_file);
+
+    if (array_key_exists('FACEBOOK_OAUTH_APP_ID', $config) === true) {
+      return strval($config['FACEBOOK_OAUTH_APP_ID']);
+    }
+
+    return '';
+  }
+
+  public static function genFacebookOAuthSettingsAppSecret(): string {
+    $settings_file = '../../settings.ini';
+    $config = parse_ini_file($settings_file);
+
+    if (array_key_exists('FACEBOOK_OAUTH_APP_SECRET', $config) === true) {
+      return strval($config['FACEBOOK_OAUTH_APP_SECRET']);
+    }
+
+    return '';
   }
 
   public static function genGoogleOAuthFileExists(): bool {

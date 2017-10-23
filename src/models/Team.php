@@ -408,6 +408,38 @@ class Team extends Model implements Importable, Exportable {
     await Session::genDeleteByTeam($team_id);
   }
 
+  public static async function genSetTeamName(
+    int $team_id,
+    string $teamname,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    $teamname = trim($teamname);
+
+    if ($teamname === '') {
+      return false;
+    }
+
+    $shortname = substr($teamname, 0, 20);
+
+    $team_exists = await Team::genTeamExist($shortname);
+    if ($team_exists === true) {
+      return false;
+    } else {
+      $team = await self::genTeam($team_id);
+      await self::genUpdate(
+        $shortname,
+        $team->getLogo(),
+        $team->getPoints(),
+        $team_id,
+      );
+      MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
+      ScoreLog::invalidateMCRecords(); // Invalidate Memcached ScoreLog data.
+      ActivityLog::invalidateMCRecords(); // Invalidate Memcached ActivityLog data.
+      return true;
+    }
+  }
+
   // Enable or disable teams by passing 1 or 0.
   public static async function genSetStatus(
     int $team_id,
@@ -734,29 +766,146 @@ class Team extends Model implements Importable, Exportable {
     Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
   }
 
+  public static async function genAuthTokenExists(
+    string $type,
+    string $token,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    $team_id_result = await $db->queryf(
+      'SELECT team_id FROM teams_oauth WHERE type = %s AND token = %s',
+      $type,
+      $token,
+    );
+
+    if ($team_id_result->numRows() === 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public static async function genTeamOAuthTokenExists(
+    string $type,
+    int $team_id,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    $team_id_result = await $db->queryf(
+      'SELECT id FROM teams_oauth WHERE type = %s AND team_id = %d',
+      $type,
+      $team_id,
+    );
+
+    if ($team_id_result->numRows() === 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public static async function genTeamFromOAuthToken(
+    string $type,
+    string $token,
+  ): Awaitable<Team> {
+    $db = await self::genDb();
+
+    $team_id_result = await $db->queryf(
+      'SELECT team_id FROM teams_oauth WHERE type = %s AND token = %s',
+      $type,
+      $token,
+    );
+
+    $team_id =
+      intval(must_have_idx($team_id_result->mapRows()[0], 'team_id'));
+    $team = await self::genTeam($team_id);
+    return $team;
+  }
+
+  public static async function genSetOAuthToken(
+    int $team_id,
+    string $type,
+    string $token,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    $oauth_exists_result = await $db->queryf(
+      'SELECT id FROM teams_oauth WHERE type = %s AND token = %s',
+      $type,
+      $token,
+    );
+
+    if ($oauth_exists_result->numRows() > 0) {
+      return false;
+    }
+
+    $current_id_result = await $db->queryf(
+      'SELECT id FROM teams_oauth WHERE team_id = %d AND type = %s',
+      $team_id,
+      $type,
+    );
+
+    if ($current_id_result->numRows() === 1) {
+      $result = await $db->queryf(
+        'UPDATE teams_oauth SET token = %s WHERE id = %d',
+        $token,
+        intval(must_have_idx($current_id_result->mapRows()[0], 'id')),
+      );
+      if ($result) {
+        return true;
+      }
+    } else {
+      $result = await $db->queryf(
+        'INSERT INTO teams_oauth (type, team_id, token) VALUES (%s, %d, %s)',
+        $type,
+        $team_id,
+        $token,
+      );
+      if ($result) {
+        return true;
+      }
+    }
+    return false;
+
+  }
+
   public static async function genGetLiveSyncKey(
     int $team_id,
     string $type,
   ): Awaitable<string> {
     $db = await self::genDb();
-    $result = await $db->queryf(
-      'SELECT * FROM livesync WHERE team_id = %d AND type = %s',
-      $team_id,
-      $type,
-    );
-    invariant($result->numRows() === 1, 'Expected exactly one result');
+    if ($type === 'general') {
+      $team = await self::genTeam($team_id);
+      $username = $team->getName();
+      $key = '';
+    } else {
+      $result = await $db->queryf(
+        'SELECT * FROM livesync WHERE team_id = %d AND type = %s',
+        $team_id,
+        $type,
+      );
+      invariant($result->numRows() === 1, 'Expected exactly one result');
 
-    $username = strval(must_have_idx($result->mapRows()[0], 'username'));
-    $key_from_db = strval(must_have_idx($result->mapRows()[0], 'sync_key'));
+      $username = strval(must_have_idx($result->mapRows()[0], 'username'));
+      $key_from_db = strval(must_have_idx($result->mapRows()[0], 'sync_key'));
 
-    switch ($type) {
-      case 'fbctf':
-        $key = self::generateHash($key_from_db);
-        break;
-        // FALLTHROUGH
-      default:
-        $key = $key_from_db;
-        break;
+      switch ($type) {
+        case 'fbctf':
+          $key = self::generateHash($key_from_db);
+          break;
+        case 'facebook_oauth':
+          $key = $key_from_db;
+          $username = '';
+          break;
+        case 'google_oauth':
+          $key = $key_from_db;
+          $username = '';
+          break;
+          // FALLTHROUGH
+        default:
+          $key = $key_from_db;
+          break;
+      }
     }
 
     return strval($type.":".$username.":".$key);
@@ -864,6 +1013,13 @@ class Team extends Model implements Importable, Exportable {
           $type,
         );
         break;
+      case 'facebook_oauth':
+        $result = await $db->queryf(
+          'SELECT * FROM livesync WHERE sync_key = %s AND type = %s',
+          $key,
+          $type,
+        );
+        break;
       case 'google_oauth':
         $result = await $db->queryf(
           'SELECT * FROM livesync WHERE sync_key = %s AND type = %s',
@@ -921,6 +1077,13 @@ class Team extends Model implements Importable, Exportable {
           $type,
         );
         invariant($result->numRows() > 0, 'Expected at least one result');
+        break;
+      case 'facebook_oauth':
+        $result = await $db->queryf(
+          'SELECT * FROM livesync WHERE sync_key = %s AND type = %s',
+          $key,
+          $type,
+        );
         break;
       case 'google_oauth':
         $result = await $db->queryf(

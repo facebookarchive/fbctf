@@ -118,7 +118,8 @@ class IndexAjaxController extends AjaxController {
     }
 
     // Check if strongs passwords are enforced
-    $login_strongpasswords = await Configuration::gen('login_strongpasswords');
+    $login_strongpasswords =
+      await Configuration::gen('login_strongpasswords');
     if ($login_strongpasswords->getValue() !== '0') {
       $password_type = await Configuration::genCurrentPasswordType();
       if (!preg_match(strval($password_type->getValue()), $password)) {
@@ -157,10 +158,12 @@ class IndexAjaxController extends AjaxController {
       // This will help avoid leaking users ldap passwords if the server's database
       // is compromised.
       $ldap_password = $password;
-      $password = strval(gmp_strval(
-        gmp_init(bin2hex(openssl_random_pseudo_bytes(16)), 16),
-        62,
-      ));
+      $password = strval(
+        gmp_strval(
+          gmp_init(bin2hex(openssl_random_pseudo_bytes(16)), 16),
+          62,
+        ),
+      );
     }
 
     // Check if tokenized registration is enabled

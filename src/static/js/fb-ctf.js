@@ -2499,7 +2499,46 @@ function setupInputListeners() {
       Modal.loadPopup('p=action&modal=account', 'action-account');
     });
 
-    // submit account modal
+    // submit account team name modal
+    $body.on('click', '.js-trigger-account-team-name-save', function(event) {
+      event.preventDefault();
+
+      var teamname = $('.team-name-form input[name=teamname]')[0].value;
+      var csrf_token = $('.team-name-form input[name=csrf_token]')[0].value;
+      var team_name_data = {
+        action: 'set_team_name',
+        teamname: teamname,
+        csrf_token: csrf_token
+      };
+
+      $.post(
+        'index.php?p=game&ajax=true',
+        team_name_data
+      ).fail(function() {
+        // TODO: Make this a modal
+        console.log('ERROR');
+      }).done(function(data) {
+        var responseData = JSON.parse(data);
+        if (responseData.result === 'OK') {
+          console.log('OK');
+          $('.team-name-form input[name=teamname]').css("background-color", "#1f7a1f");
+          $('.team-name-form span').text('Team Name updated.');
+        } else {
+          console.log('Failed');
+          $('.team-name-form input[name=teamname]').css("background-color", "#800000");
+          $('.team-name-form span').text('Failed! Please try a different name.');
+        }
+      });
+    });
+
+    $body.on('keypress', '.team-name-form', function(e) {
+      if (e.keyCode == 13) {
+        e.preventDefault();
+        $('.js-trigger-account-team-name-save').click();
+      }
+    });
+
+    // submit account livesync modal
     $body.on('click', '.js-trigger-account-save', function(event) {
         event.preventDefault();
 
@@ -2536,22 +2575,33 @@ function setupInputListeners() {
       });
 
     $body.on('keypress', '.account-link-form', function(e) {
-        if (e.keyCode == 13) {
-          e.preventDefault();
-          $('.js-trigger-account-save').click();
-        }
-      });
+      if (e.keyCode == 13) {
+        e.preventDefault();
+        $('.js-trigger-account-save').click();
+      }
+    });
+
+    // open Facebook OAuth popup
+    $body.on('click', '.js-trigger-facebook-oauth', function(event) {
+      event.preventDefault();
+
+      var popup = window.open('/data/integration_oauth.php?type=facebook', 'Facebook OAuth', 'height=800,width=800,toolbar=no,scrollbars=1,status=no,location=no,directories=no');
+      if (window.focus)  {
+        popup.focus();
+      }
+      return false;
+    });
 
     // open Google OAuth popup
     $body.on('click', '.js-trigger-google-oauth', function(event) {
-        event.preventDefault();
+      event.preventDefault();
 
-            var popup = window.open('/data/google_oauth.php', 'Google OAuth', 'height=800,width=800,toolbar=no,scrollbars=1,status=no,location=no,directories=no');
-            if (window.focus)  {
-                popup.focus();
-            }
-        return false;
-      });
+      var popup = window.open('/data/integration_oauth.php?type=google', 'Google OAuth', 'height=800,width=800,toolbar=no,scrollbars=1,status=no,location=no,directories=no');
+      if (window.focus)  {
+        popup.focus();
+       }
+       return false;
+    });
 
     // click events
     $body.on('click', '.click-effect', function() {
