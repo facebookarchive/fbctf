@@ -129,7 +129,7 @@ class Attachment extends Model {
 
     // Copy file to deleted folder
     $attachment = await self::gen($attachment_id);
-    $filename = $attachment->getFilename();
+    $filename = self::attachmentsDir.$attachment->getFilename();
     $parts = pathinfo($filename);
     error_log(
       'Copying from '.
@@ -139,9 +139,8 @@ class Attachment extends Model {
       '/deleted/'.
       $parts['basename'],
     );
-    $root = strval($server['DOCUMENT_ROOT']);
-    $origin = $root.$filename;
-    $dest = $root.$parts['dirname'].'/deleted/'.$parts['basename'];
+    $origin = $filename;
+    $dest = $parts['dirname'].'/deleted/'.$parts['basename'];
     copy($origin, $dest);
 
     // Delete file.
