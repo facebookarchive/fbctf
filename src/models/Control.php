@@ -422,14 +422,17 @@ class Control extends Model {
     $filename =
       strval(BinaryImporterController::getFilename('attachments_file'));
     $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
-    $directory = $document_root.Attachment::attachmentsDir;
-    $cmd = "tar -zx -C $directory -f $filename";
+    $directory = Attachment::attachmentsDir;
+    $cmd = "tar -zx --mode=600 -C $directory -f $filename";
     exec($cmd, $output, $status);
     if (intval($status) !== 0) {
       return false;
     }
-    $directory_files = scandir($directory);
+    $directory_files = array_slice(scandir($directory), 2);
     foreach ($directory_files as $file) {
+      if (is_dir($file) === true) {
+        continue;
+      }
       $chmod = chmod($directory.$file, 0600);
       invariant(
         $chmod === true,
@@ -507,7 +510,7 @@ class Control extends Model {
     header('Content-Type: application/x-tgz');
     header('Content-Disposition: attachment; filename="'.$filename.'"');
     $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
-    $directory = $document_root.Attachment::attachmentsDir;
+    $directory = Attachment::attachmentsDir;
     $cmd = "tar -cz -C $directory . ";
     passthru($cmd);
     exit();

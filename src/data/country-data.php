@@ -63,7 +63,10 @@ class CountryDataController extends DataController {
         $all_attachments =
           await Attachment::genAllAttachments($level->getId());
         foreach ($all_attachments as $attachment) {
-          array_push($attachments_list, $attachment->getFilename());
+          $attachment_details = array();
+          $attachment_details['filename'] = $attachment->getFilename();
+          $attachment_details['file_link'] = $attachment->getFileLink();
+          array_push($attachments_list, $attachment_details);
         }
       }
 

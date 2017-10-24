@@ -934,8 +934,10 @@ function setupInputListeners() {
         $('.capture-text', $container).text(intro);
         if (attachments instanceof Array) {
           $.each(attachments, function() {
-            var f = this.substr(this.lastIndexOf('/') + 1);
-            var attachment = $('<a/>').attr('target', '_blank').attr('href', this).text('[ ' + f + ' ]');
+            var filename = this['filename'];
+            var link = this['file_link'];
+            var f = filename.substr(filename.lastIndexOf('/') + 1);
+            var attachment = $('<a/>').attr('target', '_blank').attr('href', link).text('[ ' + f + ' ]');
             $('.capture-links', $container).append(attachment);
             $('.capture-links', $container).append($('<br/>'));
           });

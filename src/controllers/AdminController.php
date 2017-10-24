@@ -4,7 +4,7 @@ class AdminController extends Controller {
   <<__Override>>
   protected function getTitle(): string {
     $custom_org = \HH\Asio\join(Configuration::gen('custom_org'));
-    return tr($custom_org->getValue()). ' '. tr('CTF'). ' | '. tr('Admin');
+    return tr($custom_org->getValue()).' '.tr('CTF').' | '.tr('Admin');
   }
 
   <<__Override>>
@@ -157,8 +157,8 @@ class AdminController extends Controller {
     $select = <select name="fb--conf--password_type"></select>;
     foreach ($types as $type) {
       $select->appendChild(
-        <option 
-          class="fb--conf--password_type" 
+        <option
+          class="fb--conf--password_type"
           value={strval($type->getField())}
           selected={($type->getField() === $config->getField())}>
           {$type->getDescription()}
@@ -476,15 +476,15 @@ class AdminController extends Controller {
       $custom_logo_xhp =
         <div class="form-el el--block-label el--full-text">
           <label for="">{tr('Logo')}</label>
-          <img 
-            id="custom-logo-image" 
-            class="icon--badge" 
+          <img
+            id="custom-logo-image"
+            class="icon--badge"
             src={$custom_logo_image->getValue()}
           />
-          <br/>
-           <h6>
+          <br />
+          <h6>
             <a class="icon-text" href="#" id="custom-logo-link">
-            {tr('Change')}
+              {tr('Change')}
             </a>
           </h6>
           <input
@@ -2014,7 +2014,7 @@ class AdminController extends Controller {
                         value={$attachment->getFilename()}
                         disabled={true}
                       />
-                      <a href={$attachment->getFilename()} target="_blank">
+                      <a href={$attachment->getFileLink()} target="_blank">
                         {tr('Link')}
                       </a>
                     </div>
@@ -2547,7 +2547,7 @@ class AdminController extends Controller {
                         value={$attachment->getFilename()}
                         disabled={true}
                       />
-                      <a href={$attachment->getFilename()} target="_blank">
+                      <a href={$attachment->getFileLink()} target="_blank">
                         {tr('Link')}
                       </a>
                     </div>

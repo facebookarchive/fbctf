@@ -2,7 +2,7 @@
 
 class Attachment extends Model {
   // TODO: Configure this
-  const string attachmentsDir = '/data/attachments/';
+  const string attachmentsDir = '/var/www/fbctf/attachments/';
 
   protected static string $MC_KEY = 'attachments:';
 
@@ -17,6 +17,7 @@ class Attachment extends Model {
     private int $id,
     private int $levelId,
     private string $filename,
+    private string $link,
     private string $type,
   ) {}
 
@@ -26,6 +27,10 @@ class Attachment extends Model {
 
   public function getFilename(): string {
     return $this->filename;
+  }
+
+  public function getFileLink(): string {
+    return $this->link;
   }
 
   public function getType(): string {
@@ -44,7 +49,8 @@ class Attachment extends Model {
   ): Awaitable<bool> {
     $db = await self::genDb();
     $type = '';
-    $local_filename = self::attachmentsDir;
+    $file_path = self::attachmentsDir;
+    $local_filename = '';
 
     $files = Utils::getFILES();
     $server = Utils::getSERVER();
@@ -63,30 +69,21 @@ class Attachment extends Model {
         $local_filename .= '.'.$extension;
       }
 
-      // Avoid php shells
-      if (ends_with($local_filename, '.php')) {
-        $local_filename .= 's'; // Make the extension 'phps'
-      }
-      move_uploaded_file(
-        $tmp_name,
-        must_have_string($server, 'DOCUMENT_ROOT').$local_filename,
-      );
+      // Remove all non alpahnum characters from filename - allow international chars, dash, underscore, and period
+      $local_filename =
+        preg_replace('/[^\p{L}\p{N}_\-.]+/u', '_', $local_filename);
+
+      move_uploaded_file($tmp_name, $file_path.$local_filename);
 
       // Force 0600 Permissions
-      $chmod = chmod(
-        must_have_string($server, 'DOCUMENT_ROOT').$local_filename,
-        0600,
-      );
+      $chmod = chmod($file_path.$local_filename, 0600);
       invariant(
         $chmod === true,
         'Failed to set attachment file permissions to 0600',
       );
 
       // Force ownership to www-data
-      $chown = chown(
-        must_have_string($server, 'DOCUMENT_ROOT').$local_filename,
-        'www-data',
-      );
+      $chown = chown($file_path.$local_filename, 'www-data');
       invariant(
         $chown === true,
         'Failed to set attachment file ownership to www-data',
@@ -242,6 +239,31 @@ class Attachment extends Model {
     }
   }
 
+  public static async function genCheckExists(
+    int $attachment_id,
+    bool $refresh = false,
+  ): Awaitable<bool> {
+    $mc_result = self::getMCRecords('ATTACHMENTS');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $attachments = Map {};
+      $result = await $db->queryf('SELECT * FROM attachments');
+      foreach ($result->mapRows() as $row) {
+        $attachments->add(
+          Pair {intval($row->get('id')), self::attachmentFromRow($row)},
+        );
+      }
+      self::setMCRecords('ATTACHMENTS', $attachments);
+      return $attachments->contains($attachment_id);
+    } else {
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      return $mc_result->contains($attachment_id);
+    }
+  }
+
   // Check if a level has attachments.
   public static async function genHasAttachments(
     int $level_id,
@@ -304,6 +326,7 @@ class Attachment extends Model {
       intval(must_have_idx($row, 'id')),
       intval(must_have_idx($row, 'level_id')),
       must_have_idx($row, 'filename'),
+      strval('/data/attachment.php?id='.intval(must_have_idx($row, 'id'))),
       must_have_idx($row, 'type'),
     );
   }

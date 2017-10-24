@@ -326,10 +326,10 @@ fi
     fi
 
     log "Creating attachments folder, and setting ownership to www-data"
-    sudo sudo mkdir -p "$CTF_PATH/src/data/attachments"
-    sudo sudo mkdir -p "$CTF_PATH/src/data/attachments/deleted"
-    sudo chown -R www-data:www-data "$CTF_PATH/src/data/attachments"
-    sudo chown -R www-data:www-data "$CTF_PATH/src/data/attachments/deleted"
+    sudo sudo mkdir -p "$CTF_PATH/attachments"
+    sudo sudo mkdir -p "$CTF_PATH/attachments/deleted"
+    sudo chown -R www-data:www-data "$CTF_PATH/attachments"
+    sudo chown -R www-data:www-data "$CTF_PATH/attachments/deleted"
 
     log "Creating custom logos folder, and setting ownership to www-data"
     sudo mkdir -p "$CTF_PATH/src/data/customlogos"
