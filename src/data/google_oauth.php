@@ -22,7 +22,16 @@ if (Configuration::genGoogleOAuthFileExists()) {
   );
 
   $integration_csrf_token = base64_encode(random_bytes(100));
-  setcookie('integration_csrf_token', strval($integration_csrf_token));
+  // Cookie is sent with headers, and therefore not set until after the PHP code executes - this allows us to reset the cookie on each request without clobbering the state
+  setcookie(
+    'integration_csrf_token',
+    strval($integration_csrf_token),
+    0,
+    '/data/',
+    must_have_string(Utils::getSERVER(), 'SERVER_NAME'),
+    true,
+    true,
+  );
   $client->setState(strval($integration_csrf_token));
 
   if ($code !== false) {
