@@ -36,6 +36,7 @@ class Configuration extends Model {
       $result = $mc_result;
     } else {
       $db = await self::genDb();
+      error_log($field);
       $db_result = await $db->queryf(
         'SELECT * FROM configuration WHERE field = %s LIMIT 1',
         $field,

@@ -60,6 +60,12 @@ class AdminAjaxController extends AjaxController {
         'bonus' => FILTER_VALIDATE_INT,
         'bonus_dec' => FILTER_VALIDATE_INT,
         'penalty' => FILTER_VALIDATE_INT,
+        'wrong_answer_penalty' => FILTER_VALIDATE_INT,
+        'is_short_answer' => FILTER_VALIDATE_INT,
+        'answer_choice_1' => FILTER_UNSAFE_RAW,
+        'answer_choice_2' => FILTER_UNSAFE_RAW,
+        'answer_choice_3' => FILTER_UNSAFE_RAW,
+        'answer_choice_4' => FILTER_UNSAFE_RAW,
         'active' => FILTER_VALIDATE_INT,
         'field' => FILTER_UNSAFE_RAW,
         'value' => FILTER_UNSAFE_RAW,
@@ -175,10 +181,16 @@ class AdminAjaxController extends AjaxController {
           must_have_string($params, 'answer'),
           must_have_int($params, 'entity_id'),
           must_have_int($params, 'points'),
-          intval($bonus),
-          intval($bonus_dec),
+          must_have_int($params, 'bonus'),
+          must_have_int($params, 'bonus_dec'),
           must_have_string($params, 'hint'),
           intval(must_have_idx($params, 'penalty')),
+          intval(must_have_int($params, 'wrong_answer_penalty')),
+          intval(must_have_int($params, 'is_short_answer')),
+          must_have_string($params, 'answer_choice_1'),
+          must_have_string($params, 'answer_choice_2'),
+          must_have_string($params, 'answer_choice_3'),
+          must_have_string($params, 'answer_choice_4'),
         );
         return Utils::ok_response('Created succesfully', 'admin');
       case 'update_quiz':
@@ -193,6 +205,12 @@ class AdminAjaxController extends AjaxController {
           must_have_string($params, 'hint'),
           intval(must_have_idx($params, 'penalty')),
           must_have_int($params, 'level_id'),
+          intval(must_have_int($params, 'wrong_answer_penalty')),
+          intval(must_have_int($params, 'is_short_answer')),
+          must_have_string($params, 'answer_choice_1'),
+          must_have_string($params, 'answer_choice_2'),
+          must_have_string($params, 'answer_choice_3'),
+          must_have_string($params, 'answer_choice_4'),
         );
         return Utils::ok_response('Updated succesfully', 'admin');
       case 'create_flag':
@@ -205,10 +223,11 @@ class AdminAjaxController extends AjaxController {
           must_have_int($params, 'entity_id'),
           must_have_int($params, 'category_id'),
           must_have_int($params, 'points'),
-          intval($bonus),
-          intval($bonus_dec),
+          must_have_int($params, 'bonus'),
+          must_have_int($params, 'bonus_dec'),
           must_have_string($params, 'hint'),
           intval(must_have_idx($params, 'penalty')),
+          intval(must_have_idx($params, 'wrong_answer_penalty')),
         );
         return Utils::ok_response('Created succesfully', 'admin');
       case 'update_flag':
@@ -224,6 +243,7 @@ class AdminAjaxController extends AjaxController {
           must_have_string($params, 'hint'),
           intval(must_have_idx($params, 'penalty')),
           must_have_int($params, 'level_id'),
+          intval(must_have_idx($params, 'wrong_answer_penalty')),
         );
         return Utils::ok_response('Updated succesfully', 'admin');
       case 'create_base':

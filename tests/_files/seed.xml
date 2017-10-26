@@ -41,6 +41,12 @@
     <column>flag</column>
     <column>hint</column>
     <column>penalty</column>
+    <column>wrong_answer_penalty</column>
+    <column>is_short_answer</column>
+    <column>answer_choice_1</column>
+    <column>answer_choice_2</column>
+    <column>answer_choice_3</column>
+    <column>answer_choice_4</column>
     <column>created_ts</column>
     <row>
       <value>1</value>
@@ -57,6 +63,12 @@
       <value>flag</value>
       <value>hint</value>
       <value>1</value>
+      <value>5</value>
+      <value>1</value>
+      <value>"A"</value>
+      <value>"B"</value>
+      <value>"C"</value>
+      <value>"D"</value>
       <value>2015-04-26 12:14:20</value>
     </row>
     <row>
@@ -74,6 +86,12 @@
       <value>quiz</value>
       <value>hint</value>
       <value>1</value>
+      <value>5</value>
+      <value>1</value>
+      <value>"A"</value>
+      <value>"B"</value>
+      <value>"C"</value>
+      <value>"D"</value>
       <value>2015-04-26 12:14:20</value>
     </row>
     <row>
@@ -91,6 +109,12 @@
       <value>flag</value>
       <value>hint</value>
       <value>1</value>
+      <value>5</value>
+      <value>1</value>
+      <value>"A"</value>
+      <value>"B"</value>
+      <value>"C"</value>
+      <value>"D"</value>
       <value>2015-04-26 12:14:20</value>
     </row>
   </table>

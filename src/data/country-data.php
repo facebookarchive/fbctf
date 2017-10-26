@@ -26,28 +26,35 @@ class CountryDataController extends DataController {
         continue;
       }
 
+      $score = await ScoreLog::genPreviousScore(
+        $level->getId(),
+        $my_team->getId(),
+        false,
+      );
+
       $category = await Category::genSingleCategory($level->getCategoryId());
+      $points = $level -> getPoints();
+      $hint_cost = $level->getPenalty();
       if ($level->getHint() !== '') {
         // There is hint, can this team afford it?
         if ($level->getPenalty() > $my_team->getPoints()) { // Not enough points
           $hint_cost = -2;
           $hint = 'no';
         } else {
-          $hint = await HintLog::genPreviousHint(
+          $hint = await HintLog::genPreviousHint( //check for a previous hint
             $level->getId(),
             $my_team->getId(),
             false,
           );
-          $score = await ScoreLog::genPreviousScore(
-            $level->getId(),
-            $my_team->getId(),
-            false,
-          );
-          // Has this team requested this hint or scored this level before?
-          if ($hint || $score) {
+          // Has this team requested this hint before?
+
+          if ($hint) {
+            $points -= $hint_cost;
             $hint_cost = 0;
-          } else {
-            $hint_cost = $level->getPenalty();
+          }
+          // Has this team scored this level before?
+          if ($score) {
+            $hint_cost = 0;
           }
           $hint = ($hint_cost === 0) ? $level->getHint() : 'yes';
         }
@@ -55,6 +62,20 @@ class CountryDataController extends DataController {
         $hint_cost = -1;
         $hint = 'no';
       }
+
+      //Handle the wrong answer penalties
+      $all_failures = await FailureLog::genAllFailures();
+      $failures_cost = 0;
+      $wrong_answer_penalty = $level->getWrongAnswerPenalty();
+      $numIncorrectGuesses = 0;
+      foreach($all_failures as $failure){
+        if($level->getId() === $failure->getLevelId() and $my_team->getId() === $failure->getTeamId()){
+          $failures_cost += $wrong_answer_penalty;
+          $numIncorrectGuesses += 1;
+        }
+      }
+      $points -= $failures_cost;
+      $points = max($points,0);
 
       // All attachments for this level
       $attachments_list = array();
@@ -94,12 +115,45 @@ class CountryDataController extends DataController {
       } else {
         $owner = 'Uncaptured';
       }
+
+      //All possible Answer choices for this question
+      $choiceA = "";
+      $choiceB = "";
+      $choiceC = "";
+      $choiceD = "";
+      if($level->getIsShortAnswer()){
+        $choiceA = "Short Answer";
+        $choiceB = "Short Answer";
+        $choiceC = "Short Answer";
+        $choiceD = "Short Answer";
+      }
+      else{
+        //$random = mt_rand(0,3);
+        $choiceA = $level->getAnswerChoice1();
+        $choiceB = $level->getAnswerChoice2();
+        $choiceC = $level->getAnswerChoice3();
+        $choiceD = $level->getAnswerChoice4();
+      }
+      //Handle if scored, ignore points calculated above and just set to value scored.
+      //The reason for this is to get the bonus that is calculated when scored.
+      if ($score) {
+        $team_score = await ScoreLog::genLevelScoreByTeam(
+          $my_team->getId(),
+          $level->getId(),
+        );
+        $points = $team_score->getPoints();
+      }
+
+      //randomize order
+      $choices = array($choiceA,$choiceB,$choiceC,$choiceD);
+      shuffle($choices);
+
       $country_data = (object) array(
         'level_id' => $level->getId(),
         'title' => $level->getTitle(),
         'intro' => $level->getDescription(),
         'type' => $level->getType(),
-        'points' => $level->getPoints(),
+        'points' => $points,
         'bonus' => $level->getBonus(),
         'category' => $category->getCategory(),
         'owner' => $owner,
@@ -108,6 +162,18 @@ class CountryDataController extends DataController {
         'hint_cost' => $hint_cost,
         'attachments' => $attachments_list,
         'links' => $links_list,
+        'wrong_answer_penalty' => $wrong_answer_penalty,
+        'numIncorrectGuesses' => $numIncorrectGuesses,
+        'isShortAnswer' => $level->getIsShortAnswer(),
+        'shuffledChoiceA' => $choices[0],
+        'shuffledChoiceB' => $choices[1],
+        'shuffledChoiceC' => $choices[2],
+        'shuffledChoiceD' => $choices[3],
+        'choiceA' => $choiceA,
+        'choiceB' => $choiceB,
+        'choiceC' => $choiceC,
+        'choiceD' => $choiceD,
+        'scored' => $score,
       );
       /* HH_FIXME[1002] */
       /* HH_FIXME[2011] */
