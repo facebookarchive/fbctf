@@ -347,7 +347,7 @@ class IndexController extends Controller {
                 <label for="">{tr('Team Name')}</label>
                 <input
                   autocomplete="off"
-                  name="teamname"
+                  name="team_name"
                   type="text"
                   maxlength={20}
                   autofocus={true}
@@ -454,7 +454,7 @@ class IndexController extends Controller {
                 <label for="">{tr('Team Name')}</label>
                 <input
                   autocomplete="off"
-                  name="teamname"
+                  name="team_name"
                   type="text"
                   maxlength={20}
                   autofocus={true}
