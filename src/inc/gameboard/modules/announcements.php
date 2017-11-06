@@ -2,12 +2,13 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-/* HH_IGNORE_ERROR[1002] */
-SessionUtils::sessionStart();
-SessionUtils::enforceLogin();
-
-class AnnouncementsModuleController {
+class AnnouncementsModuleController extends ModuleController {
   public async function genRender(): Awaitable<:xhp> {
+
+    /* HH_IGNORE_ERROR[1002] */
+    SessionUtils::sessionStart();
+    SessionUtils::enforceLogin();
+
     await tr_start();
     $announcements = await Announcement::genAllAnnouncements();
     $announcements_ul = <ul class="activity-stream announcements-list"></ul>;
@@ -41,5 +42,6 @@ class AnnouncementsModuleController {
   }
 }
 
+/* HH_IGNORE_ERROR[1002] */
 $announcements_generated = new AnnouncementsModuleController();
-echo \HH\Asio\join($announcements_generated->genRender());
+$announcements_generated->sendRender();

@@ -9,8 +9,10 @@ function teamNameFormError() {
 
 function teamLoginFormError() {
   $('.el--text')[0].classList.add('form-error');
+  $('.el--text')[1].classList.add('form-error');
   $('.fb-form input').on('change', function() {
     $('.el--text')[0].classList.remove('form-error');
+    $('.el--text')[1].classList.remove('form-error');
   });
 }
 
@@ -149,7 +151,7 @@ module.exports = {
     if (name && password && !logoInfo.error) {
       var register_data = {
         action: 'register_team',
-        teamname: name,
+        team_name: name,
         password: password,
         logo: logoInfo.logo,
         isCustomLogo: logoInfo.isCustom,
@@ -182,7 +184,7 @@ module.exports = {
     if (name && password && !logoInfo.error) {
       var register_data = {
         action: 'register_names',
-        teamname: name,
+        team_name: name,
         password: password,
         logo: logoInfo.logo,
         isCustomLogo: logoInfo.isCustom,
@@ -204,7 +206,7 @@ module.exports = {
       teamParam = 'team_id';
     } else {
       team = $('.fb-form input[name="team_name"]')[0].value;
-      teamParam = 'teamname';
+      teamParam = 'team_name';
     }
     password = verifyTeamPassword();
 

@@ -6,8 +6,10 @@ class ScoreboardModalController extends ModalController {
 
     $game = await Configuration::gen('game');
     if ($game->getValue() === '1') {
-      $start_ts = await Configuration::gen('start_ts');
-      $end_ts = await Configuration::gen('end_ts');
+      list($start_ts, $end_ts) = await \HH\Asio\va(
+        Configuration::gen('start_ts'),
+        Configuration::gen('end_ts'),
+      );
       $start_ts = $start_ts->getValue();
       $end_ts = $end_ts->getValue();
 
@@ -40,15 +42,17 @@ class ScoreboardModalController extends ModalController {
     $gameboard = await Configuration::gen('gameboard');
     if ($gameboard->getValue() === '1') {
       $rank = 1;
-      $leaderboard = await MultiTeam::genLeaderboard();
+      $leaderboard = await MultiTeam::genLeaderboard(false);
 
       foreach ($leaderboard as $team) {
         $team_id = 'fb-scoreboard--team-'.strval($team->getId());
         $color = '#'.substr(md5($team->getName()), 0, 6).';';
         $style = 'color: '.$color.'; background:'.$color.';';
-        $quiz = await MultiTeam::genPointsByType($team->getId(), 'quiz');
-        $flag = await MultiTeam::genPointsByType($team->getId(), 'flag');
-        $base = await MultiTeam::genPointsByType($team->getId(), 'base');
+        list($quiz, $flag, $base) = await \HH\Asio\va(
+          MultiTeam::genPointsByType($team->getId(), 'quiz'),
+          MultiTeam::genPointsByType($team->getId(), 'flag'),
+          MultiTeam::genPointsByType($team->getId(), 'base'),
+        );
         $scoreboard_tbody->appendChild(
           <tr>
             <td style="width: 10%;" class="el--radio">

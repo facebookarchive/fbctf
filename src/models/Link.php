@@ -9,6 +9,7 @@ class Link extends Model {
       'LEVELS_COUNT' => 'link_levels_count',
       'LEVEL_LINKS' => 'link_levels',
       'LINKS' => 'link_by_id',
+      'LEVEL_LINKS_VALUES' => 'link_level_values',
     };
 
   private function __construct(
@@ -26,7 +27,7 @@ class Link extends Model {
   }
 
   public function getLink(): string {
-    return $this->link;
+    return mb_convert_encoding($this->link, 'UTF-8');
   }
 
   // Create link for a given level.
@@ -98,6 +99,75 @@ class Link extends Model {
         invariant(
           is_array($link_array),
           '$link_array should be an array of Link',
+        );
+        return $link_array;
+      } else {
+        return array();
+      }
+    }
+  }
+
+  public static async function genAllLinksForGame(
+    bool $refresh = false,
+  ): Awaitable<Map<?int, ?Link>> {
+    $mc_result = self::getMCRecords('LEVEL_LINKS');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $links = array();
+      $result = await $db->queryf('SELECT * FROM links');
+      foreach ($result->mapRows() as $row) {
+        $links[intval($row->get('level_id'))][] = self::linkFromRow($row);
+      }
+      self::setMCRecords('LEVEL_LINKS', new Map($links));
+      $links = new Map($links);
+      invariant($links instanceof Map, 'links should be a Map of Link');
+      return $links;
+    } else {
+      invariant($mc_result instanceof Map, 'links should be of type Map');
+      invariant($mc_result instanceof Map, 'cache should be a Map of Link');
+      return $mc_result;
+    }
+  }
+
+  public static async function genAllLinksValues(
+    int $level_id,
+    bool $refresh = false,
+  ): Awaitable<array<string>> {
+    $mc_result = self::getMCRecords('LEVEL_LINKS_VALUES');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $link_values = array();
+      $links = await self::genAllLinksForGame();
+      invariant($links instanceof Map, 'link should be a Map of Link');
+      foreach ($links as $level => $link_arr) {
+        invariant(is_array($link_arr), 'link_arr should be an array of Link');
+        foreach ($link_arr as $link_obj) {
+          invariant(
+            $link_obj instanceof Link,
+            'link_obj should be of type Link',
+          );
+          $link_values[$level][] = $link_obj->getLink();
+        }
+      }
+      self::setMCRecords('LEVEL_LINKS_VALUES', new Map($link_values));
+      $link_values = new Map($link_values);
+      if ($link_values->contains($level_id)) {
+        $link_array = $link_values->get($level_id);
+        invariant(
+          is_array($link_array),
+          'link_array should be an array of string',
+        );
+        return $link_array;
+      } else {
+        return array();
+      }
+    } else {
+      invariant($mc_result instanceof Map, 'links should be of type Map');
+      if ($mc_result->contains($level_id)) {
+        $link_array = $mc_result->get($level_id);
+        invariant(
+          is_array($link_array),
+          'link_array should be an array of string',
         );
         return $link_array;
       } else {

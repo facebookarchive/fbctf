@@ -2,12 +2,13 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-/* HH_IGNORE_ERROR[1002] */
-SessionUtils::sessionStart();
-SessionUtils::enforceLogin();
-
-class WorldMapController {
+class WorldMapController extends ModuleController {
   public async function genRender(): Awaitable<:xhp> {
+
+    /* HH_IGNORE_ERROR[1002] */
+    SessionUtils::sessionStart();
+    SessionUtils::enforceLogin();
+
     $worldMap = await $this->genRenderWorldMap();
     return
       <svg
@@ -55,7 +56,7 @@ class WorldMapController {
         $data_captured = null;
 
         if ($level) {
-          $my_previous_score = await ScoreLog::genPreviousScore(
+          $my_previous_score = await ScoreLog::genAllPreviousScore(
             $level->getId(),
             SessionUtils::sessionTeam(),
             false,
@@ -106,5 +107,6 @@ class WorldMapController {
   }
 }
 
+/* HH_IGNORE_ERROR[1002] */
 $map = new WorldMapController();
-echo \HH\Asio\join($map->genRender());
+$map->sendRender();

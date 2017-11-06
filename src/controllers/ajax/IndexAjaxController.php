@@ -6,7 +6,7 @@ class IndexAjaxController extends AjaxController {
     return array(
       'POST' => array(
         'team_id' => FILTER_VALIDATE_INT,
-        'teamname' => FILTER_UNSAFE_RAW,
+        'team_name' => FILTER_UNSAFE_RAW,
         'password' => FILTER_UNSAFE_RAW,
         'logo' => array(
           'filter' => FILTER_VALIDATE_REGEXP,
@@ -43,7 +43,7 @@ class IndexAjaxController extends AjaxController {
         return Utils::error_response('Invalid action', 'index');
       case 'register_team':
         return await $this->genRegisterTeam(
-          must_have_string($params, 'teamname'),
+          must_have_string($params, 'team_name'),
           must_have_string($params, 'password'),
           strval(must_have_idx($params, 'token')),
           must_have_string($params, 'logo'),
@@ -62,7 +62,7 @@ class IndexAjaxController extends AjaxController {
         );
 
         return await $this->genRegisterTeam(
-          must_have_string($params, 'teamname'),
+          must_have_string($params, 'team_name'),
           must_have_string($params, 'password'),
           strval(must_have_idx($params, 'token')),
           must_have_string($params, 'logo'),
@@ -78,7 +78,7 @@ class IndexAjaxController extends AjaxController {
         if ($login_select->getValue() === '1') {
           $team_id = must_have_int($params, 'team_id');
         } else {
-          $team_name = must_have_string($params, 'teamname');
+          $team_name = must_have_string($params, 'team_name');
           $team_exists = await Team::genTeamExist($team_name);
           if ($team_exists) {
             $team = await Team::genTeamByName($team_name);
@@ -99,7 +99,7 @@ class IndexAjaxController extends AjaxController {
   }
 
   private async function genRegisterTeam(
-    string $teamname,
+    string $team_name,
     string $password,
     ?string $token,
     string $logo,
@@ -111,14 +111,25 @@ class IndexAjaxController extends AjaxController {
   ): Awaitable<string> {
     $ldap_password = $password;
 
+    $awaitables = Map {
+      'registration' => Configuration::gen('registration'),
+      'login_strongpasswords' => Configuration::gen('login_strongpasswords'),
+      'ldap' => Configuration::gen('ldap'),
+      'registration_type' => Configuration::gen('registration_type'),
+    };
+    $awaitables_results = await \HH\Asio\m($awaitables);
+
+    $registration = $awaitables_results['registration'];
+    $login_strongpasswords = $awaitables_results['login_strongpasswords'];
+    $ldap = $awaitables_results['ldap'];
+    $registration_type = $awaitables_results['registration_type'];
+
     // Check if registration is enabled
-    $registration = await Configuration::gen('registration');
     if ($registration->getValue() === '0') {
       return Utils::error_response('Registration failed', 'registration');
     }
 
     // Check if strongs passwords are enforced
-    $login_strongpasswords = await Configuration::gen('login_strongpasswords');
     if ($login_strongpasswords->getValue() !== '0') {
       $password_type = await Configuration::genCurrentPasswordType();
       if (!preg_match(strval($password_type->getValue()), $password)) {
@@ -127,13 +138,15 @@ class IndexAjaxController extends AjaxController {
     }
 
     // Check if ldap is enabled and verify credentials if successful
-    $ldap = await Configuration::gen('ldap');
     $ldap_password = '';
     if ($ldap->getValue() === '1') {
       // Get server information from configuration
-      $ldap_server = await Configuration::gen('ldap_server');
-      $ldap_port = await Configuration::gen('ldap_port');
-      $ldap_domain_suffix = await Configuration::gen('ldap_domain_suffix');
+      list($ldap_server, $ldap_port, $ldap_domain_suffix) =
+        await \HH\Asio\va(
+          Configuration::gen('ldap_server'),
+          Configuration::gen('ldap_port'),
+          Configuration::gen('ldap_domain_suffix'),
+        );
       // connect to ldap server
       $ldapconn = ldap_connect(
         $ldap_server->getValue(),
@@ -144,10 +157,10 @@ class IndexAjaxController extends AjaxController {
           'Could not connect to LDAP server',
           'registration',
         );
-      $teamname = trim($teamname);
+      $team_name = trim($team_name);
       $bind = ldap_bind(
         $ldapconn,
-        $teamname.$ldap_domain_suffix->getValue(),
+        $team_name.$ldap_domain_suffix->getValue(),
         $password,
       );
       if (!$bind)
@@ -157,14 +170,10 @@ class IndexAjaxController extends AjaxController {
       // This will help avoid leaking users ldap passwords if the server's database
       // is compromised.
       $ldap_password = $password;
-      $password = strval(gmp_strval(
-        gmp_init(bin2hex(openssl_random_pseudo_bytes(16)), 16),
-        62,
-      ));
+      $password = strval(bin2hex(random_bytes(100)));
     }
 
     // Check if tokenized registration is enabled
-    $registration_type = await Configuration::gen('registration_type');
     if ($registration_type->getValue() === '2') {
       $token_check = await Token::genCheck((string) $token);
       // Check provided token
@@ -185,18 +194,18 @@ class IndexAjaxController extends AjaxController {
       }
     }
 
-    $check_exists = await Logo::genCheckExists($logo_name);
-    if (!$check_exists) {
+    $logo_exists = await Logo::genCheckExists($logo_name);
+    if (!$logo_exists) {
       $logo_name = await Logo::genRandomLogo();
     }
 
     // Check if team name is not empty or just spaces
-    if (trim($teamname) === '') {
+    if (trim($team_name) === '') {
       return Utils::error_response('Registration failed', 'registration');
     }
 
     // Trim team name to 20 chars, to avoid breaking UI
-    $shortname = substr($teamname, 0, 20);
+    $shortname = substr($team_name, 0, 20);
 
     // Verify that this team name is not created yet
     $team_exists = await Team::genTeamExist($shortname);
@@ -236,10 +245,11 @@ class IndexAjaxController extends AjaxController {
     string $password,
   ): Awaitable<string> {
     // Verify credentials first so we can allow admins to login regardless of the login setting
-    $team = await Team::genVerifyCredentials($team_id, $password);
-
+    list($team, $login) = await \HH\Asio\va(
+      Team::genVerifyCredentials($team_id, $password),
+      Configuration::gen('login'),
+    );
     // Check if login is disabled and this isn't an admin
-    $login = await Configuration::gen('login');
     if (($login->getValue() === '0') &&
         ($team === null || $team->getAdmin() === false)) {
       return Utils::error_response('Login failed', 'login');
@@ -253,10 +263,7 @@ class IndexAjaxController extends AjaxController {
         SessionUtils::sessionSet('name', $team->getName());
         SessionUtils::sessionSet(
           'csrf_token',
-          (string) gmp_strval(
-            gmp_init(bin2hex(openssl_random_pseudo_bytes(16)), 16),
-            62,
-          ),
+          (string) strval(bin2hex(random_bytes(100))),
         );
         SessionUtils::sessionSet(
           'IP',

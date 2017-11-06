@@ -2,41 +2,41 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-/* HH_IGNORE_ERROR[1002] */
-SessionUtils::sessionStart();
-SessionUtils::enforceLogin();
-
 class MapDataController extends DataController {
   public async function genGenerateData(): Awaitable<void> {
+
+    /* HH_IGNORE_ERROR[1002] */
+    SessionUtils::sessionStart();
+    SessionUtils::enforceLogin();
+
     $map_data = (object) array();
 
     $my_team_id = SessionUtils::sessionTeam();
     $my_name = SessionUtils::sessionTeamName();
 
-    $all_levels = await Level::genAllLevels();
-    $enabled_countries = await Country::genAllEnabledCountriesForMap();
-
-    $levels_map = Map {};
-    foreach ($all_levels as $level) {
-      $levels_map[$level->getEntityId()] = $level;
-    }
+    list($all_levels, $enabled_countries) = await \HH\Asio\va(
+      Level::genAllLevelsCountryMap(),
+      Country::genAllEnabledCountriesForMap(),
+    );
 
     foreach ($enabled_countries as $country) {
-      $country_level = $levels_map->get($country->getId());
+      $country_level = $all_levels->get($country->getId());
       $is_active_level =
         $country_level !== null && $country_level->getActive();
       $active = ($country->getUsed() && $is_active_level) ? 'active' : '';
       if ($country_level) {
-        $my_previous_score = await ScoreLog::genPreviousScore(
-          $country_level->getId(),
-          $my_team_id,
-          false,
-        );
-        $other_previous_score = await ScoreLog::genPreviousScore(
-          $country_level->getId(),
-          $my_team_id,
-          true,
-        );
+        list($my_previous_score, $other_previous_score) = await \HH\Asio\va(
+          ScoreLog::genAllPreviousScore(
+            $country_level->getId(),
+            $my_team_id,
+            false,
+          ),
+          ScoreLog::genPreviousScore(
+            $country_level->getId(),
+            $my_team_id,
+            true,
+          ),
+        ); // TODO: Combine Awaits
 
         // If my team has scored
         if ($my_previous_score) {
@@ -46,7 +46,7 @@ class MapDataController extends DataController {
         } else if ($other_previous_score) {
           $captured_by = 'opponent';
           $completed_by =
-            await MultiTeam::genCompletedLevel($country_level->getId());
+            await MultiTeam::genCompletedLevel($country_level->getId()); // TODO: Combine Awaits
           $data_captured = '';
           foreach ($completed_by as $c) {
             $data_captured .= ' '.$c->getName();
@@ -74,4 +74,4 @@ class MapDataController extends DataController {
 }
 
 $map = new MapDataController();
-\HH\Asio\join($map->genGenerateData());
+$map->sendData();

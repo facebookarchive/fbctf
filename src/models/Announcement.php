@@ -18,7 +18,7 @@ class Announcement extends Model {
   }
 
   public function getAnnouncement(): string {
-    return $this->announcement;
+    return mb_convert_encoding($this->announcement, 'UTF-8');
   }
 
   public function getTs(): string {
@@ -50,8 +50,10 @@ class Announcement extends Model {
   public static async function genCreateAuto(
     string $announcement,
   ): Awaitable<void> {
-    $config_game = await Configuration::gen('game');
-    $config_pause = await Configuration::gen('game_paused');
+    list($config_game, $config_pause) = await \HH\Asio\va(
+      Configuration::gen('game'),
+      Configuration::gen('game_paused'),
+    );
     if ((intval($config_game->getValue()) === 1) &&
         (intval($config_pause->getValue()) === 0)) {
       $auto_announce = await Configuration::gen('auto_announce');

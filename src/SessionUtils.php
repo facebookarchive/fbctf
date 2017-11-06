@@ -110,14 +110,14 @@ class SessionUtils {
   public static function enforceLogin(): void {
     /* HH_IGNORE_ERROR[2050] */
     if (!self::sessionActive()) {
-      throw new IndexRedirectException();
+      throw new LoginRedirectException();
     }
   }
 
   public static function enforceAdmin(): void {
     /* HH_IGNORE_ERROR[2050] */
     if (!array_key_exists('admin', $_SESSION)) {
-      throw new IndexRedirectException();
+      throw new LoginRedirectException();
     }
   }
 

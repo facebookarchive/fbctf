@@ -60,11 +60,20 @@ Admin Nav
   }
 }
 
+.admin-nav-controls {
+  text-align: center;
+  padding-top: 20px;
+
+  a {
+    margin: 20px auto 20px;
+    border-top: 1px solid $blue-border;
+  }
+}
+
 .admin-nav--footer {
   @include purista-bold;
 
   text-align: center;
-  padding-top: 20px;
 
   .branding-el {
     display: block;

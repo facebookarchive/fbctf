@@ -2,35 +2,41 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-/* HH_IGNORE_ERROR[1002] */
-SessionUtils::sessionStart();
-SessionUtils::enforceLogin();
-
 class ConfigurationController extends DataController {
-  // Refresh rate for teams/leaderboard in milliseconds
-  private string $teams_cycle = "5000";
-  // Refresh rate for map/announcements in milliseconds
-  private string $map_cycle = "5000";
-  // Refresh rate for configuration values in milliseconds
-  private string $conf_cycle = "10000";
-  // Refresh rate for commands in milliseconds
-  private string $cmd_cycle = "10000";
 
   public async function genGenerateData(): Awaitable<void> {
+
+    /* HH_IGNORE_ERROR[1002] */
+    SessionUtils::sessionStart();
+    SessionUtils::enforceLogin();
+
     $conf_data = (object) array();
 
     $control = new Control();
 
-    $gameboard = await Configuration::gen('gameboard');
+    $awaitables = Map {
+      'gameboard' => Configuration::gen('gameboard'),
+      'gameboard_cycle' => Configuration::gen('gameboard_cycle'),
+      'conf_cycle' => Configuration::gen('conf_cycle'),
+    };
+    $awaitables_results = await \HH\Asio\m($awaitables);
+
+    $gameboard = $awaitables_results['gameboard'];
+    // Refresh rate for teams/leaderboard in milliseconds
+    // Refresh rate for map/announcements in milliseconds
+    $gameboard_cycle = $awaitables_results['gameboard_cycle'];
+    // Refresh rate for configuration values in milliseconds
+    // Refresh rate for commands in milliseconds
+    $conf_cycle = $awaitables_results['conf_cycle'];
 
     /* HH_FIXME[1002] */
     /* HH_FIXME[2011] */
     $conf_data->{'currentTeam'} = SessionUtils::sessionTeamName();
     $conf_data->{'gameboard'} = $gameboard->getValue();
-    $conf_data->{'refreshTeams'} = $this->teams_cycle;
-    $conf_data->{'refreshMap'} = $this->map_cycle;
-    $conf_data->{'refreshConf'} = $this->conf_cycle;
-    $conf_data->{'refreshCmd'} = $this->cmd_cycle;
+    $conf_data->{'refreshTeams'} = ($gameboard_cycle->getValue()) * 1000;
+    $conf_data->{'refreshMap'} = ($gameboard_cycle->getValue()) * 1000;
+    $conf_data->{'refreshConf'} = ($conf_cycle->getValue()) * 1000;
+    $conf_data->{'refreshCmd'} = ($conf_cycle->getValue()) * 1000;
     $conf_data->{'progressiveCount'} = await Progressive::genCount();
 
     $this->jsonSend($conf_data);
@@ -38,4 +44,4 @@ class ConfigurationController extends DataController {
 }
 
 $confController = new ConfigurationController();
-\HH\Asio\join($confController->genGenerateData());
+$confController->sendData();

@@ -2,12 +2,13 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-/* HH_IGNORE_ERROR[1002] */
-SessionUtils::sessionStart();
-SessionUtils::enforceLogin();
-
-class FilterModuleController {
+class FilterModuleController extends ModuleController {
   public async function genRender(): Awaitable<:xhp> {
+
+    /* HH_IGNORE_ERROR[1002] */
+    SessionUtils::sessionStart();
+    SessionUtils::enforceLogin();
+
     await tr_start();
     $categories_ul = <ul class="radio-list"></ul>;
     $categories_ul->appendChild(
@@ -134,5 +135,6 @@ class FilterModuleController {
   }
 }
 
+/* HH_IGNORE_ERROR[1002] */
 $filter_generated = new FilterModuleController();
-echo \HH\Asio\join($filter_generated->genRender());
+$filter_generated->sendRender();

@@ -8,22 +8,18 @@ abstract class Controller {
   abstract protected function genRenderBody(string $page): Awaitable<:xhp>;
 
   public async function genRenderBranding(): Awaitable<:xhp> {
-    $awaitables = Map {
-      'custom_logo' => Configuration::gen('custom_logo'),
-      'custom_byline' => Configuration::gen('custom_byline'),
-      'custom_logo_image' => Configuration::gen('custom_logo_image'),
-    };
-    $results = await \HH\Asio\m($awaitables);
-    $branding = $results['custom_logo'];
-    $custom_byline = $results['custom_byline'];
-    if ($branding->getValue() === '0') {
-      $branding_xhp = 
-        <fbbranding
-          brandingText={tr(strval($custom_byline->getValue()))}
-        />;
+    list($custom_branding, $custom_byline, $custom_logo_image) =
+      await \HH\Asio\va(
+        Configuration::gen('custom_logo'),
+        Configuration::gen('custom_byline'),
+        Configuration::gen('custom_logo_image'),
+      );
+
+    if ($custom_branding->getValue() === '0') {
+      $branding_xhp =
+        <fbbranding brandingText={tr(strval($custom_byline->getValue()))} />;
     } else {
-      $custom_logo_image = $results['custom_logo_image'];
-      $branding_xhp = 
+      $branding_xhp =
         <custombranding
           brandingText={strval($custom_byline->getValue())}
           brandingLogo={strval($custom_logo_image->getValue())}
@@ -34,8 +30,10 @@ abstract class Controller {
 
   public async function genRender(): Awaitable<:xhp> {
     $page = $this->processRequest();
-    $body = await $this->genRenderBody($page);
-    $config = await Configuration::gen('language');
+    list($body, $config) = await \HH\Asio\va(
+      $this->genRenderBody($page),
+      Configuration::gen('language'),
+    );
     $language = $config->getValue();
     if (!preg_match('/^\w{2}$/', $language)) {
       $language = 'en';

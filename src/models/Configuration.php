@@ -2,7 +2,16 @@
 
 class Configuration extends Model {
 
-  const string MC_KEY = 'configuration:';
+  protected static string $MC_KEY = 'configuration:';
+
+  protected static Map<string, string>
+    $MC_KEYS = Map {
+      'CONFIGURATION' => 'config_field',
+      'FACEBOOK_INTEGRATION_APP_ID' => 'integration_facebook_app_id',
+      'FACEBOOK_INTEGRATION_APP_SECRET' =>
+        'integration_facebook_app_secret',
+      'GOOGLE_INTEGRATION_FILE' => 'integration_google_file',
+    };
 
   private function __construct(
     private int $id,
@@ -28,23 +37,52 @@ class Configuration extends Model {
   }
 
   // Get configuration entry.
-  public static async function gen(string $field): Awaitable<Configuration> {
-    $mc = self::getMc();
-    $key = self::MC_KEY.$field;
-    $mc_result = $mc->get($key);
-    if ($mc_result) {
-      $result = $mc_result;
-    } else {
+  public static async function gen(
+    string $field,
+    bool $refresh = false,
+  ): Awaitable<Configuration> {
+    $mc_result = self::getMCRecords('CONFIGURATION');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $db = await self::genDb();
-      $db_result = await $db->queryf(
-        'SELECT * FROM configuration WHERE field = %s LIMIT 1',
+      $config_values = Map {};
+      $result = await $db->queryf('SELECT * FROM configuration');
+      foreach ($result->mapRows() as $row) {
+        $config_values->add(
+          Pair {
+            strval($row->get('field')),
+            self::configurationFromRow($row->toArray()),
+          },
+        );
+      }
+      self::setMCRecords('CONFIGURATION', $config_values);
+      invariant(
+        $config_values->contains($field) !== false,
+        'config value not found (db): %s',
         $field,
       );
-      invariant($db_result->numRows() === 1, 'Expected exactly one result');
-      $result = firstx($db_result->mapRows())->toArray();
-      $mc->set($key, $result);
+      $config = $config_values->get($field);
+      invariant(
+        $config instanceof Configuration,
+        'config cache value should of type Configuration and not null',
+      );
+      return $config;
+    } else {
+      invariant(
+        $mc_result instanceof Map,
+        'config cache return should be of type Map and not null',
+      );
+      invariant(
+        $mc_result->contains($field) !== false,
+        'config value not found (cache): %s',
+        $field,
+      );
+      $config = $mc_result->get($field);
+      invariant(
+        $config instanceof Configuration,
+        'config cache value should of type Configuration and not null',
+      );
+      return $config;
     }
-    return self::configurationFromRow($result);
   }
 
   // Change configuration field.
@@ -62,7 +100,7 @@ class Configuration extends Model {
       await Session::genDeleteAllUnprotected();
     }
 
-    self::getMc()->delete(self::MC_KEY.$field);
+    self::invalidateMCRecords(); // Invalidate Configuration data.
   }
 
   // Check if field is valid.
@@ -96,10 +134,11 @@ class Configuration extends Model {
   public static async function genCurrentPasswordType(
   ): Awaitable<Configuration> {
     $db = await self::genDb();
-    $db_result = await $db->queryf(
-      'SELECT * FROM password_types WHERE field = (SELECT value FROM configuration WHERE field = %s) LIMIT 1',
-      'password_type'
-    );
+    $db_result =
+      await $db->queryf(
+        'SELECT * FROM password_types WHERE field = (SELECT value FROM configuration WHERE field = %s) LIMIT 1',
+        'password_type',
+      );
 
     invariant($db_result->numRows() === 1, 'Expected exactly one result');
     $result = firstx($db_result->mapRows())->toArray();
@@ -132,26 +171,69 @@ class Configuration extends Model {
     );
   }
 
-  public static function genGoogleOAuthFileExists(): bool {
-    $settings_file = '../../settings.ini';
-    $config = parse_ini_file($settings_file);
-
-    if ((array_key_exists('GOOGLE_OAUTH_FILE', $config) === true) &&
-        (file_exists($config['GOOGLE_OAUTH_FILE']) === true)) {
-      return true;
-    }
-    return false;
+  public static function getFacebookOAuthSettingsExists(
+    bool $refresh = false,
+  ): bool {
+    return (self::getFacebookOAuthSettingsAppId($refresh) !== '' &&
+            self::getFacebookOAuthSettingsAppSecret($refresh) !== '');
   }
 
-  public static function genGoogleOAuthFile(): string {
-    $settings_file = '../../settings.ini';
-    $config = parse_ini_file($settings_file);
-
-    if ((array_key_exists('GOOGLE_OAUTH_FILE', $config) === true) &&
-        (file_exists($config['GOOGLE_OAUTH_FILE']) === true)) {
-      return strval($config['GOOGLE_OAUTH_FILE']);
+  public static function getFacebookOAuthSettingsAppId(
+    bool $refresh = false,
+  ): string {
+    $mc_result = self::getMCRecords('FACEBOOK_INTEGRATION_APP_ID');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $settings_file = '../../settings.ini';
+      $config = parse_ini_file($settings_file);
+      $app_id = '';
+      if (array_key_exists('FACEBOOK_OAUTH_APP_ID', $config) === true) {
+        $app_id = strval($config['FACEBOOK_OAUTH_APP_ID']);
+      }
+      self::setMCRecords('FACEBOOK_INTEGRATION_APP_ID', $app_id);
+      return $app_id;
+    } else {
+      return strval($mc_result);
     }
+  }
 
-    return '';
+  public static function getFacebookOAuthSettingsAppSecret(
+    bool $refresh = false,
+  ): string {
+    $mc_result = self::getMCRecords('FACEBOOK_INTEGRATION_APP_SECRET');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $settings_file = '../../settings.ini';
+      $config = parse_ini_file($settings_file);
+      $app_secret = '';
+      if (array_key_exists('FACEBOOK_OAUTH_APP_SECRET', $config) === true) {
+        $app_secret = strval($config['FACEBOOK_OAUTH_APP_SECRET']);
+      }
+      self::setMCRecords('FACEBOOK_INTEGRATION_APP_SECRET', $app_secret);
+      return $app_secret;
+    } else {
+      return strval($mc_result);
+    }
+  }
+
+  public static function getGoogleOAuthFileExists(
+    bool $refresh = false,
+  ): bool {
+    return (self::getGoogleOAuthFile($refresh) !== '');
+  }
+
+  public static function getGoogleOAuthFile(bool $refresh = false): string {
+    $mc_result = self::getMCRecords('GOOGLE_INTEGRATION_FILE');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $settings_file = '../../settings.ini';
+      $config = parse_ini_file($settings_file);
+      $oauth_file = '';
+      if ((array_key_exists('GOOGLE_OAUTH_FILE', $config) === true) &&
+          (file_exists($config['GOOGLE_OAUTH_FILE']) === true)) {
+        $oauth_file = strval($config['GOOGLE_OAUTH_FILE']);
+      }
+      self::setMCRecords('GOOGLE_INTEGRATION_FILE', $oauth_file);
+      return $oauth_file;
+    } else {
+      return strval($mc_result);
+    }
   }
 }

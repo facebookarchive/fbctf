@@ -164,11 +164,20 @@ class Logo extends Model implements Importable, Exportable {
         await $db->queryf(
           'SELECT * FROM logos WHERE enabled = 1 AND used = 0 AND protected = 0 AND custom = 0',
         );
-
-      foreach ($result->mapRows() as $row) {
-        $all_enabled_logos[] = self::logoFromRow($row);
+      //  If all logos are used, provide all logos with no restriction on unused.
+      if ($result->numRows() === 0) {
+        $all_logos = await self::genAllLogos();
+        $all_enabled_logos = $all_logos->toArray();
+      } else {
+        foreach ($result->mapRows() as $row) {
+          $all_enabled_logos[] = self::logoFromRow($row);
+        }
       }
       self::setMCRecords('ALL_ENABLED_LOGOS', $all_enabled_logos);
+      invariant(
+        is_array($all_enabled_logos),
+        'all_enabled_logos should be an array of Logo',
+      );
       return $all_enabled_logos;
     } else {
       invariant(
@@ -197,7 +206,7 @@ class Logo extends Model implements Importable, Exportable {
   ): Awaitable<bool> {
     foreach ($elements as $logo) {
       $name = must_have_string($logo, 'name');
-      $exist = await self::genCheckExists($name);
+      $exist = await self::genCheckExists($name); // TODO: Combine Awaits
       if (!$exist) {
         await self::genCreate(
           (bool) must_have_idx($logo, 'used'),
@@ -206,7 +215,7 @@ class Logo extends Model implements Importable, Exportable {
           (bool) must_have_idx($logo, 'custom'),
           $name,
           must_have_string($logo, 'logo'),
-        );
+        ); // TODO: Combine Awaits
       }
     }
     return true;

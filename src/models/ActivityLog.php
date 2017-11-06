@@ -18,6 +18,7 @@ class ActivityLog extends Model {
     private string $formatted_subject = '',
     private string $formatted_entity = '',
     private string $formatted_message = '',
+    private bool $visible = true,
   ) {
     $formatted_subject =
       \HH\Asio\join(self::genFormatString("%s", $this->subject));
@@ -28,6 +29,9 @@ class ActivityLog extends Model {
     $formatted_message =
       \HH\Asio\join(self::genFormatString($this->message, $this->arguments));
     $this->formatted_message = $formatted_message;
+    $visible =
+      \HH\Asio\join(self::genLogEntryVisible($this->subject, $this->action));
+    $this->visible = $visible;
   }
 
   public function getId(): int {
@@ -70,6 +74,10 @@ class ActivityLog extends Model {
     return $this->ts;
   }
 
+  public function getVisible(): bool {
+    return $this->visible;
+  }
+
   private static function activitylogFromRow(
     Map<string, string> $row,
   ): ActivityLog {
@@ -97,7 +105,7 @@ class ActivityLog extends Model {
           case "Team":
             $team_exists = await Team::genTeamExistById(intval($id));
             if ($team_exists === true) {
-              $team = await Team::genTeam(intval($id));
+              $team = await MultiTeam::genTeam(intval($id));
               $variables[] = $team->getName();
             } else {
               return '';
@@ -131,6 +139,21 @@ class ActivityLog extends Model {
       return $formatted;
     }
     return $string;
+  }
+
+  public static async function genLogEntryVisible(
+    string $subject,
+    string $action,
+  ): Awaitable<bool> {
+    if ($subject === '') {
+      return true;
+    }
+    list($class, $id) = explode(':', $subject);
+    if ($class === 'Team' && $action === 'captured') {
+      $team = await MultiTeam::genTeam(intval($id));
+      return $team->getVisible();
+    }
+    return true;
   }
 
   public static async function genCreate(
@@ -191,8 +214,10 @@ class ActivityLog extends Model {
     string $entity_class,
     int $entity_id,
   ): Awaitable<void> {
-    $config_game = await Configuration::gen('game');
-    $config_pause = await Configuration::gen('game_paused');
+    list($config_game, $config_pause) = await \HH\Asio\va(
+      Configuration::gen('game'),
+      Configuration::gen('game_paused'),
+    );
     if ((intval($config_game->getValue()) === 1) &&
         (intval($config_pause->getValue()) === 0)) {
       await self::genCreate(
@@ -255,8 +280,9 @@ class ActivityLog extends Model {
     if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $db = await self::genDb();
       $activity_log_lines = array();
-      $result =
-        await $db->queryf('SELECT * FROM activity_log ORDER BY ts DESC');
+      $result = await $db->query(
+        'SELECT * FROM activity_log ORDER BY ts DESC LIMIT 100',
+      );
       foreach ($result->mapRows() as $row) {
         $activity_log = self::activitylogFromRow($row);
         if (($activity_log->getFormattedMessage() !== '') ||

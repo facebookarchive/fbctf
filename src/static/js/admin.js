@@ -574,6 +574,14 @@ function flushMemcached() {
   sendAdminRequest(flush_memcached, true);
 }
 
+//Reset Game Schedule
+function resetGameSchedule() {
+  var reset_game_schedule = {
+    action: 'reset_game_schedule'
+  };
+  sendAdminRequest(reset_game_schedule, true);
+}
+
 // Create tokens
 function createTokens() {
   var create_data = {
@@ -1099,6 +1107,8 @@ module.exports = {
         exportCurrentCategories();
       } else if (action === 'flush-memcached') {
         flushMemcached();
+      } else if (action === 'reset-game-schedule') {
+        resetGameSchedule();
       } else if (action === 'create-tokens') {
         createTokens();
       } else if (action === 'export-tokens') {
@@ -1212,7 +1222,7 @@ module.exports = {
       var start_day = $('input[type="number"][name="fb--schedule--start_day"]')[0].value;
       var start_hour = $('input[type="number"][name="fb--schedule--start_hour"]')[0].value;
       var start_min = $('input[type="number"][name="fb--schedule--start_min"]')[0].value;
-      var start_ts = new Date(start_month + "/" + start_day + "/" + start_year + " " + start_hour + ":" + start_min).getTime() / 1000;
+      var start_ts = Date.UTC(start_year, start_month - 1, start_day, start_hour, start_min) / 1000;
       if ($.isNumeric(start_ts)) {
         changeConfiguration("start_ts", start_ts);
         changeConfiguration("next_game", start_ts);
@@ -1222,7 +1232,7 @@ module.exports = {
       var end_day = $('input[type="number"][name="fb--schedule--end_day"]')[0].value;
       var end_hour = $('input[type="number"][name="fb--schedule--end_hour"]')[0].value;
       var end_min = $('input[type="number"][name="fb--schedule--end_min"]')[0].value;
-      var end_ts = new Date(end_month + "/" + end_day + "/" + end_year + " " + end_hour + ":" + end_min).getTime() / 1000;
+      var end_ts = Date.UTC(end_year, end_month - 1, end_day, end_hour, end_min) / 1000;
       if ($.isNumeric(end_ts)) {
         changeConfiguration("end_ts", end_ts);
       }

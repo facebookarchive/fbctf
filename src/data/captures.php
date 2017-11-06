@@ -2,7 +2,7 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-class AnnouncementsDataController extends DataController {
+class CapturesController extends DataController {
   public async function genGenerateData(): Awaitable<void> {
 
     /* HH_IGNORE_ERROR[1002] */
@@ -11,9 +11,12 @@ class AnnouncementsDataController extends DataController {
 
     $data = array();
 
-    $all_announcements = await Announcement::genAllAnnouncements();
-    foreach ($all_announcements as $announcement) {
-      array_push($data, $announcement->getAnnouncement());
+    $my_team_id = SessionUtils::sessionTeam();
+
+    $captures = await ScoreLog::genAllScoresByTeam($my_team_id);
+
+    foreach ($captures as $capture) {
+      $data[] = $capture->getLevelId();
     }
 
     $this->jsonSend($data);
@@ -21,5 +24,5 @@ class AnnouncementsDataController extends DataController {
 }
 
 /* HH_IGNORE_ERROR[1002] */
-$announcementsData = new AnnouncementsDataController();
-$announcementsData->sendData();
+$capturesData = new CapturesController();
+$capturesData->sendData();

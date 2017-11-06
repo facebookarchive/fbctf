@@ -25,6 +25,11 @@ class Db {
 
   private function __clone(): void {}
 
+  public static function getDatabaseStats(): array<string, mixed> {
+    $db = self::getInstance();
+    return $db->pool->getPoolStats();
+  }
+
   public function getBackupCmd(): string {
     $usr = must_have_idx($this->config, 'DB_USERNAME');
     $pwd = must_have_idx($this->config, 'DB_PASSWORD');

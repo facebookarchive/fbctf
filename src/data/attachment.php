@@ -29,13 +29,10 @@ class AttachmentDataController extends DataController {
       }
     }
 
-    header('Content-Type: application/octet-stream');
-    header("Content-Transfer-Encoding: Binary");
-    header('Content-disposition: attachment; filename="'.$filename.'"');
-    print $data;
+    $this->downloadSend($filename, $data);
   }
 }
 
 /* HH_IGNORE_ERROR[1002] */
-$attachment_file = new AttachmentDataController();
-\HH\Asio\join($attachment_file->genGenerateData());
+$attachmentData = new AttachmentDataController();
+$attachmentData->sendData();

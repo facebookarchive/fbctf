@@ -2,7 +2,7 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-class LeaderboardModuleViewController {
+class LeaderboardModuleViewController extends ModuleController {
   public async function genRender(): Awaitable<:xhp> {
     await tr_start();
     $leaderboard_ul = <ul></ul>;
@@ -46,4 +46,4 @@ class LeaderboardModuleViewController {
 
 /* HH_IGNORE_ERROR[1002] */
 $leaderboard_generated = new LeaderboardModuleViewController();
-echo \HH\Asio\join($leaderboard_generated->genRender());
+$leaderboard_generated->sendRender();

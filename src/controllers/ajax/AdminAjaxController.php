@@ -27,7 +27,7 @@ class AdminAjaxController extends AjaxController {
         'logo_id' => FILTER_VALIDATE_INT,
         'logo' => array(
           'filter' => FILTER_VALIDATE_REGEXP,
-          'options' => array('regexp' => '/^[\w-]+$/'),
+          'options' => array('regexp' => '/^[\w-.]+$/'),
         ),
         'logo_b64' => array(
           'filter' => FILTER_VALIDATE_REGEXP,
@@ -143,6 +143,7 @@ class AdminAjaxController extends AjaxController {
       'import_levels',
       'import_categories',
       'import_attachments',
+      'reset_game_schedule',
       'flush_memcached',
       'reset_database',
     );
@@ -160,8 +161,10 @@ class AdminAjaxController extends AjaxController {
       }
     }
 
-    $default_bonus = await Configuration::gen('default_bonus');
-    $default_bonusdec = await Configuration::gen('default_bonusdec');
+    list($default_bonus, $default_bonusdec) = await \HH\Asio\va(
+      Configuration::gen('default_bonus'),
+      Configuration::gen('default_bonusdec'),
+    );
 
     switch ($action) {
       case 'none':
@@ -334,10 +337,11 @@ class AdminAjaxController extends AjaxController {
         );
         return Utils::ok_response('Success', 'admin');
       case 'delete_team':
-        // Delete team sessions
-        await Session::genDeleteByTeam(must_have_int($params, 'team_id'));
-        // Delete team
-        await Team::genDelete(must_have_int($params, 'team_id'));
+        // Delete team and associated sessions
+        await \HH\Asio\va(
+          Session::genDeleteByTeam(must_have_int($params, 'team_id')),
+          Team::genDelete(must_have_int($params, 'team_id')),
+        );
         return Utils::ok_response('Deleted successfully', 'admin');
       case 'update_session':
         await Session::genUpdate(
@@ -511,6 +515,13 @@ class AdminAjaxController extends AjaxController {
           return Utils::ok_response('Success', 'admin');
         }
         return Utils::error_response('Error importing', 'admin');
+      case 'reset_game_schedule':
+        await \HH\Asio\va(
+          Configuration::genUpdate('start_ts', '0'), // Put timestamps to zero
+          Configuration::genUpdate('end_ts', '0'),
+          Configuration::genUpdate('next_game', '0'),
+        );
+        return Utils::ok_response('Success', 'admin');
       case 'flush_memcached':
         $result = await Control::genFlushMemcached();
         if ($result) {

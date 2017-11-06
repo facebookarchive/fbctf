@@ -2,13 +2,15 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-class ActivityViewModeModuleController {
+class ActivityViewModeModuleController extends ModuleController {
   public async function genRender(): Awaitable<:xhp> {
     await tr_start();
     $activity_ul = <ul class="activity-stream"></ul>;
 
-    $all_activity = await Control::genAllActivity();
-    $config = await Configuration::gen('language');
+    list($all_activity, $config) = await \HH\Asio\va(
+      Control::genAllActivity(),
+      Configuration::gen('language'),
+    );
     $language = $config->getValue();
     foreach ($all_activity as $score) {
       $translated_country =
@@ -40,4 +42,4 @@ class ActivityViewModeModuleController {
 
 /* HH_IGNORE_ERROR[1002] */
 $activity_generated = new ActivityViewModeModuleController();
-echo \HH\Asio\join($activity_generated->genRender());
+$activity_generated->sendRender();

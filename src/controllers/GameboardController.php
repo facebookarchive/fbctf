@@ -4,7 +4,7 @@ class GameboardController extends Controller {
   <<__Override>>
   protected function getTitle(): string {
     $custom_org = \HH\Asio\join(Configuration::gen('custom_org'));
-    return tr($custom_org->getValue()). ' '. tr('CTF').' | '.tr('Gameboard');
+    return tr($custom_org->getValue()).' '.tr('CTF').' | '.tr('Gameboard');
   }
 
   <<__Override>>

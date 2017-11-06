@@ -43,10 +43,7 @@ class Token extends Model {
 
   private static function generate(): string {
     $token_len = 15;
-    $crypto_strong = True;
-    return md5(
-      base64_encode(openssl_random_pseudo_bytes($token_len, $crypto_strong)),
-    );
+    return md5(base64_encode(random_bytes($token_len)));
   }
 
   // Create token.

@@ -7,6 +7,7 @@ if (php_sapi_name() !== 'cli') {
 require_once (__DIR__.'/../Db.php');
 require_once (__DIR__.'/../Utils.php');
 require_once (__DIR__.'/../models/Model.php');
+require_once (__DIR__.'/../models/Cache.php');
 require_once (__DIR__.'/../models/Configuration.php');
 require_once (__DIR__.'/../models/Progressive.php');
 
