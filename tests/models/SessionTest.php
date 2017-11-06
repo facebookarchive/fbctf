@@ -18,7 +18,7 @@ class SessionTest extends FBCTFTest {
     $all = HH\Asio\join(Session::genAllSessions());
     $this->assertEquals(2, count($all));
 
-    $a = $all[0];
+    $a = $all[1];
     $this->assertEquals(2, $a->getId());
     $this->assertEquals('cookie2', $a->getCookie());
     $this->assertEquals('data2', $a->getData());

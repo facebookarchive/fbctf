@@ -176,7 +176,7 @@ DROP TABLE IF EXISTS `teams_data`;
 CREATE TABLE `teams_data` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
-  `name` text NOT NULL,
+  `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `created_ts` timestamp NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),

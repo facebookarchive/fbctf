@@ -119,7 +119,7 @@ CREATE TABLE `teams` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `active` tinyint(1) NOT NULL DEFAULT 1,
   `name` varchar(255) NOT NULL,
-  `password_hash` text NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
   `points` int(11) NOT NULL DEFAULT 0,
   `last_score` timestamp NOT NULL,
   `logo` text NOT NULL,
@@ -378,12 +378,16 @@ DROP TABLE IF EXISTS `scripts`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `scripts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `host` varchar(1024) NOT NULL,
   `ts` timestamp NULL,
   `pid` int(11) NOT NULL,
-  `name` text NOT NULL,
+  `name` varchar(255) NOT NULL,
   `cmd` text NOT NULL,
   `status` tinyint(1) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `host` (`host`),
+  KEY `status` (`status`),
+  KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

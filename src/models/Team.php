@@ -421,6 +421,10 @@ class Team extends Model implements Importable, Exportable {
       sprintf('DELETE FROM scores_log WHERE team_id = %d', $team_id),
       sprintf('DELETE FROM hints_log WHERE team_id = %d', $team_id),
       sprintf('DELETE FROM failures_log WHERE team_id = %d', $team_id),
+      sprintf(
+        'DELETE FROM activity_log WHERE subject = "Team:%d"',
+        $team_id,
+      ),
     };
     await $db->multiQuery($queries);
     MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.

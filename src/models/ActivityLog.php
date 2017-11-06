@@ -150,8 +150,12 @@ class ActivityLog extends Model {
     }
     list($class, $id) = explode(':', $subject);
     if ($class === 'Team' && $action === 'captured') {
-      $team = await MultiTeam::genTeam(intval($id));
-      return $team->getVisible();
+      $team_exists = await Team::genTeamExistById(intval($id));
+      if ($team_exists === true) {
+        $team = await MultiTeam::genTeam(intval($id));
+        return $team->getVisible();
+      } else
+        return false;
     }
     return true;
   }

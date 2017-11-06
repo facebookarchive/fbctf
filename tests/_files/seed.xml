@@ -153,6 +153,12 @@
       <value>0</value>
       <value>description</value>
     </row>
+    <row>
+      <value>6</value>
+      <value>leaderboard_limit</value>
+      <value>50</value>
+      <value>description</value>
+    </row>
   </table>
   <table name="categories">
     <column>id</column>
