@@ -1383,7 +1383,7 @@ class AdminController extends Controller {
     return
       <div>
         <header class="admin-page-header">
-          <h3>Game Controls</h3>
+          <h3>{tr('Game Controls')}</h3>
           <span class="admin-section--status">
             {tr('status_')}<span class="highlighted">{tr('OK')}</span>
           </span>
@@ -3858,7 +3858,7 @@ class AdminController extends Controller {
                 class={$highlighted_color}
                 href="#"
                 data-action={str_replace('_', '-', $highlighted_action)}>
-                {$action_text}
+                {tr($action_text)}
               </a>
             </header>
             <div class="fb-column-container">

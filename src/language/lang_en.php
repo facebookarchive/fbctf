@@ -25,6 +25,8 @@ $translations = array(
     'Login',
   'Soon' =>
     'Soon',
+  'In Progress' =>
+    'In Progress',
   'Upcoming Game' =>
     'Upcoming Game',
   '_days' =>
@@ -140,6 +142,8 @@ $translations = array(
     'View mode',
   'Tutorial' =>
     'Tutorial',
+  'Account' =>
+    'Account',
   'Scoreboard' =>
     'Scoreboard',
   'You' =>
@@ -227,14 +231,22 @@ $translations = array(
     'Bases Cycle (s)',
   'Default Bonus Dec' =>
     'Default Bonus Dec',
+  'Autorun Cycle (s)' =>
+    'Autorun Cycle (s)',
+  'Auto Announcements' =>
+    'Auto Announcements',
   'Game Schedule' =>
     'Game Schedule',
   'Game Start Year' =>
     'Game Start Year',
   'Game End Year' =>
     'Game End Year',
+  'Month' =>
+    'Month',
   'Day' =>
     'Day',
+  'Hour' =>
+    'Hour',
   'Minute' =>
     'Minute',
   'Timer' =>
@@ -247,6 +259,10 @@ $translations = array(
     'Begin Time',
   'Expected End Time' =>
     'Expected End Time',
+  'LiveSync' =>
+    'Livesync',
+  'Optional LiveSync Auth Key' =>
+    'Optional Livesync Auth Key',
   'Internationalization' =>
     'Internationalization',
   'Language' =>
@@ -255,6 +271,10 @@ $translations = array(
     'Branding',
   'Custom Logo' =>
     'Custom Logo',
+  'Custom Organization' =>
+    'Custom Organization',
+  'Custom Byline' =>
+    'Custom Byline',
   'Logo' =>
     'Logo',
   'Custom Text' =>
@@ -263,6 +283,8 @@ $translations = array(
     'DELETE',
   'Delete' =>
     'Delete',
+  'Announcement Controls' =>
+    'Announcement Controls',
   'No Announcements' =>
     'No Announcements',
   'Game Controls' =>
@@ -273,8 +295,16 @@ $translations = array(
     'Create',
   'General' =>
     'General',
-  'Back Up Database' =>
-    'Back Up Database',
+  'Utilities' =>
+    'Utilities',
+  'Flush Memcached' =>
+    'Flush Memcached',
+  'Reset Database' =>
+    'Reset Database',
+  'Restore Database' =>
+    'Restore Database',
+  'Backup Database' =>
+    'Backup Database',
   'Export Full Game' =>
     'Export Full Game',
   'Import Full Game' =>
@@ -291,6 +321,10 @@ $translations = array(
     'Import Levels',
   'Export Levels' =>
     'Export Levels',
+  'Import Attachments' =>
+    'Import Attachments',
+  'Export Attachments' =>
+    'Export Attachments',
   'Import Categories' =>
     'Import Categories',
   'Export Categories' =>
@@ -329,6 +363,10 @@ $translations = array(
     'Enabled',
   'Disabled' =>
     'Disabled',
+  'ENABLE' =>
+    'ENABLE',
+  'DISABLE' =>
+    'DISABLE',
   'Quiz Level' =>
     'Quiz Level',
   'Show Answer' =>
@@ -499,6 +537,8 @@ $translations = array(
     'End Game',
   'Begin Game' =>
     'Begin Game',
+  'Pause Game' =>
+    'Pause Game',
   'Game Admin' =>
     'Game Admin',
   'Controls' =>
@@ -576,12 +616,30 @@ $translations = array(
     'end_',
   'Are you sure you want to finish the current game?' =>
     'Are you sure you want to finish the current game?',
+  'pause_' =>
+    'pause_',
+  'Are you sure you want to pause the current game?' =>
+    'Are you sure you want to pause the current game?',
+  'unpause_' =>
+    'unpause_',
+  'Are you sure you want to unpause the current game?' =>
+    'Are you sure you want to unpause the current game?',
   'Are you sure you want to logout from the game?' =>
     'Are you sure you want to logout from the game?',
+  'delete_' =>
+    'delete_',
+  'Are you sure you want to delete this level? All data for this level will be irreversibly removed, including scores.' =>
+    'Are you sure you want to delete this level? All data for this level will be irreversibly removed, including scores.',
+  'Are you sure you want to delete this team? All data for this team will be irreversibly removed, including scoring logs. If you prefer to retain data, you can disable the team instead.' =>
+    'Are you sure you want to delete this team? All data for this team will be irreversibly removed, including scoring logs. If you prefer to retain data, you can disable the team instead.',
   'Saved' =>
     'Saved',
   'All changes have been successfully saved.' =>
     'All changes have been successfully saved.',
+  'Imported' =>
+    'Imported',
+  'Items have been imported successfully' =>
+    'Items have been imported successfully',
   'Error' =>
     'Error',
   'Sorry your form was not saved. Please correct the all errors and save again.' =>
@@ -590,6 +648,16 @@ $translations = array(
     'cancel_',
   'Are you sure you want to cancel? You have unsaved changes that will be reverted.' =>
     'Are you sure you want to cancel? You have unsaved changes that will be reverted.',
+  'Database' =>
+    'Database',
+  'restore_' =>
+    'restore_',
+  'Are you sure you want to restore the database? This will overwrite ALL existing data!' =>
+    'Are you sure you want to restore the database? This will overwrite ALL existing data!',
+  'reset_' =>
+    'reset_',
+  'Are you sure you want to reset the database? This will destroy ALL data! Admin accounts will remain.' =>
+    'Are you sure you want to reset the database? This will destroy ALL data! Admin accounts will remain.',
   'choose_logo' =>
     'choose_logo',
   'captured_' =>
@@ -684,6 +752,22 @@ $translations = array(
     'Next',
   'Skip to play' =>
     'Skip to play',
+  'account_' =>
+    'account_',
+  'Settings' =>
+    'Settings',
+  'Setup your FBCTF Live Sync credentials.  These credentials must be the SAME on all other FBCTF instances that you are linking. DO NOT use your account password.' =>
+    'Setup your FBCTF Live Sync credentials.  These credentials must be the SAME on all other FBCTF instances that you are linking. DO NOT use your account password.',
+  'Set your live sync username' =>
+    'Set your live sync username',
+  'Set your live sync password' =>
+    'Set your live sync password',
+  'Link Your Google Account' =>
+    'Link Your Google Account',
+  'Link your account with Google.  You may link your FBCTF account on this instance with your Google account.  Note that this will provide your email address to the administrators of this FBCTF instance.' =>
+    'Link your account with Google.  You may link your FBCTF account on this instance with your Google account.  Note that this will provide your email address to the administrators of this FBCTF instance.',
+  'Close' =>
+    'Close',
   'Powered By Facebook' =>
     'Powered By Facebook',
   'Active Directory / LDAP' =>
