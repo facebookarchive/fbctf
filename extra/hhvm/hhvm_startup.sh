@@ -2,7 +2,8 @@
 
 set -e
 
-service hhvm restart
+chown -R www-data:www-data /var/www/fbctf
+sudo -u www-data service hhvm restart
 
 while true; do
     if [[ -e /var/run/hhvm/sock ]]; then

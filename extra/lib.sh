@@ -59,7 +59,7 @@ function install_unison() {
 function repo_osquery() {
   log "Adding osquery repository keys"
   sudo DEBIAN_FRONTEND=noninteractive apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1484120AC4E9F8A1A577AEEE97A80C63C9D8B80B
-  sudo DEBIAN_FRONTEND=noninteractive add-apt-repository "deb [arch=amd64] https://osquery-packages.s3.amazonaws.com/trusty trusty main"
+  sudo DEBIAN_FRONTEND=noninteractive add-apt-repository "deb [arch=amd64] https://pkg.osquery.io/deb deb main"
 }
 
 function install_mysql() {
@@ -229,16 +229,14 @@ function install_hhvm() {
 
   package software-properties-common
 
-  log "Adding HHVM key"
+  log "Adding HHVM keys"
   sudo DEBIAN_FRONTEND=noninteractive apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0x5a16e7281be7a449
+  sudo DEBIAN_FRONTEND=noninteractive apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xB4112585D386EB94
 
   log "Adding HHVM repo"
-  sudo DEBIAN_FRONTEND=noninteractive add-apt-repository "deb http://dl.hhvm.com/ubuntu $(lsb_release -sc) main"
+  sudo DEBIAN_FRONTEND=noninteractive add-apt-repository "deb http://dl.hhvm.com/ubuntu xenial-lts-3.21 main"
 
   package_repo_update
-
-  log "Installing HHVM"
-  # Installing the package so the dependencies are installed too
   package hhvm
 
   log "Enabling HHVM to start by default"
@@ -274,7 +272,7 @@ function hhvm_performance() {
   cat "$__config" | sed "s|$__oldrepo|$__repofile|g" | sudo tee "$__config"
   sudo hhvm-repo-mode enable "$__path"
   sudo chown www-data:www-data "$__repofile"
-  sudo service hhvm start
+  sudo service hhvm restart
 }
 
 function install_composer() {
@@ -288,9 +286,6 @@ function install_composer() {
 }
 
 function install_nodejs() {
-  log "Removing node.js legacy version"
-  sudo DEBIAN_FRONTEND=noninteractive apt-get remove --purge nodejs -y
-
   log "Downloading and setting node.js version 6.x repo information"
   dl_pipe "https://deb.nodesource.com/setup_6.x" | sudo -E bash -
 
