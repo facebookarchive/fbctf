@@ -278,6 +278,7 @@
     <column>team_id</column>
     <column>created_ts</column>
     <column>last_access_ts</column>
+    <column>last_access_page</column>
     <row>
       <value>1</value>
       <value>cookie</value>
@@ -285,6 +286,7 @@
       <value>1</value>
       <value>2015-04-24 17:15:23</value>
       <value>2016-04-24 17:15:23</value>
+      <value>index</value>
     </row>
   </table>
   <table name="registration_tokens">
