@@ -278,7 +278,7 @@
     <column>team_id</column>
     <column>created_ts</column>
     <column>last_access_ts</column>
-    <column>last_access_page</column>
+    <column>last_page_access</column>
     <row>
       <value>1</value>
       <value>cookie</value>
