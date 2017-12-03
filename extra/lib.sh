@@ -47,7 +47,7 @@ function package() {
     log "$1 is already installed. skipping."
   else
     log "Installing $1"
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install $1 -y --no-install-recommends
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install $1 -y --no-install-recommends --force-yes
   fi
 }
 
@@ -289,7 +289,7 @@ function install_composer() {
 
 function install_nodejs() {
   log "Removing node.js legacy version"
-  sudo DEBIAN_FRONTEND=noninteractive apt-get remove --purge nodejs -y
+  sudo DEBIAN_FRONTEND=noninteractive apt-get remove --purge nodejs -y --force-yes
 
   log "Downloading and setting node.js version 6.x repo information"
   dl_pipe "https://deb.nodesource.com/setup_6.x" | sudo -E bash -
