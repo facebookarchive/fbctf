@@ -439,7 +439,13 @@ class Session extends Model {
       $sessions = array();
       $cached_sessions = array();
       /* HH_IGNORE_ERROR[4053]: HHVM doesn't beleive there is a getAllKeys() method, there is... */
-      $mc_keys = $mc->getAllKeys();
+      //$mc_keys = $mc->getAllKeys();
+      /* Memcached::getAllKeys() is not working in HHVM 3.21 - For now we will flush Memcache in place of the call.
+       *  Flushing the cache will be slower and will negatively impact performance.
+       *  As soon as getAllKeys() regains support in HHVM, or the functionality it replaced, this should be updated.
+       */
+      $mc_keys = array();
+      self::flushMCCluster();
       $all_sessions = preg_grep(
         '/'.self::$MC_KEY.self::$MC_KEYS->get('SESSIONS').'/',
         $mc_keys,
@@ -492,7 +498,13 @@ class Session extends Model {
     $key = str_replace(' ', '', $key);
     if ($key === null) {
       /* HH_IGNORE_ERROR[4053]: HHVM doesn't beleive there is a getAllKeys() method, there is... */
-      $mc_keys = $mc->getAllKeys();
+      //$mc_keys = $mc->getAllKeys();
+      /* Memcached::getAllKeys() is not working in HHVM 3.21 - For now we will flush Memcache in place of the call.
+       *  Flushing the cache will be slower and will negatively impact performance.
+       *  As soon as getAllKeys() regains support in HHVM, or the functionality it replaced, this should be updated.
+       */
+      $mc_keys = array();
+      self::flushMCCluster();
       $all_sessions = preg_grep(
         '/'.self::$MC_KEY.self::$MC_KEYS->get('SESSIONS').'/',
         $mc_keys,
