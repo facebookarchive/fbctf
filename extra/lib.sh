@@ -230,6 +230,7 @@ function install_hhvm() {
 
   log "Adding HHVM key"
   sudo DEBIAN_FRONTEND=noninteractive apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0x5a16e7281be7a449
+  sudo DEBIAN_FRONTEND=noninteractive apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xB4112585D386EB94
 
   log "Adding HHVM repo"
   sudo DEBIAN_FRONTEND=noninteractive add-apt-repository "deb http://dl.hhvm.com/ubuntu $(lsb_release -sc) main"
