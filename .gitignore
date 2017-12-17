@@ -31,10 +31,10 @@ www.pid
 *.swo
 
 # Attachments directory
-src/data/attachments/*
-!src/data/attachments/index.php
-src/data/attachments/deleted/*
-!src/data/attachments/deleted/index.php
+attachments/*
+!attachments/index.php
+attachments/deleted/*
+!attachments/deleted/index.php
 
 # Custom logos directory
 src/data/customlogos/*

@@ -2,12 +2,13 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-/* HH_IGNORE_ERROR[1002] */
-SessionUtils::sessionStart();
-SessionUtils::enforceLogin();
-
 class CommandsController extends DataController {
   public async function genGenerateData(): Awaitable<void> {
+
+    /* HH_IGNORE_ERROR[1002] */
+    SessionUtils::sessionStart();
+    SessionUtils::enforceLogin();
+
     // Object to hold all the data.
     $commands_line_data = (object) array();
 
@@ -15,7 +16,18 @@ class CommandsController extends DataController {
     $results_library = (object) array();
     $results_library_key = "results_library";
 
-    $all_levels = await Level::genAllLevels();
+    list(
+      $all_levels,
+      $all_enabled_countries,
+      $all_visible_teams,
+      $all_categories,
+    ) = await \HH\Asio\va(
+      Level::genAllLevels(),
+      Country::genAllEnabledCountries(),
+      MultiTeam::genAllVisibleTeams(),
+      Category::genAllCategories(),
+    );
+
     $levels_map = Map {};
     foreach ($all_levels as $level) {
       $levels_map[$level->getEntityId()] = $level;
@@ -24,7 +36,6 @@ class CommandsController extends DataController {
     // List of active countries.
     $countries_results = array();
     $countries_key = "country_list";
-    $all_enabled_countries = await Country::genAllEnabledCountries();
     foreach ($all_enabled_countries as $country) {
       $level = $levels_map->get($country->getId());
       $is_active_level = $level !== null && $level->getActive();
@@ -48,7 +59,6 @@ class CommandsController extends DataController {
     // List of active teams.
     $teams_results = array();
     $teams_key = "teams";
-    $all_visible_teams = await MultiTeam::genAllVisibleTeams();
     foreach ($all_visible_teams as $team) {
       array_push($teams_results, $team->getName());
     }
@@ -56,7 +66,6 @@ class CommandsController extends DataController {
     // List of level categories.
     $categories_results = array();
     $categories_key = "categories";
-    $all_categories = await Category::genAllCategories();
     foreach ($all_categories as $category) {
       array_push($categories_results, $category->getCategory());
     }
@@ -128,4 +137,4 @@ class CommandsController extends DataController {
 }
 
 $cmd = new CommandsController();
-\HH\Asio\join($cmd->genGenerateData());
+$cmd->sendData();

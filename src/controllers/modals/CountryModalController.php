@@ -100,6 +100,17 @@ class CountryModalController extends ModalController {
                       autocomplete="off"
                     />
                   </div>
+                  <div
+                    class=
+                      "answer_captured form-el el--text completely-hidden">
+                    <input
+                      placeholder={tr('Level already captured!')}
+                      name="answer"
+                      type="text"
+                      autocomplete="off"
+                      disabled={true}
+                    />
+                  </div>
                 </fieldset>
                 <div class="form-el--multiple-actions fb-column-container">
                   <div class="col col-1-2">
@@ -107,9 +118,16 @@ class CountryModalController extends ModalController {
                       <span>{tr('Request Hint')}</span>
                     </a>
                   </div>
-                  <div class="answer_no_bases col col-1-2 actions--right">
+                  <div class="answer_no_bases col col-1-2 actions--right ">
                     <a class="fb-cta cta--yellow js-trigger-score">
                       {tr('Submit')}
+                    </a>
+                  </div>
+                  <div
+                    class=
+                      "answer_captured col col-1-2 actions--right completely-hidden">
+                    <a class="fb-cta cta--yellowe">
+                      {tr('Captured!')}
                     </a>
                   </div>
                 </div>
@@ -182,12 +200,30 @@ class CountryModalController extends ModalController {
                       disabled={true}
                     />
                   </div>
+                  <div
+                    class=
+                      "answer_captured form-el el--text completely-hidden">
+                    <input
+                      placeholder={tr('Level already captured!')}
+                      name="answer"
+                      type="text"
+                      autocomplete="off"
+                      disabled={true}
+                    />
+                  </div>
                 </fieldset>
                 <div class="form-el--multiple-actions fb-column-container">
                   <div class="col col-1-2"></div>
                   <div class="answer_no_bases col col-1-2 actions--right">
                     <a class="fb-cta cta--yellowe">
                       {tr('Scoring Off')}
+                    </a>
+                  </div>
+                  <div
+                    class=
+                      "answer_captured col col-1-2 actions--right completely-hidden">
+                    <a class="fb-cta cta--yellowe">
+                      {tr('Captured!')}
                     </a>
                   </div>
                 </div>

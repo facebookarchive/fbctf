@@ -2,12 +2,13 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-/* HH_IGNORE_ERROR[1002] */
-SessionUtils::sessionStart();
-SessionUtils::enforceLogin();
-
 class LeaderboardDataController extends DataController {
   public async function genGenerateData(): Awaitable<void> {
+
+    /* HH_IGNORE_ERROR[1002] */
+    SessionUtils::sessionStart();
+    SessionUtils::enforceLogin();
+
     $leaderboard_data = (object) array();
 
     // If refresing is disabled, exit
@@ -17,9 +18,18 @@ class LeaderboardDataController extends DataController {
       exit(1);
     }
 
-    $leaders = await MultiTeam::genLeaderboard();
-    $my_team = await MultiTeam::genTeam(SessionUtils::sessionTeam());
-    $my_rank = await Team::genMyRank(SessionUtils::sessionTeam());
+    list($leaders, list($my_team, $my_rank), $leaderboard_limit) =
+      await \HH\Asio\va(
+        MultiTeam::genLeaderboard(),
+        MultiTeam::genMyTeamRank(SessionUtils::sessionTeam()),
+        Configuration::gen('leaderboard_limit'),
+      );
+
+    $leaderboard_limit_value = intval($leaderboard_limit->getValue());
+    if ($my_rank >= $leaderboard_limit_value) {
+      $my_rank = $leaderboard_limit_value."+";
+    }
+
     $my_team_data = (object) array(
       'badge' => $my_team->getLogo(),
       'points' => $my_team->getPoints(),
@@ -51,4 +61,4 @@ class LeaderboardDataController extends DataController {
 }
 
 $leaderboardData = new LeaderboardDataController();
-\HH\Asio\join($leaderboardData->genGenerateData());
+$leaderboardData->sendData();

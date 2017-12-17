@@ -173,7 +173,7 @@ class Session extends Model {
         return true;
       }
     }
-    return self::getMCSession($cookie) != false;
+    return self::getMCSession($cookie) !== false;
   }
 
   public static async function genSessionDataIfExist(
@@ -312,9 +312,11 @@ class Session extends Model {
       return;
     }
     $db = await self::genDb();
-    $expired_sessions =
-      await self::genExpiredSessionsForCleanup($maxlifetime);
-    $empty_sessions = await self::genEmptySessionsForCleanup();
+    list($expired_sessions, $empty_sessions) = await \HH\Asio\va(
+      self::genExpiredSessionsForCleanup($maxlifetime),
+      self::genEmptySessionsForCleanup(),
+    );
+
     foreach ($expired_sessions as $session) {
       $cached_session = self::getMCSession($session->getCookie());
       if ($cached_session === false) {
@@ -355,17 +357,15 @@ class Session extends Model {
         );
       }
     }
-    // Clean up expired sessions
-    await $db->queryf(
-      'DELETE FROM sessions WHERE UNIX_TIMESTAMP(last_access_ts) < %d',
-      time() - $maxlifetime,
-    );
-    // Clean up empty sessions
-    await $db->queryf(
-      'DELETE FROM sessions WHERE IFNULL(data, %s) = %s',
-      '',
-      '',
-    );
+    // Clean up expired and empty sessions
+    $queries = Vector {
+      sprintf(
+        'DELETE FROM sessions WHERE UNIX_TIMESTAMP(last_access_ts) < %d',
+        time() - $maxlifetime,
+      ),
+      'DELETE FROM sessions WHERE data IS NULL',
+    };
+    await $db->multiQuery($queries);
   }
 
   public static async function genUnprotectedSessions(
@@ -439,7 +439,13 @@ class Session extends Model {
       $sessions = array();
       $cached_sessions = array();
       /* HH_IGNORE_ERROR[4053]: HHVM doesn't beleive there is a getAllKeys() method, there is... */
-      $mc_keys = $mc->getAllKeys();
+      //$mc_keys = $mc->getAllKeys();
+      /* Memcached::getAllKeys() is not working in HHVM 3.21 - For now we will flush Memcache in place of the call.
+       *  Flushing the cache will be slower and will negatively impact performance.
+       *  As soon as getAllKeys() regains support in HHVM, or the functionality it replaced, this should be updated.
+       */
+      $mc_keys = array();
+      self::flushMCCluster();
       $all_sessions = preg_grep(
         '/'.self::$MC_KEY.self::$MC_KEYS->get('SESSIONS').'/',
         $mc_keys,
@@ -447,8 +453,13 @@ class Session extends Model {
       foreach ($all_sessions as $session_key) {
         $session_key =
           substr(strstr(substr(strstr($session_key, ':'), 1), ':'), 1);
-        $cached_sessions[] = $session_key;
-        $sessions[] = self::getMCSession($session_key);
+        $session = self::getMCSession($session_key);
+        if ($session !== false &&
+            $session instanceof Session &&
+            $session->getTeamId() !== 0) {
+          $cached_sessions[] = $session_key;
+          $sessions[] = $session;
+        }
       }
       $db = await self::genDb();
       $result = await $db->queryf('SELECT * FROM sessions');
@@ -467,12 +478,10 @@ class Session extends Model {
   }
 
   private static function setMCSession(string $key, mixed $records): void {
-    $mc = self::getMc();
     $key = str_replace(' ', '', $key);
-    $mc->set(
+    self::writeMCCluster(
       self::$MC_KEY.self::$MC_KEYS->get('SESSIONS').$key,
       $records,
-      self::$MC_EXPIRE,
     );
   }
 
@@ -487,18 +496,26 @@ class Session extends Model {
   public static function invalidateMCSessions(?string $key = null): void {
     $mc = self::getMc();
     $key = str_replace(' ', '', $key);
-    /* HH_IGNORE_ERROR[4053]: HHVM doesn't beleive there is a getAllKeys() method, there is... */
-    $mc_keys = $mc->getAllKeys();
     if ($key === null) {
+      /* HH_IGNORE_ERROR[4053]: HHVM doesn't beleive there is a getAllKeys() method, there is... */
+      //$mc_keys = $mc->getAllKeys();
+      /* Memcached::getAllKeys() is not working in HHVM 3.21 - For now we will flush Memcache in place of the call.
+       *  Flushing the cache will be slower and will negatively impact performance.
+       *  As soon as getAllKeys() regains support in HHVM, or the functionality it replaced, this should be updated.
+       */
+      $mc_keys = array();
+      self::flushMCCluster();
       $all_sessions = preg_grep(
         '/'.self::$MC_KEY.self::$MC_KEYS->get('SESSIONS').'/',
         $mc_keys,
       );
       foreach ($all_sessions as $session_key) {
-        $mc->delete($session_key);
+        self::invalidateMCCluster($session_key);
       }
     } else {
-      $mc->delete(self::$MC_KEY.self::$MC_KEYS->get('SESSIONS').$key);
+      self::invalidateMCCluster(
+        self::$MC_KEY.self::$MC_KEYS->get('SESSIONS').$key,
+      );
     }
   }
 }

@@ -2,22 +2,32 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-/* HH_IGNORE_ERROR[1002] */
-SessionUtils::sessionStart();
-SessionUtils::enforceLogin();
-
-class ActivityModuleController {
+class ActivityModuleController extends ModuleController {
   public async function genRender(): Awaitable<:xhp> {
+
+    /* HH_IGNORE_ERROR[1002] */
+    SessionUtils::sessionStart();
+    SessionUtils::enforceLogin();
+
     await tr_start();
     $activity_ul = <ul class="activity-stream"></ul>;
 
-    $all_activity = await ActivityLog::genAllActivity();
-    $config = await Configuration::gen('language');
+    list($all_activity, $config) = await \HH\Asio\va(
+      ActivityLog::genAllActivity(),
+      Configuration::gen('language'),
+    );
     $language = $config->getValue();
-    foreach ($all_activity as $activity) {
+    $activity_count = count($all_activity);
+    $activity_limit = ($activity_count > 100) ? 100 : $activity_count;
+    for ($i = 0; $i < $activity_limit; $i++) {
+      $activity = $all_activity[$i];
       $subject = $activity->getSubject();
       $entity = $activity->getEntity();
       $ts = $activity->getTs();
+      $visible = $activity->getVisible();
+      if ($visible === false) {
+        continue;
+      }
       if (($subject !== '') && ($entity !== '')) {
         $class_li = '';
         $class_span = '';
@@ -78,5 +88,6 @@ class ActivityModuleController {
   }
 }
 
+/* HH_IGNORE_ERROR[1002] */
 $activity_generated = new ActivityModuleController();
-echo \HH\Asio\join($activity_generated->genRender());
+$activity_generated->sendRender();

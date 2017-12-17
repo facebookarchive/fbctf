@@ -8,13 +8,10 @@ class LiveSyncDataController extends DataController {
     $data = array();
     await tr_start();
     $input_auth_key = idx(Utils::getGET(), 'auth', '');
-    $livesync_awaits = Map {
-      'livesync_enabled' => Configuration::gen('livesync'),
-      'livesync_auth_key' => Configuration::gen('livesync_auth_key'),
-    };
-    $livesync_awaits_results = await \HH\Asio\m($livesync_awaits);
-    $livesync_enabled = $livesync_awaits_results['livesync_enabled'];
-    $livesync_auth_key = $livesync_awaits_results['livesync_auth_key'];
+    list($livesync_enabled, $livesync_auth_key) = await \HH\Asio\va(
+      Configuration::gen('livesync'),
+      Configuration::gen('livesync_auth_key'),
+    );
 
     if ($livesync_enabled->getValue() === '1' &&
         hash_equals(
@@ -59,21 +56,49 @@ class LiveSyncDataController extends DataController {
       $team_livesync_exists = Map {};
       $team_livesync_key = Map {};
       foreach ($all_teams as $team) {
+        $team_livesync_types = Map {};
         $team_id = $team->getId();
-        $team_livesync_exists->add(
-          Pair {$team_id, Team::genLiveSyncExists($team_id, "fbctf")},
+
+        $team_livesync_types->add(
+          Pair {'fbctf', Team::genLiveSyncExists($team_id, 'fbctf')},
         );
+        $team_livesync_types->add(
+          Pair {
+            'facebook_oauth',
+            Team::genLiveSyncExists($team_id, 'facebook_oauth'),
+          },
+        );
+        $team_livesync_types->add(
+          Pair {
+            'google_oauth',
+            Team::genLiveSyncExists($team_id, 'google_oauth'),
+          },
+        );
+
+        $team_livesync_exists->add(Pair {$team_id, $team_livesync_types});
       }
-      $team_livesync_exists_results = await \HH\Asio\m($team_livesync_exists);
-      foreach ($team_livesync_exists_results as $team_id => $livesync_exists) {
-        if ($livesync_exists === true) {
-          $team_livesync_key->add(
-            Pair {$team_id, Team::genGetLiveSyncKey($team_id, "fbctf")},
-          );
+
+      foreach ($team_livesync_exists as $team_id => $livesync_types) {
+        $team_livesync_keys = Map {};
+        $team_livesync_exists_results = await \HH\Asio\m($livesync_types); // TODO: Combine Awaits
+        foreach ($team_livesync_exists_results as
+                 $livesync_type => $livesync_exists) {
+          if (boolval($livesync_exists) === true) {
+            $team_livesync_keys->add(
+              Pair {
+                $livesync_type,
+                Team::genGetLiveSyncKey($team_id, $livesync_type),
+              },
+            );
+          }
         }
+        $team_livesync_keys->add(
+          Pair {'general', Team::genGetLiveSyncKey($team_id, 'general')},
+        );
+        $team_livesync_keys_results = await \HH\Asio\m($team_livesync_keys); // TODO: Combine Awaits
+        $team_livesync_key->add(Pair {$team_id, $team_livesync_keys_results});
       }
-      $team_livesync_key_results = await \HH\Asio\m($team_livesync_key);
-      $teams_array = $team_livesync_key_results->toArray();
+      $teams_array = $team_livesync_key->toArray();
 
       $scores_array = array();
       $scored_teams = array();
@@ -83,13 +108,21 @@ class LiveSyncDataController extends DataController {
             false) {
           continue;
         }
-        $scores_array[$score->getLevelId()][$teams_array[$score->getTeamId()]]['timestamp'] =
-          $score->getTs();
-        $scores_array[$score->getLevelId()][$teams_array[$score->getTeamId()]]['capture'] =
-          true;
-        $scores_array[$score->getLevelId()][$teams_array[$score->getTeamId()]]['hint'] =
-          false;
-        $scored_teams[$score->getLevelId()][] = $score->getTeamId();
+        $team_livesync_array_scores =
+          $team_livesync_key->get($score->getTeamId());
+        invariant(
+          $team_livesync_array_scores instanceof Map,
+          'team_livesync_array_scores should of type Map and not null',
+        );
+        foreach ($team_livesync_array_scores as
+                 $livesync_type => $livesync_key) {
+          $scores_array[$score->getLevelId()][$livesync_key]['timestamp'] =
+            $score->getTs();
+          $scores_array[$score->getLevelId()][$livesync_key]['capture'] =
+            true;
+          $scores_array[$score->getLevelId()][$livesync_key]['hint'] = false;
+          $scored_teams[$score->getLevelId()][] = $score->getTeamId();
+        }
       }
       foreach ($all_hints as $hint) {
         if ($hint->getPenalty()) {
@@ -97,17 +130,25 @@ class LiveSyncDataController extends DataController {
               false) {
             continue;
           }
-          $scores_array[$hint->getLevelId()][$teams_array[$hint->getTeamId()]]['hint'] =
-            true;
-          if (in_array(
-                $hint->getTeamId(),
-                $scored_teams[$hint->getLevelId()],
-              ) ===
-              false) {
-            $scores_array[$hint->getLevelId()][$teams_array[$hint->getTeamId()]]['capture'] =
-              false;
-            $scores_array[$hint->getLevelId()][$teams_array[$hint->getTeamId()]]['timestamp'] =
-              $hint->getTs();
+          $team_livesync_array_hints =
+            $team_livesync_key->get($hint->getTeamId());
+          invariant(
+            $team_livesync_array_hints instanceof Map,
+            'team_livesync_array_hints should of type Map and not null',
+          );
+          foreach ($team_livesync_array_hints as
+                   $livesync_type => $livesync_key) {
+            $scores_array[$hint->getLevelId()][$livesync_key]['hint'] = true;
+            if (in_array(
+                  $hint->getTeamId(),
+                  $scored_teams[$hint->getLevelId()],
+                ) ===
+                false) {
+              $scores_array[$hint->getLevelId()][$livesync_key]['capture'] =
+                false;
+              $scores_array[$hint->getLevelId()][$livesync_key]['timestamp'] =
+                $hint->getTs();
+            }
           }
         }
       }

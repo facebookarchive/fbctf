@@ -2,7 +2,7 @@
 
 class Attachment extends Model {
   // TODO: Configure this
-  const string attachmentsDir = '/data/attachments/';
+  const string attachmentsDir = '/var/www/fbctf/attachments/';
 
   protected static string $MC_KEY = 'attachments:';
 
@@ -11,12 +11,15 @@ class Attachment extends Model {
       'LEVELS_COUNT' => 'attachment_levels_count',
       'LEVEL_ATTACHMENTS' => 'attachment_levels',
       'ATTACHMENTS' => 'attachments_by_id',
+      'LEVEL_ATTACHMENTS_NAMES' => 'attachment_file_names',
+      'LEVEL_ATTACHMENTS_LINKS' => 'attachment_file_links',
     };
 
   private function __construct(
     private int $id,
     private int $levelId,
     private string $filename,
+    private string $link,
     private string $type,
   ) {}
 
@@ -26,6 +29,10 @@ class Attachment extends Model {
 
   public function getFilename(): string {
     return $this->filename;
+  }
+
+  public function getFileLink(): string {
+    return $this->link;
   }
 
   public function getType(): string {
@@ -44,7 +51,8 @@ class Attachment extends Model {
   ): Awaitable<bool> {
     $db = await self::genDb();
     $type = '';
-    $local_filename = self::attachmentsDir;
+    $file_path = self::attachmentsDir;
+    $local_filename = '';
 
     $files = Utils::getFILES();
     $server = Utils::getSERVER();
@@ -56,37 +64,29 @@ class Attachment extends Model {
 
       // Extract extension and name
       $parts = explode('.', $filename, 2);
-      $local_filename .= firstx($parts).'_'.$md5_str;
+      $local_filename .=
+        mb_convert_encoding(firstx($parts), 'UTF-8').'_'.$md5_str;
 
       $extension = idx($parts, 1);
       if ($extension !== null) {
-        $local_filename .= '.'.$extension;
+        $local_filename .= '.'.mb_convert_encoding($extension, 'UTF-8');
       }
 
-      // Avoid php shells
-      if (ends_with($local_filename, '.php')) {
-        $local_filename .= 's'; // Make the extension 'phps'
-      }
-      move_uploaded_file(
-        $tmp_name,
-        must_have_string($server, 'DOCUMENT_ROOT').$local_filename,
-      );
+      // Remove all non alphanum characters from filename - allow international chars, dash, underscore, and period
+      $local_filename =
+        preg_replace('/[^\p{L}\p{N}_\-.]+/u', '_', $local_filename);
+
+      move_uploaded_file($tmp_name, $file_path.$local_filename);
 
       // Force 0600 Permissions
-      $chmod = chmod(
-        must_have_string($server, 'DOCUMENT_ROOT').$local_filename,
-        0600,
-      );
+      $chmod = chmod($file_path.$local_filename, 0600);
       invariant(
         $chmod === true,
         'Failed to set attachment file permissions to 0600',
       );
 
       // Force ownership to www-data
-      $chown = chown(
-        must_have_string($server, 'DOCUMENT_ROOT').$local_filename,
-        'www-data',
-      );
+      $chown = chown($file_path.$local_filename, 'www-data');
       invariant(
         $chown === true,
         'Failed to set attachment file ownership to www-data',
@@ -132,7 +132,7 @@ class Attachment extends Model {
 
     // Copy file to deleted folder
     $attachment = await self::gen($attachment_id);
-    $filename = $attachment->getFilename();
+    $filename = self::attachmentsDir.$attachment->getFilename();
     $parts = pathinfo($filename);
     error_log(
       'Copying from '.
@@ -142,9 +142,8 @@ class Attachment extends Model {
       '/deleted/'.
       $parts['basename'],
     );
-    $root = strval($server['DOCUMENT_ROOT']);
-    $origin = $root.$filename;
-    $dest = $root.$parts['dirname'].'/deleted/'.$parts['basename'];
+    $origin = $filename;
+    $dest = $parts['dirname'].'/deleted/'.$parts['basename'];
     copy($origin, $dest);
 
     // Delete file.
@@ -201,6 +200,168 @@ class Attachment extends Model {
     }
   }
 
+  public static async function genAllAttachmentsForGame(
+    bool $refresh = false,
+  ): Awaitable<Map<?int, ?Attachment>> {
+    $mc_result = self::getMCRecords('LEVEL_ATTACHMENTS');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $attachments = array();
+      $result = await $db->queryf('SELECT * FROM attachments');
+      foreach ($result->mapRows() as $row) {
+        $attachments[intval($row->get('level_id'))][] =
+          self::attachmentFromRow($row);
+      }
+      self::setMCRecords('LEVEL_ATTACHMENTS', new Map($attachments));
+      $attachments = new Map($attachments);
+      invariant(
+        $attachments instanceof Map,
+        'attachments should be a Map of Attachment',
+      );
+      return $attachments;
+    } else {
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      return $mc_result;
+    }
+  }
+
+  public static async function genAllAttachmentsFileNames(
+    int $level_id,
+    bool $refresh = false,
+  ): Awaitable<array<string>> {
+    $mc_result = self::getMCRecords('LEVEL_ATTACHMENTS_NAMES');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $filenames = array();
+      $attachments = await self::genAllAttachmentsForGame();
+      invariant(
+        $attachments instanceof Map,
+        'attachments should be a Map of Attachment',
+      );
+      foreach ($attachments as $level => $attachment_arr) {
+        invariant(
+          is_array($attachment_arr),
+          'attachment_arr should be an array of Attachment',
+        );
+        foreach ($attachment_arr as $attach_obj) {
+          invariant(
+            $attach_obj instanceof Attachment,
+            'link_obj should be of type Attachment',
+          );
+          $filenames[$level][] = $attach_obj->getFilename();
+        }
+      }
+      self::setMCRecords('LEVEL_ATTACHMENTS_NAMES', new Map($filenames));
+      $filenames = new Map($filenames);
+      if ($filenames->contains($level_id)) {
+        $filename = $filenames->get($level_id);
+        invariant(
+          is_array($filename),
+          'filename should be an array of string',
+        );
+        return $filename;
+      } else {
+        return array();
+      }
+    } else {
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      if ($mc_result->contains($level_id)) {
+        $filename = $mc_result->get($level_id);
+        invariant(
+          is_array($filename),
+          'filename should be an array of string',
+        );
+        return $filename;
+      } else {
+        return array();
+      }
+    }
+  }
+
+  public static async function genAllAttachmentsFileLinks(
+    int $level_id,
+    bool $refresh = false,
+  ): Awaitable<array<string>> {
+    $mc_result = self::getMCRecords('LEVEL_ATTACHMENTS_LINKS');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $attachment_links = array();
+      $attachments = await self::genAllAttachmentsForGame();
+      invariant(
+        $attachments instanceof Map,
+        'attachments should be a Map of Attachment',
+      );
+      foreach ($attachments as $level => $attachment_arr) {
+        invariant(
+          is_array($attachment_arr),
+          'attachment_arr should be an array of Attachment',
+        );
+        foreach ($attachment_arr as $attach_obj) {
+          invariant(
+            $attach_obj instanceof Attachment,
+            'link_obj should be of type Attachment',
+          );
+          $attachment_links[$level][] = $attach_obj->getFileLink();
+        }
+      }
+      self::setMCRecords(
+        'LEVEL_ATTACHMENTS_LINKS',
+        new Map($attachment_links),
+      );
+      $attachment_links = new Map($attachment_links);
+      if ($attachment_links->contains($level_id)) {
+        $attachment_link = $attachment_links->get($level_id);
+        invariant(
+          is_array($attachment_link),
+          'attachment link should be an array of string',
+        );
+        return $attachment_link;
+      } else {
+        return array();
+      }
+    } else {
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      if ($mc_result->contains($level_id)) {
+        $attachment_link = $mc_result->get($level_id);
+        invariant(
+          is_array($attachment_link),
+          'attachment_link should be an array of string',
+        );
+        return $attachment_link;
+      } else {
+        return array();
+      }
+    }
+  }
+
+  public static async function genAllAttachmentsFileNamesLinks(
+    int $level_id,
+    bool $refresh = false,
+  ): Awaitable<array<int, array<string, string>>> {
+    $filenames_links = array();
+    list($file_names, $file_links) = await \HH\Asio\va(
+      self::genAllAttachmentsFileNames($level_id),
+      self::genAllAttachmentsFileLinks($level_id),
+    );
+
+    foreach ($file_names as $idx => $file_name) {
+      if (idx($file_links, $idx) !== null) {
+        $filenames_links[$idx]['filename'] = $file_name;
+        $filenames_links[$idx]['file_link'] = $file_links[$idx];
+      }
+    }
+    return $filenames_links;
+  }
+
   // Get a single attachment.
   /* HH_IGNORE_ERROR[4110]: Claims - It is incompatible with void because this async function implicitly returns Awaitable<void>, yet this returns Awaitable<Attachment> and the type is checked on line 185 */
   public static async function gen(
@@ -239,6 +400,31 @@ class Attachment extends Model {
         );
         return $attachment;
       }
+    }
+  }
+
+  public static async function genCheckExists(
+    int $attachment_id,
+    bool $refresh = false,
+  ): Awaitable<bool> {
+    $mc_result = self::getMCRecords('ATTACHMENTS');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $db = await self::genDb();
+      $attachments = Map {};
+      $result = await $db->queryf('SELECT * FROM attachments');
+      foreach ($result->mapRows() as $row) {
+        $attachments->add(
+          Pair {intval($row->get('id')), self::attachmentFromRow($row)},
+        );
+      }
+      self::setMCRecords('ATTACHMENTS', $attachments);
+      return $attachments->contains($attachment_id);
+    } else {
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should be of type Map',
+      );
+      return $mc_result->contains($attachment_id);
     }
   }
 
@@ -304,6 +490,7 @@ class Attachment extends Model {
       intval(must_have_idx($row, 'id')),
       intval(must_have_idx($row, 'level_id')),
       must_have_idx($row, 'filename'),
+      strval('/data/attachment.php?id='.intval(must_have_idx($row, 'id'))),
       must_have_idx($row, 'type'),
     );
   }

@@ -49,9 +49,23 @@ class ScoreLogTest extends FBCTFTest {
     $this->assertFalse($previous);
   }
 
-  public function testLogValidScore(): void {
+  public function testDuplicateLogValidScore(): void {
     HH\Asio\join(ScoreLog::genLogValidScore(
       2, // level
+      1, // team
+      5, // points
+      'base', // any_team
+    ));
+
+    $all = HH\Asio\join(ScoreLog::genAllScores());
+    $this->assertEquals(2, count($all));
+    $s = $all[0];
+    $this->assertEquals(10, $s->getPoints());
+  }
+
+  public function testLogValidScore(): void {
+    HH\Asio\join(ScoreLog::genLogValidScore(
+      1, // level
       1, // team
       5, // points
       'base', // any_team

@@ -1,5 +1,4 @@
-FROM ubuntu:trusty
-LABEL maintainer="Boik Su <boik@tdohacker.org>"
+FROM ubuntu:xenial
 
 ENV HOME /root
 
@@ -10,9 +9,11 @@ ARG TYPE=self
 ARG KEY
 ARG CRT
 
+ENV HHVM_DISABLE_NUMA true
+
 WORKDIR $HOME
 COPY . $HOME
-RUN chown www-data:www-data $HOME
 
+RUN apt-get update && apt-get -y install sudo apt-utils
 RUN ./extra/provision.sh -m $MODE -c $TYPE -k $KEY -C $CRT -D $DOMAIN -e $EMAIL -s `pwd` --docker
 CMD ["./extra/service_startup.sh"]

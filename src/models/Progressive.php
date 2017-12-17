@@ -71,7 +71,7 @@ class Progressive extends Model {
       $progressive = array();
       $result =
         await $db->queryf(
-          'SELECT * FROM progressive_log GROUP BY team_name, iteration ORDER BY points ASC',
+          'SELECT MAX(id) as id, MAX(ts) as ts, team_name, MAX(points) as points, iteration FROM progressive_log GROUP BY team_name, iteration, id ORDER BY points ASC',
         );
       foreach ($result->mapRows() as $row) {
         $progressive[$row->get('team_name')][] =

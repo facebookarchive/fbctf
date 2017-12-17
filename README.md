@@ -18,11 +18,11 @@ For more information, see the [Admin Guide](https://github.com/facebook/fbctf/wi
 
 # Installation
 
-The FBCTF platform was designed with flexibility in mind, allowing for different types of installations depending on the needs of the end user. The FBCTF platform can be installed either in Development Mode, or Production Mode. Development is for development, and Production is intended for live events utilizing the FBCTF platform. 
+The FBCTF platform was designed with flexibility in mind, allowing for different types of installations depending on the needs of the end user. The FBCTF platform can be installed either in Development Mode, or Production Mode.
 
-[Development Installation Guide](https://github.com/facebook/fbctf/wiki/Installation-Guide,-Development)
+[Quick Setup Guide](https://github.com/facebook/fbctf/wiki/Quick-Setup-Guide) (_Recommended Installation_)
 
-[Production Installation Guide](https://github.com/facebook/fbctf/wiki/Installation-Guide,-Production) 
+The [Quick Setup Guide](https://github.com/facebook/fbctf/wiki/Quick-Setup-Guide) details the quick setup mode which provides a streamlined and consistent build of the platform but offers less flexibility when compared to a custom installation. If you would prefer to perform a custom installation, please see the [Development Installation Guide](https://github.com/facebook/fbctf/wiki/Installation-Guide,-Development) or [Production Installation Guide](https://github.com/facebook/fbctf/wiki/Installation-Guide,-Production).
 
 ## Reporting an Issue
 

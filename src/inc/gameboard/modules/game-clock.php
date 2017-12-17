@@ -2,10 +2,7 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-/* HH_IGNORE_ERROR[1002] */
-SessionUtils::sessionStart();
-
-class ClockModuleController {
+class ClockModuleController extends ModuleController {
   private async function genGenerateIndicator(
     string $start_ts,
     string $end_ts,
@@ -44,13 +41,20 @@ class ClockModuleController {
   }
 
   public async function genRender(): Awaitable<:xhp> {
+
+    /* HH_IGNORE_ERROR[1002] */
+    SessionUtils::sessionStart();
+
     await tr_start();
-    $timer = await Configuration::gen('timer');
-    $start_ts = await Configuration::gen('start_ts');
-    $end_ts = await Configuration::gen('end_ts');
-    $timer = $timer->getValue();
-    $start_ts = $start_ts->getValue();
-    $end_ts = $end_ts->getValue();
+    list($config_timer, $config_start_ts, $config_end_ts) =
+      await \HH\Asio\va(
+        Configuration::gen('timer'),
+        Configuration::gen('start_ts'),
+        Configuration::gen('end_ts'),
+      );
+    $timer = $config_timer->getValue();
+    $start_ts = $config_start_ts->getValue();
+    $end_ts = $config_end_ts->getValue();
 
     $now = time();
     $init = intval($end_ts) - $now;
@@ -142,5 +146,6 @@ class ClockModuleController {
   }
 }
 
+/* HH_IGNORE_ERROR[1002] */
 $clock_generated = new ClockModuleController();
-echo \HH\Asio\join($clock_generated->genRender());
+$clock_generated->sendRender();

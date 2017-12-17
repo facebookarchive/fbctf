@@ -10,6 +10,7 @@ class GameAjaxController extends AjaxController {
         'csrf_token' => FILTER_UNSAFE_RAW,
         'livesync_username' => FILTER_UNSAFE_RAW,
         'livesync_password' => FILTER_UNSAFE_RAW,
+        'team_name' => FILTER_UNSAFE_RAW,
         'action' => array(
           'filter' => FILTER_VALIDATE_REGEXP,
           'options' => array('regexp' => '/^[\w-]+$/'),
@@ -47,21 +48,22 @@ class GameAjaxController extends AjaxController {
         if ($scoring->getValue() === '1') {
           $level_id = must_have_int($params, 'level_id');
           $answer = must_have_string($params, 'answer');
-          $check_base = await Level::genCheckBase($level_id);
-          $check_status = await Level::genCheckStatus($level_id);
-          $check_answer = await Level::genCheckAnswer($level_id, $answer);
+          list($check_base, $check_status, $check_answer) =
+            await \HH\Asio\va(
+              Level::genCheckBase($level_id),
+              Level::genCheckStatus($level_id),
+              Level::genCheckAnswer($level_id, $answer),
+            );
           // Check if level is not a base or if level isn't active
           if ($check_base || !$check_status) {
             return Utils::error_response('Failed', 'game');
             // Check if answer is valid
           } else if ($check_answer) {
-            // Give points!
-            await Level::genScoreLevel(
-              $level_id,
-              SessionUtils::sessionTeam(),
+            // Give points and update last score for team
+            await \HH\Asio\va(
+              Level::genScoreLevel($level_id, SessionUtils::sessionTeam()),
+              Team::genLastScore(SessionUtils::sessionTeam()),
             );
-            // Update teams last score
-            await Team::genLastScore(SessionUtils::sessionTeam());
             return Utils::ok_response('Success', 'game');
           } else {
             await FailureLog::genLogFailedScore(
@@ -89,6 +91,16 @@ class GameAjaxController extends AjaxController {
         }
       case 'open_level':
         return Utils::ok_response('Success', 'admin');
+      case 'set_team_name':
+        $updated_team_name = await Team::genSetTeamName(
+          SessionUtils::sessionTeam(),
+          must_have_string($params, 'team_name'),
+        );
+        if ($updated_team_name === true) {
+          return Utils::ok_response('Success', 'game');
+        } else {
+          return Utils::error_response('Failed', 'game');
+        }
       case 'set_livesync_password':
         $livesync_password_update = await Team::genSetLiveSyncPassword(
           SessionUtils::sessionTeam(),

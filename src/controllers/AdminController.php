@@ -4,7 +4,7 @@ class AdminController extends Controller {
   <<__Override>>
   protected function getTitle(): string {
     $custom_org = \HH\Asio\join(Configuration::gen('custom_org'));
-    return tr($custom_org->getValue()). ' '. tr('CTF'). ' | '. tr('Admin');
+    return tr($custom_org->getValue()).' '.tr('CTF').' | '.tr('Admin');
   }
 
   <<__Override>>
@@ -152,13 +152,15 @@ class AdminController extends Controller {
 
   // TODO: Translate password types
   private async function genStrongPasswordsSelect(): Awaitable<:xhp> {
-    $types = await Configuration::genAllPasswordTypes();
-    $config = await Configuration::genCurrentPasswordType();
+    list($types, $config) = await \HH\Asio\va(
+      Configuration::genAllPasswordTypes(),
+      Configuration::genCurrentPasswordType(),
+    );
     $select = <select name="fb--conf--password_type"></select>;
     foreach ($types as $type) {
       $select->appendChild(
-        <option 
-          class="fb--conf--password_type" 
+        <option
+          class="fb--conf--password_type"
           value={strval($type->getField())}
           selected={($type->getField() === $config->getField())}>
           {$type->getDescription()}
@@ -170,10 +172,12 @@ class AdminController extends Controller {
   }
 
   private async function genConfigurationDurationSelect(): Awaitable<:xhp> {
-    $config = await Configuration::gen('game_duration_unit');
-    $duration_unit = $config->getValue();
-    $config = await Configuration::gen('game_duration_value');
-    $duration_value = $config->getValue();
+    list($config_duration_unit, $config_duration_value) = await \HH\Asio\va(
+      Configuration::gen('game_duration_unit'),
+      Configuration::gen('game_duration_value'),
+    );
+    $duration_unit = $config_duration_unit->getValue();
+    $duration_value = $config_duration_value->getValue();
 
     $minute_selected = $duration_unit === 'm';
     $hour_selected = $duration_unit === 'h';
@@ -244,7 +248,7 @@ class AdminController extends Controller {
     $tokens = await Token::genAllTokens();
     foreach ($tokens as $token) {
       if ($token->getUsed()) {
-        $team = await MultiTeam::genTeam($token->getTeamId());
+        $team = await MultiTeam::genTeam($token->getTeamId()); // TODO: Combine Awaits
         $token_status =
           <span class="highlighted--red">
             {tr('Used by')} {$team->getName()}
@@ -298,7 +302,12 @@ class AdminController extends Controller {
       'login' => Configuration::gen('login'),
       'login_select' => Configuration::gen('login_select'),
       'login_strongpasswords' => Configuration::gen('login_strongpasswords'),
+      'login_facebook' => Configuration::gen('login_facebook'),
+      'login_google' => Configuration::gen('login_google'),
       'registration_names' => Configuration::gen('registration_names'),
+      'registration_facebook' => Configuration::gen('registration_facebook'),
+      'registration_google' => Configuration::gen('registration_google'),
+      'registration_prefix' => Configuration::gen('registration_prefix'),
       'ldap' => Configuration::gen('ldap'),
       'ldap_server' => Configuration::gen('ldap_server'),
       'ldap_port' => Configuration::gen('ldap_port'),
@@ -310,6 +319,9 @@ class AdminController extends Controller {
       'progressive_cycle' => Configuration::gen('progressive_cycle'),
       'default_bonus' => Configuration::gen('default_bonus'),
       'default_bonusdec' => Configuration::gen('default_bonusdec'),
+      'gameboard_cycle' => Configuration::gen('gameboard_cycle'),
+      'conf_cycle' => Configuration::gen('conf_cycle'),
+      'leaderboard_limit' => Configuration::gen('leaderboard_limit'),
       'bases_cycle' => Configuration::gen('bases_cycle'),
       'autorun_cycle' => Configuration::gen('autorun_cycle'),
       'start_ts' => Configuration::gen('start_ts'),
@@ -330,7 +342,13 @@ class AdminController extends Controller {
     $login = $results['login'];
     $login_select = $results['login_select'];
     $login_strongpasswords = $results['login_strongpasswords'];
+    $login_facebook = $results['login_facebook'];
+    $login_google = $results['login_google'];
     $registration_names = $results['registration_names'];
+    $registration_facebook = $results['registration_facebook'];
+    $registration_google = $results['registration_google'];
+    $registration_prefix = $results['registration_prefix'];
+    $login_google = $results['login_google'];
     $ldap = $results['ldap'];
     $ldap_server = $results['ldap_server'];
     $ldap_port = $results['ldap_port'];
@@ -342,6 +360,9 @@ class AdminController extends Controller {
     $progressive_cycle = $results['progressive_cycle'];
     $default_bonus = $results['default_bonus'];
     $default_bonusdec = $results['default_bonusdec'];
+    $gameboard_cycle = $results['gameboard_cycle'];
+    $conf_cycle = $results['conf_cycle'];
+    $leaderboard_limit = $results['leaderboard_limit'];
     $bases_cycle = $results['bases_cycle'];
     $autorun_cycle = $results['autorun_cycle'];
     $start_ts = $results['start_ts'];
@@ -352,13 +373,20 @@ class AdminController extends Controller {
     $custom_org = $results['custom_org'];
     $custom_byline = $results['custom_byline'];
     $custom_logo_image = $results['custom_logo_image'];
-
     $registration_on = $registration->getValue() === '1';
     $registration_off = $registration->getValue() === '0';
     $login_on = $login->getValue() === '1';
     $login_off = $login->getValue() === '0';
     $login_select_on = $login_select->getValue() === '1';
     $login_select_off = $login_select->getValue() === '0';
+    $login_facebook_on = $login_facebook->getValue() === '1';
+    $login_facebook_off = $login_facebook->getValue() === '0';
+    $login_google_on = $login_google->getValue() === '1';
+    $login_google_off = $login_google->getValue() === '0';
+    $registration_facebook_on = $registration_facebook->getValue() === '1';
+    $registration_facebook_off = $registration_facebook->getValue() === '0';
+    $registration_google_on = $registration_google->getValue() === '1';
+    $registration_google_off = $registration_google->getValue() === '0';
     $ldap_on = $ldap->getValue() === '1';
     $ldap_off = $ldap->getValue() === '0';
     $strong_passwords_on = $login_strongpasswords->getValue() === '1';
@@ -381,7 +409,12 @@ class AdminController extends Controller {
     $game_start_array = array();
     if ($start_ts->getValue() !== '0' && $start_ts->getValue() !== 'NaN') {
       $game_start_ts = $start_ts->getValue();
-      $game_start_array = getdate($game_start_ts);
+      $game_start_array = array();
+      $game_start_array['year'] = gmdate('Y', $game_start_ts);
+      $game_start_array['mon'] = gmdate('m', $game_start_ts);
+      $game_start_array['mday'] = gmdate('d', $game_start_ts);
+      $game_start_array['hours'] = gmdate('H', $game_start_ts);
+      $game_start_array['minutes'] = gmdate('i', $game_start_ts);
     } else {
       $game_start_ts = '0';
       $game_start_array['year'] = '0';
@@ -394,7 +427,12 @@ class AdminController extends Controller {
     $game_end_array = array();
     if ($end_ts->getValue() !== '0' && $end_ts->getValue() !== 'NaN') {
       $game_end_ts = $end_ts->getValue();
-      $game_end_array = getdate($game_end_ts);
+      $game_end_array = array();
+      $game_end_array['year'] = gmdate('Y', $game_end_ts);
+      $game_end_array['mon'] = gmdate('m', $game_end_ts);
+      $game_end_array['mday'] = gmdate('d', $game_end_ts);
+      $game_end_array['hours'] = gmdate('H', $game_end_ts);
+      $game_end_array['minutes'] = gmdate('i', $game_end_ts);
     } else {
       $game_end_ts = '0';
       $game_end_array['year'] = '0';
@@ -407,10 +445,16 @@ class AdminController extends Controller {
     if ($game->getValue() === '0') {
       $timer_start_ts = tr('Not started yet');
       $timer_end_ts = tr('Not started yet');
+      $game_schedule_reset_text = tr('Reset Schedule');
+      $game_schedule_reset_class = 'fb-cta cta--red';
+      $game_schedule_reset_action = 'reset-game-schedule';
     } else {
       $timer_start_ts =
         date(tr('date and time format'), $start_ts->getValue());
       $timer_end_ts = date(tr('date and time format'), $end_ts->getValue());
+      $game_schedule_reset_text = tr('Game Running');
+      $game_schedule_reset_class = 'fb-cta cta--yellowe';
+      $game_schedule_reset_action = '';
     }
 
     $registration_type = await Configuration::gen('registration_type');
@@ -476,15 +520,15 @@ class AdminController extends Controller {
       $custom_logo_xhp =
         <div class="form-el el--block-label el--full-text">
           <label for="">{tr('Logo')}</label>
-          <img 
-            id="custom-logo-image" 
-            class="icon--badge" 
+          <img
+            id="custom-logo-image"
+            class="icon--badge"
             src={$custom_logo_image->getValue()}
           />
-          <br/>
-           <h6>
+          <br />
+          <h6>
             <a class="icon-text" href="#" id="custom-logo-link">
-            {tr('Change')}
+              {tr('Change')}
             </a>
           </h6>
           <input
@@ -657,6 +701,119 @@ class AdminController extends Controller {
               </section>
               <section class="admin-box">
                 <header class="admin-box-header">
+                  <h3>{tr('Integration')}</h3>
+                </header>
+                <div class="fb-column-container">
+                  <div class="col col-pad col-1-4">
+                    <div class="form-el el--block-label">
+                      <label>{tr('Facebook Login')}</label>
+                      <div class="admin-section-toggle radio-inline">
+                        <input
+                          type="radio"
+                          name="fb--conf--login_facebook"
+                          id="fb--conf--login_facebook--on"
+                          checked={$login_facebook_on}
+                        />
+                        <label for="fb--conf--login_facebook--on">
+                          {tr('On')}
+                        </label>
+                        <input
+                          type="radio"
+                          name="fb--conf--login_facebook"
+                          id="fb--conf--login_facebook--off"
+                          checked={$login_facebook_off}
+                        />
+                        <label for="fb--conf--login_facebook--off">
+                          {tr('Off')}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="form-el el--block-label">
+                      <label>{tr('Facebook Registration')}</label>
+                      <div class="admin-section-toggle radio-inline">
+                        <input
+                          type="radio"
+                          name="fb--conf--registration_facebook"
+                          id="fb--conf--registration_facebook--on"
+                          checked={$registration_facebook_on}
+                        />
+                        <label for="fb--conf--registration_facebook--on">
+                          {tr('On')}
+                        </label>
+                        <input
+                          type="radio"
+                          name="fb--conf--registration_facebook"
+                          id="fb--conf--registration_facebook--off"
+                          checked={$registration_facebook_off}
+                        />
+                        <label for="fb--conf--registration_facebook--off">
+                          {tr('Off')}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col col-pad col-2-4">
+                    <div class="form-el el--block-label">
+                      <label>{tr('Google Login')}</label>
+                      <div class="admin-section-toggle radio-inline">
+                        <input
+                          type="radio"
+                          name="fb--conf--login_google"
+                          id="fb--conf--login_google--on"
+                          checked={$login_google_on}
+                        />
+                        <label for="fb--conf--login_google--on">
+                          {tr('On')}
+                        </label>
+                        <input
+                          type="radio"
+                          name="fb--conf--login_google"
+                          id="fb--conf--login_google--off"
+                          checked={$login_google_off}
+                        />
+                        <label for="fb--conf--login_google--off">
+                          {tr('Off')}
+                        </label>
+                      </div>
+                    </div>
+                    <div class="form-el el--block-label">
+                      <label>{tr('Google Registration')}</label>
+                      <div class="admin-section-toggle radio-inline">
+                        <input
+                          type="radio"
+                          name="fb--conf--registration_google"
+                          id="fb--conf--registration_google--on"
+                          checked={$registration_google_on}
+                        />
+                        <label for="fb--conf--registration_google--on">
+                          {tr('On')}
+                        </label>
+                        <input
+                          type="radio"
+                          name="fb--conf--registration_google"
+                          id="fb--conf--registration_google--off"
+                          checked={$registration_google_off}
+                        />
+                        <label for="fb--conf--registration_google--off">
+                          {tr('Off')}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col col-pad col-3-4">
+                    <div class="form-el el--block-label el--full-text">
+                      <label>{tr('Automatic Team Name Prefix')}</label>
+                      <input
+                        type="text"
+                        value={$registration_prefix->getValue()}
+                        name="fb--conf--registration_prefix"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </section>
+              <section class="admin-box">
+                <header class="admin-box-header">
                   <h3>{tr('Active Directory / LDAP')}</h3>
                   <div class="admin-section-toggle radio-inline">
                     <input
@@ -745,6 +902,14 @@ class AdminController extends Controller {
                         name="fb--conf--progressive_cycle"
                       />
                     </div>
+                    <div class="form-el el--block-label">
+                      <label>{tr('Bases Cycle (s)')}</label>
+                      <input
+                        type="number"
+                        value={$bases_cycle->getValue()}
+                        name="fb--conf--bases_cycle"
+                      />
+                    </div>
                   </div>
                   <div class="col col-pad col-2-4">
                     <div class="form-el el--block-label">
@@ -778,34 +943,16 @@ class AdminController extends Controller {
                         name="fb--conf--default_bonus"
                       />
                     </div>
+                    <div class="form-el el--block-label">
+                      <label>{tr('Gameboard Cycle (s)')}</label>
+                      <input
+                        type="number"
+                        value={$gameboard_cycle->getValue()}
+                        name="fb--conf--gameboard_cycle"
+                      />
+                    </div>
                   </div>
                   <div class="col col-pad col-3-4">
-                    <div class="form-el el--block-label">
-                      <label>{tr('Bases Cycle (s)')}</label>
-                      <input
-                        type="number"
-                        value={$bases_cycle->getValue()}
-                        name="fb--conf--bases_cycle"
-                      />
-                    </div>
-                    <div class="form-el el--block-label">
-                      <label>{tr('Default Bonus Dec')}</label>
-                      <input
-                        type="number"
-                        value={$default_bonusdec->getValue()}
-                        name="fb--conf--default_bonusdec"
-                      />
-                    </div>
-                  </div>
-                  <div class="col col-pad col-4-4">
-                    <div class="form-el el--block-label">
-                      <label>{tr('Autorun Cycle (s)')}</label>
-                      <input
-                        type="number"
-                        value={$autorun_cycle->getValue()}
-                        name="fb--conf--autorun_cycle"
-                      />
-                    </div>
                     <div class="form-el el--block-label">
                       <label>{tr('Auto Announcements')}</label>
                       <div class="admin-section-toggle radio-inline">
@@ -829,6 +976,40 @@ class AdminController extends Controller {
                         </label>
                       </div>
                     </div>
+                    <div class="form-el el--block-label">
+                      <label>{tr('Default Bonus Dec')}</label>
+                      <input
+                        type="number"
+                        value={$default_bonusdec->getValue()}
+                        name="fb--conf--default_bonusdec"
+                      />
+                    </div>
+                    <div class="form-el el--block-label">
+                      <label>{tr('Configuration Cycle (s)')}</label>
+                      <input
+                        type="number"
+                        value={$conf_cycle->getValue()}
+                        name="fb--conf--conf_cycle"
+                      />
+                    </div>
+                  </div>
+                  <div class="col col-pad col-4-4">
+                    <div class="form-el el--block-label">
+                      <label>{tr('Autorun Cycle (s)')}</label>
+                      <input
+                        type="number"
+                        value={$autorun_cycle->getValue()}
+                        name="fb--conf--autorun_cycle"
+                      />
+                    </div>
+                    <div class="form-el el--block-label">
+                      <label>{tr('Leaderboard Limit')}</label>
+                      <input
+                        type="number"
+                        value={$leaderboard_limit->getValue()}
+                        name="fb--conf--leaderboard_limit"
+                      />
+                    </div>
                     <div class="form-el el--block-label"></div>
                   </div>
                 </div>
@@ -836,6 +1017,13 @@ class AdminController extends Controller {
               <section class="admin-box">
                 <header class="admin-box-header">
                   <h3>{tr('Game Schedule')}</h3>
+                  <div class="admin-section-toggle radio-inline">
+                    <button
+                      class={strval($game_schedule_reset_class)}
+                      data-action={$game_schedule_reset_action}>
+                      {$game_schedule_reset_text}
+                    </button>
+                  </div>
                 </header>
                 <div class="fb-column-container">
                   <div class="col col-pad col-1-5">
@@ -1597,7 +1785,7 @@ class AdminController extends Controller {
       $quiz_id_txt = 'quiz_id'.strval($quiz->getId());
 
       $countries_select =
-        await $this->genGenerateCountriesSelect($quiz->getEntityId());
+        await $this->genGenerateCountriesSelect($quiz->getEntityId()); // TODO: Combine Awaits
 
       $delete_button =
         <div style="display: inline">
@@ -1771,20 +1959,15 @@ class AdminController extends Controller {
   }
 
   public async function genRenderFlagsContent(): Awaitable<:xhp> {
-    $awaitables = Map {
-      'countries_select' => $this->genGenerateCountriesSelect(0),
-      'level_categories_select' => $this->genGenerateLevelCategoriesSelect(
-        0,
-      ),
-      'filter_categories_select' =>
-        $this->genGenerateFilterCategoriesSelect(),
-    };
-
-    $results = await \HH\Asio\m($awaitables);
-
-    $countries_select = $results['countries_select'];
-    $level_categories_select = $results['level_categories_select'];
-    $filter_categories_select = $results['filter_categories_select'];
+    list(
+      $countries_select,
+      $level_categories_select,
+      $filter_categories_select,
+    ) = await \HH\Asio\va(
+      $this->genGenerateCountriesSelect(0),
+      $this->genGenerateLevelCategoriesSelect(0),
+      $this->genGenerateFilterCategoriesSelect(),
+    );
 
     $adminsections =
       <div class="admin-sections">
@@ -1990,11 +2173,11 @@ class AdminController extends Controller {
           </div>
         </div>;
 
-      $attachments = await Attachment::genHasAttachments($flag->getId());
+      $attachments = await Attachment::genHasAttachments($flag->getId()); // TODO: Combine Awaits
       if ($attachments) {
         $a_c = 1;
         $all_attachments =
-          await Attachment::genAllAttachments($flag->getId());
+          await Attachment::genAllAttachments($flag->getId()); // TODO: Combine Awaits
         foreach ($all_attachments as $attachment) {
           $attachments_div->appendChild(
             <div class="existing-attachment fb-column-container">
@@ -2014,7 +2197,7 @@ class AdminController extends Controller {
                         value={$attachment->getFilename()}
                         disabled={true}
                       />
-                      <a href={$attachment->getFilename()} target="_blank">
+                      <a href={$attachment->getFileLink()} target="_blank">
                         {tr('Link')}
                       </a>
                     </div>
@@ -2072,10 +2255,10 @@ class AdminController extends Controller {
           </div>
         </div>;
 
-      $links = await Link::genHasLinks($flag->getId());
+      $links = await Link::genHasLinks($flag->getId()); // TODO: Combine Awaits
       if ($links) {
         $l_c = 1;
-        $all_links = await Link::genAllLinks($flag->getId());
+        $all_links = await Link::genAllLinks($flag->getId()); // TODO: Combine Awaits
         foreach ($all_links as $link) {
           $links_div->appendChild(
             <div class="existing-link fb-column-container">
@@ -2115,18 +2298,10 @@ class AdminController extends Controller {
         }
       }
 
-      $awaitables = Map {
-        'countries_select' => $this->genGenerateCountriesSelect(
-          $flag->getEntityId(),
-        ),
-        'level_categories_select' =>
-          $this->genGenerateLevelCategoriesSelect($flag->getCategoryId()),
-      };
-
-      $results = await HH\Asio\m($awaitables);
-
-      $countries_select = $results['countries_select'];
-      $level_categories_select = $results['level_categories_select'];
+      list($countries_select, $level_categories_select) = await \HH\Asio\va(
+        $this->genGenerateCountriesSelect($flag->getEntityId()),
+        $this->genGenerateLevelCategoriesSelect($flag->getCategoryId()),
+      ); // TODO: Combine Awaits
 
       $adminsections->appendChild(
         <section class="validate-form admin-box section-locked">
@@ -2307,20 +2482,15 @@ class AdminController extends Controller {
   }
 
   public async function genRenderBasesContent(): Awaitable<:xhp> {
-    $awaitables = Map {
-      'countries_select' => $this->genGenerateCountriesSelect(0),
-      'level_categories_select' => $this->genGenerateLevelCategoriesSelect(
-        0,
-      ),
-      'filter_categories_select' =>
-        $this->genGenerateFilterCategoriesSelect(),
-    };
-
-    $results = await \HH\Asio\m($awaitables);
-
-    $countries_select = $results['countries_select'];
-    $level_categories_select = $results['level_categories_select'];
-    $filter_categories_select = $results['filter_categories_select'];
+    list(
+      $countries_select,
+      $level_categories_select,
+      $filter_categories_select,
+    ) = await \HH\Asio\va(
+      $this->genGenerateCountriesSelect(0),
+      $this->genGenerateLevelCategoriesSelect(0),
+      $this->genGenerateFilterCategoriesSelect(),
+    );
 
     $adminsections =
       <div class="admin-sections">
@@ -2523,11 +2693,11 @@ class AdminController extends Controller {
             </div>
           </div>
         </div>;
-      $has_attachments = await Attachment::genHasAttachments($base->getId());
+      $has_attachments = await Attachment::genHasAttachments($base->getId()); // TODO: Combine Awaits
       if ($has_attachments) {
         $a_c = 1;
         $all_attachments =
-          await Attachment::genAllAttachments($base->getId());
+          await Attachment::genAllAttachments($base->getId()); // TODO: Combine Awaits
         foreach ($all_attachments as $attachment) {
           $attachments_div->appendChild(
             <div class="existing-attachment fb-column-container">
@@ -2547,7 +2717,7 @@ class AdminController extends Controller {
                         value={$attachment->getFilename()}
                         disabled={true}
                       />
-                      <a href={$attachment->getFilename()} target="_blank">
+                      <a href={$attachment->getFileLink()} target="_blank">
                         {tr('Link')}
                       </a>
                     </div>
@@ -2605,10 +2775,10 @@ class AdminController extends Controller {
           </div>
         </div>;
 
-      $has_links = await Link::genHasLinks($base->getId());
+      $has_links = await Link::genHasLinks($base->getId()); // TODO: Combine Awaits
       if ($has_links) {
         $l_c = 1;
-        $all_links = await Link::genAllLinks($base->getId());
+        $all_links = await Link::genAllLinks($base->getId()); // TODO: Combine Awaits
         foreach ($all_links as $link) {
           if (filter_var($link->getLink(), FILTER_VALIDATE_URL)) {
             $link_a =
@@ -2652,18 +2822,10 @@ class AdminController extends Controller {
         $l_c++;
       }
 
-      $awaitables = Map {
-        'countries_select' => $this->genGenerateCountriesSelect(
-          $base->getEntityId(),
-        ),
-        'level_categories_select' =>
-          $this->genGenerateLevelCategoriesSelect($base->getCategoryId()),
-      };
-
-      $results = await HH\Asio\m($awaitables);
-
-      $countries_select = $results['countries_select'];
-      $level_categories_select = $results['level_categories_select'];
+      list($countries_select, $level_categories_select) = await \HH\Asio\va(
+        $this->genGenerateCountriesSelect($base->getEntityId()),
+        $this->genGenerateLevelCategoriesSelect($base->getCategoryId()),
+      ); // TODO: Combine Awaits
 
       $adminsections->appendChild(
         <section class="validate-form admin-box section-locked">
@@ -2870,7 +3032,7 @@ class AdminController extends Controller {
           </div>;
       }
 
-      $is_used = await Category::genIsUsed($category->getId());
+      $is_used = await Category::genIsUsed($category->getId()); // TODO: Combine Awaits
       ;
       if ($is_used || $category->getProtected()) {
         $delete_action = <a></a>;
@@ -2968,16 +3130,16 @@ class AdminController extends Controller {
 
     $all_countries = await Country::genAllCountries();
     foreach ($all_countries as $country) {
-      $using_country = await Level::genWhoUses($country->getId());
+      $using_country = await Level::genWhoUses($country->getId()); // TODO: Combine Awaits
       $current_use = ($using_country) ? tr('Yes') : tr('No');
       if ($country->getEnabled()) {
         $highlighted_action = 'disable_country';
         $highlighted_color = 'highlighted--red country-enabled';
-        $current_status = 'DISABLED';
+        $current_status = 'Disabled';
       } else {
         $highlighted_action = 'enable_country';
         $highlighted_color = 'highlighted--green country-disabled';
-        $current_status = 'ENABLED';
+        $current_status = 'Enabled';
       }
 
       if (!$using_country) {
@@ -2986,7 +3148,7 @@ class AdminController extends Controller {
             class={$highlighted_color}
             href="#"
             data-action={str_replace('_', '-', $highlighted_action)}>
-            {$current_status}
+            {tr($current_status)}
           </a>;
       } else {
         $status_action = <a class={$highlighted_color}></a>;
@@ -3092,12 +3254,12 @@ class AdminController extends Controller {
 
   private async function genGenerateTeamScores(int $team_id): Awaitable<:xhp> {
     $scores_div = <div></div>;
-    $scores = await ScoreLog::genAllScoresByTeam($team_id);
+    $scores = await ScoreLog::genAllScoresByTeam($team_id, true);
     if (count($scores) > 0) {
       $scores_tbody = <tbody></tbody>;
       foreach ($scores as $score) {
-        $level = await Level::gen($score->getLevelId());
-        $country = await Country::gen($level->getEntityId());
+        $level = await Level::gen($score->getLevelId()); // TODO: Combine Awaits
+        $country = await Country::gen($level->getEntityId()); // TODO: Combine Awaits
         $level_str = $country->getName().' - '.$level->getTitle();
         $scores_tbody->appendChild(
           <tr>
@@ -3142,7 +3304,7 @@ class AdminController extends Controller {
     if (count($failures) > 0) {
       $failures_tbody = <tbody></tbody>;
       foreach ($failures as $failure) {
-        $check_status = await Level::genCheckStatus($failure->getLevelId());
+        $check_status = await Level::genCheckStatus($failure->getLevelId()); // TODO: Combine Awaits
         if (!$check_status) {
           continue;
         }
@@ -3340,7 +3502,7 @@ class AdminController extends Controller {
     $c = 1;
     $all_teams = await Team::genAllTeams();
     foreach ($all_teams as $team) {
-      $logo_model = await $team->getLogoModel();
+      $logo_model = await $team->getLogoModel(); // TODO: Combine Awaits
       if ($logo_model->getCustom()) {
         $image = <img class="icon--badge" src={$logo_model->getLogo()}></img>;
       } else {
@@ -3461,7 +3623,7 @@ class AdminController extends Controller {
         'team_failures' => $this->genGenerateTeamFailures($team->getId()),
       };
 
-      $results = await \HH\Asio\m($awaitables);
+      $results = await \HH\Asio\m($awaitables); // TODO: Combine Awaits
 
       $team_tabs = $results['team_tabs'];
       $team_names = $results['team_names'];
@@ -3654,7 +3816,7 @@ class AdminController extends Controller {
             <use href={$iconbadge} />
           </svg>;
       }
-      $using_logo = await MultiTeam::genWhoUses($logo->getName());
+      $using_logo = await MultiTeam::genWhoUses($logo->getName()); // TODO: Combine Awaits
       $current_use = (count($using_logo) > 0) ? tr('Yes') : tr('No');
       if ($logo->getEnabled()) {
         $highlighted_action = 'disable_logo';
@@ -3745,8 +3907,17 @@ class AdminController extends Controller {
     $c = 1;
     $all_sessions = await Session::genAllSessions();
     foreach ($all_sessions as $session) {
+      /* HH_IGNORE_ERROR[2050] */
+      $cookie = $_COOKIE['FBCTF'];
+      if ($cookie === $session->getCookie()) {
+        $session_data = await Session::genSessionDataIfExist($cookie); // TODO: Combine Awaits
+        await Session::genSetTeamId($cookie, $session_data); // TODO: Combine Awaits
+        $session = await Session::gen($cookie); // TODO: Combine Awaits
+      } else if ($session->getTeamId() === 0) {
+        continue;
+      }
       $session_id = 'session_'.strval($session->getId());
-      $team = await MultiTeam::genTeam($session->getTeamId());
+      $team = await MultiTeam::genTeam($session->getTeamId()); // TODO: Combine Awaits
       $adminsections->appendChild(
         <section class="admin-box section-locked">
           <form class="session_form" name={$session_id}>
@@ -3859,43 +4030,37 @@ class AdminController extends Controller {
             <span class="highlighted--red">{$gamelog->getEntry()}</span>;
         }
 
-        $awaitables = Map {
-          'team' => MultiTeam::genTeam($gamelog->getTeamId()),
-          'level' => Level::gen($gamelog->getLevelId()),
-        };
+        list($team, $level) = await \HH\Asio\va(
+          MultiTeam::genTeam($gamelog->getTeamId()),
+          Level::gen($gamelog->getLevelId()),
+        ); // TODO: Combine Awaits
 
-        $results = await \HH\Asio\m($awaitables);
+        invariant($team !== null, 'Team should not be null');
+        invariant($team instanceof Team, 'team should be of type Team');
 
-        if ($results->contains('team') && $results->contains('level')) {
-          $team = $results->get('team');
-          invariant($team !== null, 'Team should not be null');
-          invariant($team instanceof Team, 'team should be of type Team');
+        invariant($level !== null, 'Level should not be null');
+        invariant($level instanceof Level, 'level should be of type Level');
 
-          $level = $results->get('level');
-          invariant($level !== null, 'Level should not be null');
-          invariant($level instanceof Level, 'level should be of type Level');
+        $country = await Country::gen($level->getEntityId()); // TODO: Combine Awaits
 
-          $country = await Country::gen($level->getEntityId());
+        $team_name = $team->getName();
 
-          $team_name = $team->getName();
-
-          $level_str =
-            $country->getName().
-            ' - '.
-            $level->getTitle().
-            ' - '.
-            $level->getType();
-          $logs_tbody->appendChild(
-            <tr>
-              <td>{time_ago($gamelog->getTs())}</td>
-              <td>{$log_entry}</td>
-              <td>{$level_str}</td>
-              <td>{strval($gamelog->getPoints())}</td>
-              <td>{$team_name}</td>
-              <td>{$gamelog->getFlag()}</td>
-            </tr>
-          );
-        }
+        $level_str =
+          $country->getName().
+          ' - '.
+          $level->getTitle().
+          ' - '.
+          $level->getType();
+        $logs_tbody->appendChild(
+          <tr>
+            <td>{time_ago($gamelog->getTs())}</td>
+            <td>{$log_entry}</td>
+            <td>{$level_str}</td>
+            <td>{strval($gamelog->getPoints())}</td>
+            <td>{$team_name}</td>
+            <td>{$gamelog->getFlag()}</td>
+          </tr>
+        );
         $logs_table =
           <table>
             <thead>
@@ -4038,10 +4203,11 @@ class AdminController extends Controller {
               <a href="/index.php?p=admin&page=logs">{tr('Game Logs')}</a>
             </li>
           </ul>
-          {$game_action}
-          <p><br /></p>
-          {$pause_action}
         </nav>
+        <div class="admin-nav-controls row-fixed">
+          {$game_action}
+          {$pause_action}
+        </div>
         <div class="admin-nav--footer row-fixed">
           <a href="/index.php?p=game">{tr('Gameboard')}</a>
           <a href="" class="js-prompt-logout">{tr('Logout')}</a>
@@ -4101,8 +4267,10 @@ class AdminController extends Controller {
 
   <<__Override>>
   public async function genRenderBody(string $page): Awaitable<:xhp> {
-    $rendered_page = await $this->genRenderPage($page);
-    $rendered_main_nav = await $this->genRenderMainNav();
+    list($rendered_page, $rendered_main_nav) = await \HH\Asio\va(
+      $this->genRenderPage($page),
+      $this->genRenderMainNav(),
+    );
     return
       <body data-section="admin">
         <input

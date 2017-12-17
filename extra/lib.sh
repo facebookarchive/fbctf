@@ -29,12 +29,12 @@ function ok_log() {
 function dl() {
   local __url=$1
   local __dest=$2
+  sudo curl --retry 5 --retry-delay 15 -sSL "$__url" -o "$__dest"
+}
 
-  if [ -n "$(which wget)" ]; then
-    sudo wget -q "$__url" -O "$__dest"
-  else
-    sudo curl -s "$__url" -o "$__dest"
-  fi
+function dl_pipe() {
+  local __url=$1
+  curl --retry 5 --retry-delay 15 -sSL "$__url"
 }
 
 function package_repo_update() {
@@ -53,13 +53,13 @@ function package() {
 
 function install_unison() {
   cd /
-  curl -sL https://www.archlinux.org/packages/extra/x86_64/unison/download/ | sudo tar Jx
+  dl_pipe "https://www.archlinux.org/packages/extra/x86_64/unison/download/" | sudo tar Jx
 }
 
 function repo_osquery() {
   log "Adding osquery repository keys"
   sudo DEBIAN_FRONTEND=noninteractive apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1484120AC4E9F8A1A577AEEE97A80C63C9D8B80B
-  sudo DEBIAN_FRONTEND=noninteractive add-apt-repository "deb [arch=amd64] https://osquery-packages.s3.amazonaws.com/trusty trusty main"
+  sudo DEBIAN_FRONTEND=noninteractive add-apt-repository "deb [arch=amd64] https://pkg.osquery.io/deb deb main"
 }
 
 function install_mysql() {
@@ -128,6 +128,7 @@ function letsencrypt_cert() {
   fi
 
   if [[ "$__docker" = true ]]; then
+    mkdir -p /root/tmp
     cat <<- EOF > /root/tmp/certbot.sh
 		#!/bin/bash
 		if [[ ! ( -d /etc/letsencrypt && "\$(ls -A /etc/letsencrypt)" ) ]]; then
@@ -228,16 +229,14 @@ function install_hhvm() {
 
   package software-properties-common
 
-  log "Adding HHVM key"
+  log "Adding HHVM keys"
   sudo DEBIAN_FRONTEND=noninteractive apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0x5a16e7281be7a449
+  sudo DEBIAN_FRONTEND=noninteractive apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xB4112585D386EB94
 
   log "Adding HHVM repo"
-  sudo DEBIAN_FRONTEND=noninteractive add-apt-repository "deb http://dl.hhvm.com/ubuntu $(lsb_release -sc) main"
+  sudo DEBIAN_FRONTEND=noninteractive add-apt-repository "deb http://dl.hhvm.com/ubuntu xenial-lts-3.21 main"
 
   package_repo_update
-
-  log "Installing HHVM"
-  # Installing the package so the dependencies are installed too
   package hhvm
 
   log "Enabling HHVM to start by default"
@@ -273,17 +272,25 @@ function hhvm_performance() {
   cat "$__config" | sed "s|$__oldrepo|$__repofile|g" | sudo tee "$__config"
   sudo hhvm-repo-mode enable "$__path"
   sudo chown www-data:www-data "$__repofile"
-  sudo service hhvm start
+  sudo service hhvm restart
 }
 
 function install_composer() {
   local __path=$1
 
   cd $__path
-  curl -sS https://getcomposer.org/installer | php
+  dl_pipe "https://getcomposer.org/installer" | php
   hhvm composer.phar install
   sudo mv composer.phar /usr/bin
   sudo chmod +x /usr/bin/composer.phar
+}
+
+function install_nodejs() {
+  log "Downloading and setting node.js version 6.x repo information"
+  dl_pipe "https://deb.nodesource.com/setup_6.x" | sudo -E bash -
+
+  log "Installing node.js"
+  package nodejs
 }
 
 function import_empty_db() {
