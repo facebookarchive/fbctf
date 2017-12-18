@@ -18,15 +18,15 @@ $translations = array(
   'Gameboard' =>
     'Panel de juego',
   'Register Team' =>
-    'Registrar Equipo',
+    'Registrar equipo',
   'Get ready for the CTF to start and register your team now!' =>
     '¡Prepárate para competir y registrar tu equipo!',
   'Login' =>
-    'Inciar Sesión',
+    'Inciar sesión',
   'Soon' =>
     'Próximamente',
   'Upcoming Game' =>
-    'Próximo Juego',
+    'Próximo juego',
   '_days' =>
     '_días',
   '_hours' =>
@@ -74,17 +74,17 @@ $translations = array(
   'Name' =>
     'Nombre',
   'Email' =>
-    'Correo Electrónico',
+    'Correo electrónico',
   'Token' =>
     'Token',
   'Team Registration' =>
-    'Registro de Equipo',
+    'Registro de equipo',
   'Team Name' =>
-    'Nombre de Equipo',
+    'Nombre de equipo',
   'Password' =>
-    'Password',
+    'Contraseña',
   'Choose an Emblem' =>
-    'Elige un Emblema',
+    'Elige un emblema',
   'or upload your own' =>
     'o sube tus propios',
   'Clear your custom emblem to use a default emblem.' =>
@@ -96,7 +96,7 @@ $translations = array(
   'Register to play Capture The Flag here. Once you have registered, you will be logged in.' =>
     'Regístrate aquí para jugar Capture The Flag. Una vez registrado, accederás al sitio.',
   'Not Available' =>
-    'No Disponible',
+    'No disponible',
   'Team Registration will be open soon, stay tuned!' =>
     '¡El registro de equipos se habilitará pronto, mantente al tanto!',
   'Try Again' =>
@@ -104,7 +104,7 @@ $translations = array(
   'Select' =>
     'Seleccionar',
   'Team Login' =>
-    'Acceso de Equipo',
+    'Acceso de equipo',
   'Please login here. If you have not registered, you may do so by clicking "Sign Up" below. ' =>
     'Por favor inicia sesión aquí. Si no lo hiciste, puedes hacerlo haciendo clic en "Registro" más abajo. ',
   'Team Login will be open soon, stay tuned!' =>
@@ -120,7 +120,7 @@ $translations = array(
   'Thank you.' =>
     'Gracias.',
   'Logout' =>
-    'Cerrar Sesión',
+    'Cerrar sesión',
   'Registration' =>
     'Registro',
   'Play CTF' =>
@@ -135,7 +135,7 @@ $translations = array(
   'Navigation' =>
     'Navegación',
   'View Mode' =>
-    'Modo Visualización',
+    'Modo visualización',
   'View mode' =>
     'Modo visualización',
   'Tutorial' =>
@@ -149,7 +149,7 @@ $translations = array(
   'All' =>
     'Todos',
   'Leaderboard' =>
-    'Tabla de Posiciones',
+    'Ranking',
   'Announcements' =>
     'Anuncios',
   'Teams' =>
@@ -159,12 +159,12 @@ $translations = array(
   'Activity' =>
     'Actividad',
   'Game Clock' =>
-    'Reloj del Juego',
+    'Reloj de juego',
   //Translations for AdminController
   'Auto' =>
     'Auto',
   'All Categories' =>
-    'Todas las Categorías',
+    'Todas las categorías',
   'Open' =>
     'Abrir',
   'Tokenized' =>
@@ -180,11 +180,11 @@ $translations = array(
   'Available' =>
     'Disponible',
   'Registration Tokens' =>
-    'Tokens de Registro',
+    'Tokens de registro',
   'Create More' =>
-    'Crear Más',
+    'Crear más',
   'Export Available' =>
-    'Exportar Disponibles',
+    'Exportar disponibles',
   'Not started yet' =>
     'No inició aún',
   'Configuration' =>
@@ -192,7 +192,7 @@ $translations = array(
   'Tokens' =>
     'Tokens',
   'Game Configuration' =>
-    'Configuración del Juego',
+    'Configuración del juego',
   'OK' =>
     'OK',
   'status_' =>
@@ -202,39 +202,53 @@ $translations = array(
   'Off' =>
     'Off',
   'Player Names' =>
-    'Nombre de los Jugadores',
+    'Nombre de los jugadores',
   'Players Per Team' =>
-    'Jugadores Por Equipo',
+    'Jugadores por equipo',
   'Registration Type' =>
-    'Tipo de Registro',
+    'Tipo de registro',
   'Strong Passwords' =>
-    'Contraseñas Seguras',
+    'Contraseñas Sseguras',
   'Team Selection' =>
-    'Selección de Equipo',
+    'Selección de equipo',
+  'Password Types' =>
+    'Politica de contraseñas',
   'Game' =>
     'Juego',
   'Scoring' =>
     'Puntuación',
   'Progressive Cycle (s)' =>
-    'Ciclos Progresivos',
+    'Ciclos progresivos',
   'Refresh Gameboard' =>
-    'Refrescar Panel de Juego',
+    'Refrescar panel de juego',
   'Default Bonus' =>
     'Bonus por defecto',
   'Bases Cycle (s)' =>
     'Ciclos Base',
   'Default Bonus Dec' =>
     'Bonus Dec por defecto',
+  'Game Schedule' =>
+    'Calendario',
+  'Game Start Year' =>
+    'Año de inicio',
+  'Game End Year' =>
+    'Año de fin',
+  'Day' =>
+    'Día',
+  'Month' =>
+    'Mes',
+  'Minute' =>
+    'Minuto',
   'Timer' =>
     'Temporizador',
   'Server Time' =>
-    'Tiempo de Servidor',
+    'Tiempo del servidor',
   'Game Duration' =>
-    'Duración del Juego',
+    'Duración del juego',
   'Begin Time' =>
-    'Tiempo de Inicio',
+    'Tiempo de inicio',
   'Expected End Time' =>
-    'Tiempo de Finalización Esperada',
+    'Tiempo de finalización esperado',
   'Internationalization' =>
     'Internacionalización',
   'Language' =>
@@ -242,27 +256,27 @@ $translations = array(
   'Branding' =>
     'Marca',
   'Custom Logo' =>
-    'Logotipo Personalizado',
+    'Logotipo personalizado',
   'Logo' =>
     'Logo',
   'Custom Text' =>
-    'Texto Personalizado',
+    'Texto personalizado',
   'DELETE' =>
     'BORRAR',
   'Delete' =>
     'Borrar',
   'No Announcements' =>
-    'No hay Anuncios',
+    'No hay anuncios',
   'Game Controls' =>
-    'Controles del Juego',
+    'Controles del juego',
   'Write New Announcement here' =>
-    'Escribir Nuevo Anuncio aquí',
+    'Escribir nuevo anuncio aquí',
   'Create' =>
     'Crear',
   'General' =>
     'General',
   'Back Up Database' =>
-    'Hacer Copia de Seguridad de la Base de Datos',
+    'Hacer copia de seguridad de la base de datos',
   'Export Full Game' =>
     'Juego completo de exportación',
   'Import Full Game' =>
@@ -270,11 +284,11 @@ $translations = array(
   'Import Teams' =>
     'Equipos de importación',
   'Export Teams' =>
-    'Exportar Equipos',
+    'Exportar equipos',
   'Import Logos' =>
-    'Importar Logos',
+    'Importar logos',
   'Export Logos' =>
-    'Exportar Logos',
+    'Exportar logos',
   'Import Levels' =>
     'Niveles de importación',
   'Export Levels' =>
@@ -286,13 +300,13 @@ $translations = array(
   'Levels' =>
     'Niveles',
   'New Quiz Level' =>
-    'Nuevo Nivel Acertijo',
+    'Nuevo nivel acertijo',
   'Title' =>
     'Título',
   'Question' =>
     'Pregunta',
   'Level title' =>
-    'Título del Nivel',
+    'Título del nivel',
   'Quiz question' =>
     'Acertijo',
   'Country' =>
@@ -304,23 +318,23 @@ $translations = array(
   'Hint' =>
     'Pista',
   'Hint Penalty' =>
-    'Penalidad de la Pista',
+    'Penalización de la pista',
   'EDIT' =>
     'EDITAR',
   'All Quiz Levels' =>
-    'Todos los Niveles Acertijo',
+    'Todos los niveles acertijo',
   'Filter By:' =>
     'Filtrar por:',
   'All Status' =>
-    'Todos los Estados',
+    'Todos los estados',
   'Enabled' =>
     'Habilitado',
   'Disabled' =>
     'Deshabilitado',
   'Quiz Level' =>
-    'Nivel Acertijo',
+    'Nivel acertijo',
   'Show Answer' =>
-    'Mostrar Respuesta',
+    'Mostrar respuesta',
   'Bonus' =>
     'Bonus',
   '-Dec' =>
@@ -328,15 +342,15 @@ $translations = array(
   'Save' =>
     'Guardar',
   'Quiz Management' =>
-    'Administración de Acertijos',
+    'Administración de acertijos',
   'Add Quiz Level' =>
-    'Añadir nuevo nivel de Acertijo',
+    'Añadir nuevo nivel de acertijo',
   'New Flag Level' =>
-    'Nuevo Nivel Bandera',
+    'Nuevo nivel bandera',
   'Description' =>
     'Descripción',
   'Level description' =>
-    'Descripción del Nivel',
+    'Descripción del divel',
   'Category' =>
     'Categoría',
   'Flag' =>
@@ -344,9 +358,9 @@ $translations = array(
   'flag' =>
     'bandera',
   'All Flag Levels' =>
-    'Todos los Niveles Bandera',
+    'Todos los niveles bandera',
   'New Attachment:' =>
-    'Nuevo Adjunto:',
+    'Nuevo adjunto:',
   'Attachment' =>
     'Adjunto',
   'Link' =>
@@ -354,7 +368,7 @@ $translations = array(
   'New Link:' =>
     'Nuevo Link:',
   'Flag Level' =>
-    'Nivel Bandera',
+    'Nivel bandera',
   'Categories' =>
     'Categorias',
   '+ Attachment' =>
@@ -362,39 +376,39 @@ $translations = array(
   '+ Link' =>
     '+ Link',
   'Flags Management' =>
-    'Administrar Banderas',
+    'Administrar banderas',
   'Add Flag Level' =>
-    'Añadir Nivel Bandera',
+    'Añadir nivel bandera',
   'New Base Level' =>
-    'Nuevo Nivel Base',
+    'Nuevo nivel base',
   'Keep Points' =>
-    'Mantener Puntos',
+    'Mantener puntos',
   'Capture points' =>
     'Capturar puntos',
   'All Base Levels' =>
-    'Todos los Niveles Base',
+    'Todos los niveles base',
   'Base Level' =>
-    'Nivel Base',
+    'Nivel base',
   'Bases Management' =>
-    'Administrar Bases',
+    'Administrar bases',
   'Add Base Level' =>
     'Añadir Nivel Base',
   'New Category' =>
-    'Nueva Categoría',
+    'Nueva categoría',
   'Category: ' =>
     'Categoría: ',
   'Categories Management' =>
-    'Administrar Categorías',
+    'Administrar categorías',
   'Add Category' =>
     'Añadir Categoría',
   'All Countries' =>
-    'Todos lo Países',
+    'Todos lo países',
   'In Use' =>
-    'En Uso',
+    'En uso',
   'In use' =>
     'En uso',
   'Not Used' =>
-    'Sin Usar',
+    'Sin usar',
   'Yes' =>
     'Si',
   'No' =>
@@ -402,9 +416,9 @@ $translations = array(
   'ISO Code' =>
     'Código ISO',
   'Countries Management' =>
-    'Adminsitrar Países',
+    'Adminsitrar países',
   'No Team Names' =>
-    'No hay Nombre de Equipos',
+    'No hay nombre de equipos',
   'time' =>
     'tiempo',
   'type' =>
@@ -420,7 +434,7 @@ $translations = array(
   'Attempt' =>
     'Intento',
   'No Failures' =>
-    'Sin Fallas',
+    'Sin fallas',
   'Team' =>
     'Equipo',
   'team' =>
@@ -432,45 +446,45 @@ $translations = array(
   'Failures' =>
     'Fallas',
   'New Team' =>
-    'Nuevo Equipo',
+    'Nuevo equipo',
   'Team Logo' =>
-    'Logo de Equipo',
+    'Logo de equipo',
   'Selected Logo:' =>
-    'Logo Seleccionado:',
+    'Logo seleccionado:',
   'Select Logo' =>
-    'Seleccionar Logo',
+    'Seleccionar logo',
   'All Teams' =>
-    'Todos los Equipos',
+    'Todos los equipos',
   'Protected' =>
     'Protegido',
   'Score' =>
     'Puntuación',
   'Change Password' =>
-    'Cambiar Password',
+    'Cambiar contraseña',
   'Admin Level' =>
-    'Administrar Nivel',
+    'Administrar nivel',
   'Visibility' =>
     'Visibilidad',
   'Team Management' =>
-    'Administrar Equipo',
+    'Administrar equipo',
   'Add Team' =>
-    'Añadir Equipo',
+    'Añadir equipo',
   'None' =>
     'Ningúno',
   'Logo Name' =>
-    'Nombre de Logo',
+    'Nombre de logo',
   'Logo Management' =>
-    'Administración de Logo',
+    'Administración de logo',
   'Session' =>
     'Sesión',
   'Cookie' =>
     'Cookie',
   'Creation Time' =>
-    'Tiempo de Creación',
+    'Tiempo de creación',
   'Last Access' =>
-    'Último Acceso',
+    'Último acceso',
   'Last Page Access' =>
-    'Última Página de Acceso',
+    'Última página de acceso',
   'Data' =>
     'Datos',
   'Sessions' =>
@@ -478,17 +492,17 @@ $translations = array(
   'entry' =>
     'entrada',
   'No Entries' =>
-    'Sin Entrada',
+    'Sin entrada',
   'Game Logs' =>
-    'Logs del Juego',
+    'Logs del juego',
   'Game Logs Timeline' =>
-    'Logs del Juego en Linea de Tiempo',
+    'Logs del juego en linea de tiempo',
   'End Game' =>
-    'Finalizar Juego',
+    'Finalizar juego',
   'Begin Game' =>
-    'Iniciar Juego',
+    'Iniciar juego',
   'Game Admin' =>
-    'Administración del Juego',
+    'Administración del juego',
   'Controls' =>
     'Controles',
   'Quiz' =>
@@ -519,13 +533,13 @@ $translations = array(
   'pts' =>
     'pts', //points
   'Your Rank' =>
-    'Tu Posición',
+    'Tu posición',
   'Your Score' =>
-    'Tu Puntaje',
+    'Tu puntuación',
   'Everyone' =>
     'Todos',
   'Your Team' =>
-    'Tu Equipo',
+    'Tu equipo',
   'Captured' =>
     'Capturado',
   'Initiating' =>
@@ -577,7 +591,7 @@ $translations = array(
   'cancel_' =>
     'cancelar_',
   'Are you sure you want to cancel? You have unsaved changes that will be reverted.' =>
-    'Está seguro que desea cancelar? Los cambios sin guardar se perderán.',
+    '¿Está seguro que desea cancelar? Los cambios sin guardar se perderán.',
   'choose_logo' =>
     'elegir_logo',
   'captured_' =>
@@ -595,7 +609,7 @@ $translations = array(
   'Insert your answer' =>
     'Introduce tu respuesta',
   'Request Hint' =>
-    'Solicitar Pista',
+    'Solicitar pista',
   'Submit' =>
     'Enviar',
   'hint_' =>
@@ -637,29 +651,29 @@ $translations = array(
   'Tool_Bars' =>
     'Tool_Bars',
   'Tap the "Game Clock" to keep track of time during gameplay. Don’t let time get the best of you.' =>
-    'Pulsa el "Reloj del Juego" para hacer seguimiento del tiempo. No dejes que el tiempo te gane.',
+    'Pulsa el "Reloj del juego" para hacer seguimiento del tiempo. No dejes que el tiempo te gane.',
   'Game_Clock' =>
-    'Game_Clock',
+    'Reloj de juego',
   'Countries marked with an ' =>
     'Países marcados con una ',
   'are captured by you.' =>
-    'son capturados por vos.',
+    'son capturados por tí.',
   ' are owned by others.' =>
     ' le pertenecen a otros.',
   'Captures' =>
     'Capturas',
   'Tap Plus[+] to Zoom In. Tap Minus[-] to Zoom Out.' =>
-    'Pulsa Más[+] para Acercarte. Pulsa Menos[-] para Alejarte.',
+    'Pulsa más[+] para acercarte. Pulsa menos[-] para alejarte.',
   'Click and Drag to move left, right, up and down.' =>
-    'Presiona y Arrastra para moverte por la izquierda, derecha, arriba o abajo',
+    'Presiona y rrastra para moverte por la izquierda, derecha, arriba o abajo',
   'Zoom' =>
     'Zoom',
   'Tap Forward Slash [/] to activate computer commands. A list of commands can be found under "Rules".' =>
-    'Presiona Slash [/] para activar los comandos del juego. La lista completa de comandos puede ser encontrada en "Reglas".',
+    'Presiona contrabarra [/] para activar los comandos del juego. La lista completa de comandos puede ser encontrada en "Reglas".',
   'Command_Line' =>
     'Command_Line',
   'Click "Nav" to access main navigation links like Rules of Play, Registration, Blog, Jobs & more.' =>
-    'Presiona "Nav" para acceder a los links principales como Reglas del Juego, Registro, Blog, Trabajo y más.',
+    'Presiona "Navegación" para acceder a los links principales como "Reglas del juego", "Cerrar sesión" y otros.',
   'Track your competition by clicking "scoreboard" to access real-time game statistics and graphs.' =>
     'Haz un seguimiento del juego haciendo clic en "scoreboard" para acceder a estadísticas y gráficas en tiempo real.',
   'Have fun, be the best and conquer the world.' =>
@@ -675,11 +689,11 @@ $translations = array(
   'Powered By Facebook' =>
     'Powered By Facebook',
   'Active Directory / LDAP' =>
-    'Active Directory / LDAP',
+    'Directorio Activo / LDAP',
   'LDAP Server' =>
-    'LDAP Server',
+    'LDAP Servidor',
   'LDAP Port' =>
-    'LDAP Port',
+    'LDAP Puerto',
   'LDAP Domain' =>
-    'LDAP Domain',
+    'LDAP Dominio',
 );

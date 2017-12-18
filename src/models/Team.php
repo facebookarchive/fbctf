@@ -36,7 +36,7 @@ class Team extends Model implements Importable, Exportable {
   }
 
   public function getName(): string {
-    return $this->name;
+    return mb_convert_encoding($this->name, 'UTF-8');
   }
 
   public function getPasswordHash(): string {
@@ -86,7 +86,7 @@ class Team extends Model implements Importable, Exportable {
   ): Awaitable<bool> {
     foreach ($elements as $team) {
       $name = must_have_string($team, 'name');
-      $exist = await self::genTeamExist($name);
+      $exist = await self::genTeamExist($name); // TODO: Combine Awaits
       if (!$exist) {
         $team_id = await self::genCreateAll(
           (bool) must_have_idx($team, 'active'),
@@ -97,9 +97,9 @@ class Team extends Model implements Importable, Exportable {
           (bool) must_have_idx($team, 'admin'),
           (bool) must_have_idx($team, 'protected'),
           (bool) must_have_idx($team, 'visible'),
-        );
+        ); // TODO: Combine Awaits
       }
-      await Logo::genSetUsed(must_have_string($team, 'logo'), true);
+      await Logo::genSetUsed(must_have_string($team, 'logo'), true); // TODO: Combine Awaits
     }
     return true;
   }
@@ -179,9 +179,12 @@ class Team extends Model implements Importable, Exportable {
       $ldap = await Configuration::gen('ldap');
       if ($ldap->getValue() === '1' && !$team->getAdmin()) {
         // Get server information from configuration
-        $ldap_server = await Configuration::gen('ldap_server');
-        $ldap_port = await Configuration::gen('ldap_port');
-        $ldap_domain_suffix = await Configuration::gen('ldap_domain_suffix');
+        list($ldap_server, $ldap_port, $ldap_domain_suffix) =
+          await \HH\Asio\va(
+            Configuration::gen('ldap_server'),
+            Configuration::gen('ldap_port'),
+            Configuration::gen('ldap_domain_suffix'),
+          );
         $ldapconn = ldap_connect(
           $ldap_server->getValue(),
           intval($ldap_port->getValue()),
@@ -241,14 +244,15 @@ class Team extends Model implements Importable, Exportable {
     $db = await self::genDb();
 
     // Create team
-    await $db->queryf(
-      'INSERT INTO teams (name, password_hash, logo, created_ts) VALUES (%s, %s, %s, NOW())',
-      $name,
-      $password_hash,
-      $logo,
+    await \HH\Asio\va(
+      $db->queryf(
+        'INSERT INTO teams (name, password_hash, logo, created_ts) VALUES (%s, %s, %s, NOW())',
+        $name,
+        $password_hash,
+        $logo,
+      ),
+      Logo::genSetUsed($logo, true),
     );
-
-    await Logo::genSetUsed($logo, true);
 
     // Return newly created team_id
     $result =
@@ -260,7 +264,12 @@ class Team extends Model implements Importable, Exportable {
       );
 
     Logo::invalidateMCRecords();
-    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
+    // Delay rebuilding all cache for the new team, as they won't have any scoring data yet anyway.
+    MultiTeam::invalidateMCRecords('ALL_TEAMS');
+    MultiTeam::invalidateMCRecords('ALL_ACTIVE_TEAMS');
+    MultiTeam::invalidateMCRecords('ALL_VISIBLE_TEAMS');
+    MultiTeam::invalidateMCRecords('TEAMS_BY_LOGO');
+
     invariant($result->numRows() === 1, 'Expected exactly one result');
     return intval($result->mapRows()[0]['id']);
   }
@@ -279,18 +288,20 @@ class Team extends Model implements Importable, Exportable {
     $db = await self::genDb();
 
     // Create team
-    await $db->queryf(
-      'INSERT INTO teams (name, password_hash, points, logo, active, admin, protected, visible, created_ts) VALUES (%s, %s, %d, %s, %d, %d, %d, %d, NOW())',
-      $name,
-      $password_hash,
-      $points,
-      $logo,
-      $active ? 1 : 0,
-      $admin ? 1 : 0,
-      $protected ? 1 : 0,
-      $visible ? 1 : 0,
+    await \HH\Asio\va(
+      $db->queryf(
+        'INSERT INTO teams (name, password_hash, points, logo, active, admin, protected, visible, created_ts) VALUES (%s, %s, %d, %s, %d, %d, %d, %d, NOW())',
+        $name,
+        $password_hash,
+        $points,
+        $logo,
+        $active ? 1 : 0,
+        $admin ? 1 : 0,
+        $protected ? 1 : 0,
+        $visible ? 1 : 0,
+      ),
+      Logo::genSetUsed($logo, true),
     );
-    await Logo::genSetUsed($logo, true);
 
     // Return newly created team_id
     $result =
@@ -320,7 +331,10 @@ class Team extends Model implements Importable, Exportable {
       $email,
       $team_id,
     );
-    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('ALL_TEAMS'); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('ALL_ACTIVE_TEAMS');
+    MultiTeam::invalidateMCRecords('ALL_VISIBLE_TEAMS');
+    MultiTeam::invalidateMCRecords('TEAMS_BY_LOGO');
   }
 
   // Get a team data.
@@ -349,17 +363,18 @@ class Team extends Model implements Importable, Exportable {
       await $db->queryf('SELECT logo FROM teams WHERE id = %d', $team_id);
     invariant($result->numRows() === 1, 'Expected exactly one result');
     $logo_old = strval($result->mapRows()[0]['logo']);
-    await Logo::genSetUsed($logo_old, false);
 
-    await $db->queryf(
-      'UPDATE teams SET name = %s, logo = %s , points = %d WHERE id = %d LIMIT 1',
-      $name,
-      $logo,
-      $points,
-      $team_id,
+    await \HH\Asio\va(
+      $db->queryf(
+        'UPDATE teams SET name = %s, logo = %s , points = %d WHERE id = %d LIMIT 1',
+        $name,
+        $logo,
+        $points,
+        $team_id,
+      ),
+      Logo::genSetUsed($logo_old, false),
+      Logo::genSetUsed($logo, true),
     );
-    await Logo::genSetUsed($logo, true);
-
     Logo::invalidateMCRecords();
     MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
     ActivityLog::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached ActivityLog data.
@@ -376,7 +391,10 @@ class Team extends Model implements Importable, Exportable {
       $password_hash,
       $team_id,
     );
-    MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('ALL_TEAMS'); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('ALL_ACTIVE_TEAMS');
+    MultiTeam::invalidateMCRecords('ALL_VISIBLE_TEAMS');
+    MultiTeam::invalidateMCRecords('TEAMS_BY_LOGO');
     await Session::genDeleteByTeam($team_id);
   }
 
@@ -387,25 +405,68 @@ class Team extends Model implements Importable, Exportable {
       await $db->queryf('SELECT logo FROM teams WHERE id = %d', $team_id);
     invariant($result->numRows() === 1, 'Expected exactly one result');
     $logo = strval($result->mapRows()[0]['logo']);
+
     await Logo::genSetUsed($logo, false);
 
-    await $db->queryf(
-      'DELETE FROM teams WHERE id = %d AND protected = 0 LIMIT 1',
-      $team_id,
-    );
-    await $db->queryf(
-      'DELETE FROM registration_tokens WHERE team_id = %d',
-      $team_id,
-    );
-    await $db->queryf('DELETE FROM scores_log WHERE team_id = %d', $team_id);
-    await $db->queryf('DELETE FROM hints_log WHERE team_id = %d', $team_id);
-    await $db->queryf(
-      'DELETE FROM failures_log WHERE team_id = %d',
-      $team_id,
-    );
+    $queries = Vector {
+      sprintf(
+        'DELETE FROM teams WHERE id = %d AND protected = 0 LIMIT 1',
+        $team_id,
+      ),
+      sprintf(
+        'DELETE FROM registration_tokens WHERE team_id = %d',
+        $team_id,
+      ),
+      sprintf('DELETE FROM teams_oauth WHERE team_id = %d', $team_id),
+      sprintf('DELETE FROM scores_log WHERE team_id = %d', $team_id),
+      sprintf('DELETE FROM hints_log WHERE team_id = %d', $team_id),
+      sprintf('DELETE FROM failures_log WHERE team_id = %d', $team_id),
+      sprintf(
+        'DELETE FROM activity_log WHERE subject = "Team:%d"',
+        $team_id,
+      ),
+    };
+    await $db->multiQuery($queries);
     MultiTeam::invalidateMCRecords(); // Invalidate Memcached MultiTeam data.
     ActivityLog::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached ActivityLog data.
+    ScoreLog::invalidateMCRecords(); // Invalidate Memcached ScoreLog data.
+    HintLog::invalidateMCRecords(); // Invalidate Memcached ScoreLog data.
     await Session::genDeleteByTeam($team_id);
+  }
+
+  public static async function genSetTeamName(
+    int $team_id,
+    string $team_name,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    $team_name = trim($team_name);
+
+    if ($team_name === '') {
+      return false;
+    }
+
+    $shortname = substr($team_name, 0, 20);
+
+    $team_exists = await Team::genTeamExist($shortname);
+    if ($team_exists === true) {
+      return false;
+    } else {
+      $team = await self::genTeam($team_id);
+      await self::genUpdate(
+        $shortname,
+        $team->getLogo(),
+        $team->getPoints(),
+        $team_id,
+      );
+      MultiTeam::invalidateMCRecords('ALL_TEAMS'); // Invalidate Memcached MultiTeam data.
+      MultiTeam::invalidateMCRecords('ALL_ACTIVE_TEAMS');
+      MultiTeam::invalidateMCRecords('ALL_VISIBLE_TEAMS');
+      MultiTeam::invalidateMCRecords('TEAMS_BY_LOGO');
+      ScoreLog::invalidateMCRecords(); // Invalidate Memcached ScoreLog data.
+      ActivityLog::invalidateMCRecords(); // Invalidate Memcached ActivityLog data.
+      return true;
+    }
   }
 
   // Enable or disable teams by passing 1 or 0.
@@ -734,29 +795,149 @@ class Team extends Model implements Importable, Exportable {
     Control::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached Control data.
   }
 
+  public static async function genAuthTokenExists(
+    string $type,
+    string $token,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    $team_id_result = await $db->queryf(
+      'SELECT team_id FROM teams_oauth WHERE type = %s AND token = %s',
+      $type,
+      $token,
+    );
+
+    if ($team_id_result->numRows() === 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public static async function genTeamOAuthTokenExists(
+    string $type,
+    int $team_id,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    $team_id_result = await $db->queryf(
+      'SELECT id FROM teams_oauth WHERE type = %s AND team_id = %d',
+      $type,
+      $team_id,
+    );
+
+    if ($team_id_result->numRows() === 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public static async function genTeamFromOAuthToken(
+    string $type,
+    string $token,
+  ): Awaitable<Team> {
+    $db = await self::genDb();
+
+    $team_id_result = await $db->queryf(
+      'SELECT team_id FROM teams_oauth WHERE type = %s AND token = %s',
+      $type,
+      $token,
+    );
+
+    $team_id =
+      intval(must_have_idx($team_id_result->mapRows()[0], 'team_id'));
+    $team = await self::genTeam($team_id);
+    return $team;
+  }
+
+  public static async function genSetOAuthToken(
+    int $team_id,
+    string $type,
+    string $token,
+  ): Awaitable<bool> {
+    $db = await self::genDb();
+
+    $queries = Vector {
+      sprintf(
+        'SELECT id FROM teams_oauth WHERE type = "%s" AND token = "%s"',
+        $db->escapeString($type),
+        $db->escapeString($token),
+      ),
+      sprintf(
+        'SELECT id FROM teams_oauth WHERE team_id = %d AND type = "%s"',
+        $team_id,
+        $db->escapeString($type),
+      ),
+    };
+    list($oauth_exists_result, $current_id_result) =
+      await $db->multiQuery($queries);
+
+    if ($oauth_exists_result->numRows() > 0) {
+      return false;
+    }
+
+    if ($current_id_result->numRows() === 1) {
+      $result = await $db->queryf(
+        'UPDATE teams_oauth SET token = %s WHERE id = %d',
+        $token,
+        intval(must_have_idx($current_id_result->mapRows()[0], 'id')),
+      );
+      if ($result) {
+        return true;
+      }
+    } else {
+      $result = await $db->queryf(
+        'INSERT INTO teams_oauth (type, team_id, token) VALUES (%s, %d, %s)',
+        $type,
+        $team_id,
+        $token,
+      );
+      if ($result) {
+        return true;
+      }
+    }
+    return false;
+
+  }
+
   public static async function genGetLiveSyncKey(
     int $team_id,
     string $type,
   ): Awaitable<string> {
     $db = await self::genDb();
-    $result = await $db->queryf(
-      'SELECT * FROM livesync WHERE team_id = %d AND type = %s',
-      $team_id,
-      $type,
-    );
-    invariant($result->numRows() === 1, 'Expected exactly one result');
+    if ($type === 'general') {
+      $team = await self::genTeam($team_id);
+      $username = $team->getName();
+      $key = '';
+    } else {
+      $result = await $db->queryf(
+        'SELECT * FROM livesync WHERE team_id = %d AND type = %s',
+        $team_id,
+        $type,
+      );
+      invariant($result->numRows() === 1, 'Expected exactly one result');
 
-    $username = strval(must_have_idx($result->mapRows()[0], 'username'));
-    $key_from_db = strval(must_have_idx($result->mapRows()[0], 'sync_key'));
+      $username = strval(must_have_idx($result->mapRows()[0], 'username'));
+      $key_from_db = strval(must_have_idx($result->mapRows()[0], 'sync_key'));
 
-    switch ($type) {
-      case 'fbctf':
-        $key = self::generateHash($key_from_db);
-        break;
-        // FALLTHROUGH
-      default:
-        $key = $key_from_db;
-        break;
+      switch ($type) {
+        case 'fbctf':
+          $key = self::generateHash($key_from_db);
+          break;
+        case 'facebook_oauth':
+          $key = $key_from_db;
+          $username = '';
+          break;
+        case 'google_oauth':
+          $key = $key_from_db;
+          $username = '';
+          break;
+          // FALLTHROUGH
+        default:
+          $key = $key_from_db;
+          break;
+      }
     }
 
     return strval($type.":".$username.":".$key);
@@ -864,6 +1045,9 @@ class Team extends Model implements Importable, Exportable {
           $type,
         );
         break;
+      case 'facebook_oauth':
+        return await Integration::genFacebookThirdPartyExists($key);
+        break;
       case 'google_oauth':
         $result = await $db->queryf(
           'SELECT * FROM livesync WHERE sync_key = %s AND type = %s',
@@ -909,6 +1093,7 @@ class Team extends Model implements Importable, Exportable {
     string $key,
   ): Awaitable<Team> {
     $db = await self::genDb();
+    $email = '';
 
     invariant(strpos($key, ':'), "Invalid live sync key");
     list($type, $username, $key) = explode(':', $key);
@@ -921,6 +1106,18 @@ class Team extends Model implements Importable, Exportable {
           $type,
         );
         invariant($result->numRows() > 0, 'Expected at least one result');
+        break;
+      case 'facebook_oauth':
+        $email = await Integration::genFacebookThirdPartyEmail($key);
+        invariant(
+          $email !== '',
+          'Expected an email from genFacebookThirdPartyEmail, non returned.',
+        );
+        $result = await $db->queryf(
+          'SELECT * FROM livesync WHERE username = %s AND type = %s',
+          $email,
+          $type,
+        );
         break;
       case 'google_oauth':
         $result = await $db->queryf(
@@ -948,6 +1145,13 @@ class Team extends Model implements Importable, Exportable {
       switch ($type) {
         case 'fbctf':
           if (password_verify($key_from_db, $key)) {
+            $team_id = intval(must_have_idx($row, 'team_id'));
+            $team = await self::genTeam($team_id);
+            return $team;
+          }
+          break;
+        case 'facebook_oauth':
+          if (strval($email) === strval($username)) {
             $team_id = intval(must_have_idx($row, 'team_id'));
             $team = await self::genTeam($team_id);
             return $team;

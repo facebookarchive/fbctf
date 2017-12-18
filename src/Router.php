@@ -106,6 +106,6 @@ class Router {
 
   // Check to see if the request is going through the router
   public static function isRequestRouter(): bool {
-    return self::getRequestedPage() != "index";
+    return self::getRequestedPage() !== "index";
   }
 }

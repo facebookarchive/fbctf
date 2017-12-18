@@ -8,18 +8,25 @@ class MultiTeam extends Team {
     $MC_KEYS = Map {
       'ALL_TEAMS' => 'all_teams',
       'LEADERBOARD' => 'leaderboard_teams',
+      'LEADERBOARD_LIMIT' => 'leaderboard_limit',
       'POINTS_BY_TYPE' => 'points_by_type',
       'ALL_ACTIVE_TEAMS' => 'active_teams',
       'ALL_VISIBLE_TEAMS' => 'visible_teams',
       'TEAMS_BY_LOGO' => 'logo_teams',
       'TEAMS_BY_LEVEL' => 'level_teams',
+      'TEAMS_NAMES_BY_LEVEL' => 'level_teams_names',
       'TEAMS_FIRST_CAP' => 'capture_teams',
     };
 
   private static async function genTeamArrayFromDB(
     string $query,
+    int $limit = 0,
   ): Awaitable<Vector<Map<string, string>>> {
     $db = await self::genDb();
+    if ($limit !== 0) {
+      $query .= ' LIMIT '.intval($limit);
+    }
+
     $result = await $db->query($query);
 
     return $result->mapRows();
@@ -66,24 +73,57 @@ class MultiTeam extends Team {
   ): Awaitable<Team> {
     $all_teams = await self::genAllTeamsCache($refresh);
     $team = $all_teams->get($team_id);
-    invariant(
-      $team instanceof Team,
-      'all_teams should of type Team and not null',
-    );
+    invariant($team instanceof Team, 'team should of type Team and not null');
     return $team;
+  }
+
+  public static async function genLeaderboardLimit(): Awaitable<int> {
+    $limit = false;
+    $limit = self::getMCRecords('LEADERBOARD_LIMIT');
+    if (!$limit) {
+      $limit = await self::setLeaderboardLimit();
+    }
+    return intval($limit);
+  }
+
+  public static async function setLeaderboardLimit(): Awaitable<int> {
+    $leaderboard_limit = await Configuration::gen('leaderboard_limit');
+    self::setMCRecords('LEADERBOARD_LIMIT', $leaderboard_limit->getValue());
+    return intval($leaderboard_limit->getValue());
   }
 
   // Leaderboard order.
   public static async function genLeaderboard(
+    bool $limit = true,
     bool $refresh = false,
   ): Awaitable<array<Team>> {
+    list($leaderboard_limit, $leaderboard_limit_cache, $visible_teams) =
+      await \HH\Asio\va(
+        Configuration::gen('leaderboard_limit'),
+        self::genLeaderboardLimit(),
+        self::genAllVisibleTeams(),
+      );
+
+    $teams_count = count($visible_teams);
     $mc_result = self::getMCRecords('LEADERBOARD');
-    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+    if (!$mc_result ||
+        count($mc_result) === 0 ||
+        $leaderboard_limit_cache !== intval($leaderboard_limit->getValue()) ||
+        ($limit === false && (count($mc_result) !== $teams_count)) ||
+        $refresh) {
+      if ($limit === true) {
+        $teams =
+          await self::genTeamArrayFromDB(
+            'SELECT * FROM teams WHERE active = 1 AND visible = 1 ORDER BY points DESC, last_score ASC',
+            intval($leaderboard_limit->getValue()),
+          );
+      } else {
+        $teams =
+          await self::genTeamArrayFromDB(
+            'SELECT * FROM teams WHERE active = 1 AND visible = 1 ORDER BY points DESC, last_score ASC',
+          );
+      }
       $team_leaderboard = array();
-      $teams =
-        await self::genTeamArrayFromDB(
-          'SELECT * FROM teams WHERE active = 1 AND visible = 1 ORDER BY points DESC, last_score ASC',
-        );
       foreach ($teams->items() as $team) {
         $team_leaderboard[] = Team::teamFromRow($team);
       }
@@ -274,13 +314,25 @@ class MultiTeam extends Team {
     $mc_result = self::getMCRecords('TEAMS_BY_LEVEL');
     if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $teams_by_completed_level = array();
-      $teams =
+      $scores =
         await self::genTeamArrayFromDB(
-          'SELECT scores_log.level_id, teams.* FROM teams LEFT JOIN scores_log ON teams.id = scores_log.team_id WHERE teams.visible = 1 AND teams.active = 1 AND level_id IS NOT NULL ORDER BY scores_log.ts',
+          'SELECT level_id, team_id FROM scores_log WHERE level_id IS NOT NULL ORDER BY ts',
         );
-      foreach ($teams->items() as $team) {
-        $teams_by_completed_level[intval($team->get('level_id'))][] =
-          Team::teamFromRow($team);
+      $team_scores_awaitables = Map {};
+      foreach ($scores->items() as $score) {
+        $team_scores_awaitables->add(
+          Pair {
+            $score->get('level_id'),
+            self::genTeam(intval($score->get('team_id'))),
+          },
+        );
+      }
+      $team_scores = await \HH\Asio\m($team_scores_awaitables);
+
+      foreach ($team_scores as $level_id_key => $team) {
+        if ($team->getActive() === true && $team->getVisible() === true) {
+          $teams_by_completed_level[intval($level_id_key)][] = $team;
+        }
       }
       self::setMCRecords(
         'TEAMS_BY_LEVEL',
@@ -315,6 +367,127 @@ class MultiTeam extends Team {
     }
   }
 
+  public static async function genAllCompletedLevels(
+    bool $refresh = false,
+  ): Awaitable<Map<int, Team>> {
+    $mc_result = self::getMCRecords('TEAMS_BY_LEVEL');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $teams_by_completed_level = array();
+      $scores =
+        await self::genTeamArrayFromDB(
+          'SELECT level_id, team_id FROM scores_log WHERE level_id IS NOT NULL ORDER BY ts',
+        );
+      $team_scores_awaitables = Map {};
+      foreach ($scores->items() as $score) {
+        if ($team_scores_awaitables->contains(
+              intval($score->get('level_id')),
+            )) {
+          $teams_vector =
+            $team_scores_awaitables->get(intval($score->get('level_id')));
+          invariant(
+            $teams_vector instanceof Vector,
+            'teams_map should of type Vector and not null',
+          );
+          $teams_vector->add(self::genTeam(intval($score->get('team_id'))));
+          $team_scores_awaitables->set(
+            intval($score->get('level_id')),
+            $teams_vector,
+          );
+        } else {
+          $teams_vector = Vector {};
+          $teams_vector->add(self::genTeam(intval($score->get('team_id'))));
+          $team_scores_awaitables->add(
+            Pair {intval($score->get('level_id')), $teams_vector},
+          );
+        }
+      }
+
+      $team_scores = await \HH\Asio\mmk(
+        $team_scores_awaitables,
+        async ($level_id_map_key, $teams_map) ==> {
+          $teams = await \HH\Asio\v($teams_map);
+          return $teams;
+        },
+      );
+
+      foreach ($team_scores as $level_id_key => $teams_vector) {
+        foreach ($teams_vector as $team) {
+          if ($team->getActive() === true && $team->getVisible() === true) {
+            $teams_by_completed_level[intval($level_id_key)][] = $team;
+          }
+        }
+      }
+      self::setMCRecords(
+        'TEAMS_BY_LEVEL',
+        new Map($teams_by_completed_level),
+      );
+      $teams_by_completed_level = new Map($teams_by_completed_level);
+      invariant(
+        $teams_by_completed_level instanceof Map,
+        'teams_by_completed_level should be a Map of Team',
+      );
+      return $teams_by_completed_level;
+    } else {
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should of type Map and not null',
+      );
+      return $mc_result;
+    }
+  }
+
+  public static async function genCompletedLevelTeamNames(
+    int $level_id,
+    bool $refresh = false,
+  ): Awaitable<array<string>> {
+    $mc_result = self::getMCRecords('TEAMS_NAMES_BY_LEVEL');
+    if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $team_names = array();
+      $teams = await self::genAllCompletedLevels();
+      invariant($teams instanceof Map, 'teams should be a Map of Team');
+      foreach ($teams as $level => $completed_arr) {
+        invariant(
+          is_array($completed_arr),
+          'completed_arr should be an array of Team',
+        );
+        foreach ($completed_arr as $team_obj) {
+          invariant(
+            $team_obj instanceof Team,
+            'team_obj should be of type Team',
+          );
+          $team_names[$level][] = $team_obj->getName();
+        }
+      }
+      self::setMCRecords('TEAMS_NAMES_BY_LEVEL', new Map($team_names));
+      $team_names = new Map($team_names);
+      if ($team_names->contains($level_id)) {
+        $team_name = $team_names->get($level_id);
+        invariant(
+          is_array($team_name),
+          'team_name should be an array of string and not null',
+        );
+        return $team_name;
+      } else {
+        return array();
+      }
+    } else {
+      invariant(
+        $mc_result instanceof Map,
+        'cache return should of type string and not null',
+      );
+      if ($mc_result->contains($level_id)) {
+        $team_name = $mc_result->get($level_id);
+        invariant(
+          is_array($team_name),
+          'cache return should be an array of string and not null',
+        );
+        return $team_name;
+      } else {
+        return array();
+      }
+    }
+  }
+
   public static async function genFirstCapture(
     int $level_id,
     bool $refresh = false,
@@ -322,13 +495,23 @@ class MultiTeam extends Team {
     $mc_result = self::getMCRecords('TEAMS_FIRST_CAP');
     if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $first_team_captured_by_level = array();
-      $teams =
+      $captures =
         await self::genTeamArrayFromDB(
-          'SELECT * FROM teams LEFT JOIN scores_log ON teams.id = scores_log.team_id WHERE scores_log.ts IN (SELECT MIN(scores_log.ts) FROM scores_log WHERE scores_log.team_id IN (SELECT id FROM teams) GROUP BY scores_log.level_id)',
+          'SELECT sl.level_id, sl.team_id FROM (SELECT level_id, MIN(ts) ts FROM scores_log LEFT JOIN teams ON team_id = teams.id WHERE teams.visible = 1 AND teams.active = 1 GROUP BY level_id) sl2 JOIN scores_log sl ON sl.level_id = sl2.level_id AND sl.ts = sl2.ts;',
         );
-      foreach ($teams->items() as $team) {
-        $first_team_captured_by_level[intval($team->get('level_id'))] =
-          Team::teamFromRow($team);
+      $team_scores_awaitables = Map {};
+      foreach ($captures->items() as $capture) {
+        $team_scores_awaitables->add(
+          Pair {
+            $capture->get('level_id'),
+            self::genTeam(intval($capture->get('team_id'))),
+          },
+        );
+      }
+      $team_scores = await \HH\Asio\m($team_scores_awaitables);
+
+      foreach ($team_scores as $level_id_key => $team) {
+        $first_team_captured_by_level[intval($level_id_key)] = $team;
       }
       self::setMCRecords(
         'TEAMS_FIRST_CAP',
@@ -354,4 +537,26 @@ class MultiTeam extends Team {
       return $team;
     }
   }
+
+  public static async function genMyTeamRank(
+    int $team_id,
+  ): Awaitable<(Team, int)> {
+    $team = false;
+    $rank = 1;
+    $leaderboard = await MultiTeam::genLeaderboard();
+    foreach ($leaderboard as $team) {
+      if ($team_id === $team->getId()) {
+        return tuple($team, $rank);
+      }
+      $rank++;
+    }
+
+    invariant(
+      $team instanceof Team,
+      'team return should of type Team and not null',
+    );
+
+    return tuple($team, $rank);
+  }
+
 }

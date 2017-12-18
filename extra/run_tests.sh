@@ -12,6 +12,34 @@ CODE_PATH=${1:-/vagrant}
 DB_USER=${2:-root}
 DB_PWD=${3:-root}
 
+echo "[+] Verifying service status"
+READY=0
+for i in {1..10}; do
+  HHVM_STATUS=$(service hhvm status | grep -P "start|running|Uptime" | wc -l)
+  NGINX_STATUS=$(service nginx status | grep -P "start|running|Uptime" | wc -l)
+  MYSQL_STATUS=$(service mysql status | grep -P "start|running|Uptime" | wc -l)
+  MC_STATUS=$(service memcached status | grep -P "start|running|Uptime" | wc -l)
+  if [ $HHVM_STATUS == 0 ] || [ $NGINX_STATUS == 0 ] || [ $MYSQL_STATUS == 0 ] || [ $MC_STATUS == 0 ]; then
+    echo "[+] Services not ready, waiting 10 seconds..."
+    sleep 10
+    continue
+  else
+    READY=1
+    break
+  fi
+done
+
+if [ $READY = 0 ]; then
+  echo "[!] Services are not running, tests cannot be completed."
+  exit 1
+else
+  echo "[+] Services are running"
+fi
+
+
+echo "[+] Changing directory to $CODE_PATH"
+cd "$CODE_PATH"
+
 echo "[+] Starting tests setup in $CODE_PATH"
 
 mysql -u "$DB_USER" --password="$DB_PWD" -e "CREATE DATABASE $DB;"

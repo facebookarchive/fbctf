@@ -244,7 +244,6 @@ fi
 
 # If multiple servers are being utilized, ensure provision was called from the "nginx" or "hhvm" servers
     if [[ "$MULTIPLE_SERVERS" == false || "$SERVER_TYPE" = "nginx" || $SERVER_TYPE = "hhvm" ]]; then
-    package language-pack-en
 
     if [[ "$UPDATE" == true ]] ; then
         log "Updating repo"
@@ -265,7 +264,6 @@ fi
         log "Installing HHVM"
         install_hhvm "$CTF_PATH" "$HHVM_CONFIG_PATH" "$MULTIPLE_SERVERS"
 
-        # Install Composer
         log "Installing Composer"
         install_composer "$CTF_PATH"
         log "Installing Composer in /usr/bin"
@@ -326,10 +324,10 @@ fi
     fi
 
     log "Creating attachments folder, and setting ownership to www-data"
-    sudo sudo mkdir -p "$CTF_PATH/src/data/attachments"
-    sudo sudo mkdir -p "$CTF_PATH/src/data/attachments/deleted"
-    sudo chown -R www-data:www-data "$CTF_PATH/src/data/attachments"
-    sudo chown -R www-data:www-data "$CTF_PATH/src/data/attachments/deleted"
+    sudo sudo mkdir -p "$CTF_PATH/attachments"
+    sudo sudo mkdir -p "$CTF_PATH/attachments/deleted"
+    sudo chown -R www-data:www-data "$CTF_PATH/attachments"
+    sudo chown -R www-data:www-data "$CTF_PATH/attachments/deleted"
 
     log "Creating custom logos folder, and setting ownership to www-data"
     sudo mkdir -p "$CTF_PATH/src/data/customlogos"
@@ -359,10 +357,10 @@ if [[ "$MULTIPLE_SERVERS" == false || "$SERVER_TYPE" = "mysql" ]]; then
     # Configuration for MySQL
     if [[ "$MULTIPLE_SERVERS" == true ]] && [[ "$SERVER_TYPE" = "mysql" ]]; then
         # This is required in order to generate password hash (since HHVM is not being installed)
-        package php5-cli
+        package php7.0-cli
 
-        sudo sed -e '/^bind-address/ s/^#*/#/' -i /etc/mysql/my.cnf
-        sudo sed -e '/^skip-external-locking/ s/^#*/#/' -i /etc/mysql/my.cnf
+        sudo sed -e '/^bind-address/ s/^#*/#/' -i /etc/mysql/mysql.conf.d/mysqld.cnf
+        sudo sed -e '/^skip-external-locking/ s/^#*/#/' -i /etc/mysql/mysql.conf.d/mysqld.cnf
 	fi
 
     # Database creation

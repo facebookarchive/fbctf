@@ -7,93 +7,97 @@ class Control extends Model {
   protected static Map<string, string>
     $MC_KEYS = Map {'ALL_ACTIVITY' => 'activity'};
 
+  public static async function genServerAddr(): Awaitable<string> {
+    $host = gethostname();
+    $ip = gethostbyname($host);
+    return strval($ip);
+  }
+
   public static async function genStartScriptLog(
     int $pid,
     string $name,
     string $cmd,
   ): Awaitable<void> {
     $db = await self::genDb();
+    $host = await Control::genServerAddr();
     await $db->queryf(
-      'INSERT INTO scripts (ts, pid, name, cmd, status) VALUES (NOW(), %d, %s, %s, 1)',
+      'INSERT INTO scripts (ts, pid, name, host, cmd, status) VALUES (NOW(), %d, %s, %s, %s, 1)',
       $pid,
       $name,
+      $host,
       $cmd,
     );
   }
 
   public static async function genStopScriptLog(int $pid): Awaitable<void> {
     $db = await self::genDb();
+    $host = await Control::genServerAddr();
     await $db->queryf(
-      'UPDATE scripts SET status = 0 WHERE pid = %d LIMIT 1',
+      'UPDATE scripts SET status = 0, host = %s WHERE pid = %d LIMIT 1',
+      $host,
       $pid,
     );
   }
 
   public static async function genScriptPid(string $name): Awaitable<int> {
     $db = await self::genDb();
-    $result = await $db->queryf(
-      'SELECT pid FROM scripts WHERE name = %s AND status = 1 LIMIT 1',
-      $name,
-    );
-    return intval(must_have_idx($result->mapRows()[0], 'pid'));
+    $host = await Control::genServerAddr();
+    $result =
+      await $db->queryf(
+        'SELECT pid FROM scripts WHERE name = %s AND host = %s AND status = 1 LIMIT 1',
+        $name,
+        $host,
+      );
+    $pid = 0;
+    if ($result->numRows() > 0) {
+      $pid = intval(must_have_idx($result->mapRows()[0], 'pid'));
+    }
+    return $pid;
   }
 
   public static async function genClearScriptLog(): Awaitable<void> {
     $db = await self::genDb();
-    await $db->queryf('DELETE FROM scripts WHERE id > 0 AND status = 0');
+    $host = await Control::genServerAddr();
+    await $db->queryf(
+      'DELETE FROM scripts WHERE id > 0 AND status = 0 AND host = %s',
+      $host,
+    );
   }
 
   public static async function genBegin(): Awaitable<void> {
-    // Disable registration
-    await Configuration::genUpdate('registration', '0');
+    await \HH\Asio\va(
+      Announcement::genDeleteAll(), // Clear announcements log
+      ActivityLog::genDeleteAll(), // Clear activity log
+      Team::genResetAllPoints(), // Reset all points
+      ScoreLog::genResetScores(), // Clear scores log
+      HintLog::genResetHints(), // Clear hints log
+      FailureLog::genResetFailures(), // Clear failures log
+      self::genResetBases(), // Clear bases log
+      self::genClearScriptLog(),
+      Configuration::genUpdate('registration', '0'), // Disable registration
+    );
 
-    // Clear announcements log
-    await Announcement::genDeleteAll();
-
-    // Clear activity log
-    await ActivityLog::genDeleteAll();
-
-    // Announce game starting
-    await Announcement::genCreateAuto('Game has started!');
-
-    // Log game starting
-    await ActivityLog::genCreateGenericLog('Game has started!');
-
-    // Reset all points
-    await Team::genResetAllPoints();
-
-    // Clear scores log
-    await ScoreLog::genResetScores();
-
-    // Clear hints log
-    await HintLog::genResetHints();
-
-    // Clear failures log
-    await FailureLog::genResetFailures();
-
-    // Clear bases log
-    await self::genResetBases();
-    await self::genClearScriptLog();
-
-    // Mark game as started
-    await Configuration::genUpdate('game', '1');
-
-    // Enable scoring
-    await Configuration::genUpdate('scoring', '1');
+    await \HH\Asio\va(
+      Announcement::genCreateAuto('Game has started!'), // Announce game starting
+      ActivityLog::genCreateGenericLog('Game has started!'), // Log game starting
+      Configuration::genUpdate('game', '1'), // Mark game as started
+      Configuration::genUpdate('scoring', '1'), // Enable scoring
+    );
 
     // Take timestamp of start
     $start_ts = time();
     await Configuration::genUpdate('start_ts', strval($start_ts));
 
     // Calculate timestamp of the end or game duration
-    $config = await Configuration::gen('end_ts');
-    $end_ts = intval($config->getValue());
-
+    $config_end_ts = await Configuration::gen('end_ts');
+    $end_ts = intval($config_end_ts->getValue());
     if ($end_ts === 0) {
-      $config = await Configuration::gen('game_duration_value');
-      $duration_value = intval($config->getValue());
-      $config = await Configuration::gen('game_duration_unit');
-      $duration_unit = $config->getValue();
+      list($config_value, $config_unit) = await \HH\Asio\va(
+        Configuration::gen('game_duration_value'),
+        Configuration::gen('game_duration_unit'),
+      );
+      $duration_value = intval($config_value->getValue());
+      $duration_unit = $config_unit->getValue();
       switch ($duration_unit) {
         case 'd':
           $duration = $duration_value * 60 * 60 * 24;
@@ -109,63 +113,48 @@ class Control extends Model {
       await Configuration::genUpdate('end_ts', strval($end_ts));
     } else {
       $duration_length = ($end_ts - $start_ts) / 60;
-      await Configuration::genUpdate(
-        'game_duration_value',
-        strval($duration_length),
+      await \HH\Asio\va(
+        Configuration::genUpdate(
+          'game_duration_value',
+          strval($duration_length),
+        ),
+        Configuration::genUpdate('game_duration_unit', 'm'),
       );
-      await Configuration::genUpdate('game_duration_unit', 'm');
     }
 
-    // Set pause to zero
-    await Configuration::genUpdate('pause_ts', '0');
+    await \HH\Asio\va(
+      Configuration::genUpdate('pause_ts', '0'), // Set pause to zero
+      Configuration::genUpdate('game_paused', '0'), // Set game to not paused
+      Configuration::genUpdate('timer', '1'), // Kick off timer
+      Progressive::genReset(), // Reset and kick off progressive scoreboard
+    );
 
-    // Set game to not paused
-    await Configuration::genUpdate('game_paused', '0');
-
-    // Kick off timer
-    await Configuration::genUpdate('timer', '1');
-
-    // Reset and kick off progressive scoreboard
-    await Progressive::genReset();
-    await Progressive::genRun();
-
-    // Kick off scoring for bases
-    await Level::genBaseScoring();
+    await \HH\Asio\va(
+      Progressive::genRun(),
+      Level::genBaseScoring(), // Kick off scoring for bases
+    );
   }
 
   public static async function genEnd(): Awaitable<void> {
-    // Announce game ending
-    await Announcement::genCreateAuto('Game has ended!');
-
-    // Log game ending
-    await ActivityLog::genCreateGenericLog('Game has ended!');
-
-    // Mark game as finished and it stops progressive scoreboard
-    await Configuration::genUpdate('game', '0');
-
-    // Disable scoring
-    await Configuration::genUpdate('scoring', '0');
-
-    // Put timestampts to zero
-    await Configuration::genUpdate('start_ts', '0');
-    await Configuration::genUpdate('end_ts', '0');
-    await Configuration::genUpdate('next_game', '0');
-
-    // Set pause to zero
-    await Configuration::genUpdate('pause_ts', '0');
-
-    // Stop timer
-    await Configuration::genUpdate('timer', '0');
+    await \HH\Asio\va(
+      Announcement::genCreateAuto('Game has ended!'), // Announce game ending
+      ActivityLog::genCreateGenericLog('Game has ended!'), // Log game ending
+      Configuration::genUpdate('game', '0'), // Mark game as finished and stop progressive scoreboard
+      Configuration::genUpdate('scoring', '0'), // Disable scoring
+      Configuration::genUpdate('start_ts', '0'), // Put timestamps to zero
+      Configuration::genUpdate('end_ts', '0'),
+      Configuration::genUpdate('next_game', '0'),
+      Configuration::genUpdate('pause_ts', '0'), // Set pause to zero
+      Configuration::genUpdate('timer', '0'), // Stop timer
+    );
 
     $pause = await Configuration::gen('game_paused');
     $game_paused = $pause->getValue() === '1';
 
     if (!$game_paused) {
       // Stop bases scoring process
-      await Level::genStopBaseScoring();
-
       // Stop progressive scoreboard process
-      await Progressive::genStop();
+      await \HH\Asio\va(Level::genStopBaseScoring(), Progressive::genStop());
     } else {
       // Set game to not paused
       await Configuration::genUpdate('game_paused', '0');
@@ -173,46 +162,32 @@ class Control extends Model {
   }
 
   public static async function genPause(): Awaitable<void> {
-    // Announce game starting
-    await Announcement::genCreateAuto('Game has been paused!');
+    await \HH\Asio\va(
+      Announcement::genCreateAuto('Game has been paused!'), // Announce game paused
+      ActivityLog::genCreateGenericLog('Game has been paused!'), // Log game paused
+      Configuration::genUpdate('scoring', '0'), // Disable scoring
+    );
 
-    // Log game paused
-    await ActivityLog::genCreateGenericLog('Game has been paused!');
-
-    // Disable scoring
-    await Configuration::genUpdate('scoring', '0');
-
-    // Set pause timestamp
     $pause_ts = time();
-    await Configuration::genUpdate('pause_ts', strval($pause_ts));
-
-    // Set gane to paused
-    await Configuration::genUpdate('game_paused', '1');
-
-    // Stop timer
-    await Configuration::genUpdate('timer', '0');
-
-    // Stop bases scoring process
-    await Level::genStopBaseScoring();
-
-    // Stop progressive scoreboard process
-    await Progressive::genStop();
+    await \HH\Asio\va(
+      Configuration::genUpdate('pause_ts', strval($pause_ts)), // Set pause timestamp
+      Configuration::genUpdate('game_paused', '1'), // Set gane to paused
+      Configuration::genUpdate('timer', '0'), // Stop timer
+      Level::genStopBaseScoring(), // Stop bases scoring process
+      Progressive::genStop(), // Stop progressive scoreboard process
+    );
   }
 
   public static async function genUnpause(): Awaitable<void> {
-    // Enable scoring
-    await Configuration::genUpdate('scoring', '1');
-
-    // Get pause time
-    $config_pause_ts = await Configuration::gen('pause_ts');
+    await Configuration::genUpdate('scoring', '1'); // Enable scoring
+    list($config_pause_ts, $config_start_ts, $config_end_ts) =
+      await \HH\Asio\va(
+        Configuration::gen('pause_ts'), // Get pause time
+        Configuration::gen('start_ts'), // Get start time
+        Configuration::gen('end_ts'), // Get end time
+      );
     $pause_ts = intval($config_pause_ts->getValue());
-
-    // Get start time
-    $config_start_ts = await Configuration::gen('start_ts');
     $start_ts = intval($config_start_ts->getValue());
-
-    // Get end time
-    $config_end_ts = await Configuration::gen('end_ts');
     $end_ts = intval($config_end_ts->getValue());
 
     // Calulcate game remaining
@@ -221,80 +196,64 @@ class Control extends Model {
     $remaining_duration = $game_duration - $game_played_duration;
     $end_ts = time() + $remaining_duration;
 
-    // Set new endtime
-    await Configuration::genUpdate('end_ts', strval($end_ts));
-
-    // Set pause to zero
-    await Configuration::genUpdate('pause_ts', '0');
-
-    // Set gane to not paused
-    await Configuration::genUpdate('game_paused', '0');
-
-    // Start timer
-    await Configuration::genUpdate('timer', '1');
-
-    // Kick off progressive scoreboard
-    await Progressive::genRun();
-
-    // Kick off scoring for bases
-    await Level::genBaseScoring();
-
-    // Announce game resumed
-    await Announcement::genCreateAuto('Game has resumed!');
-
-    // Log game paused
-    await ActivityLog::genCreateGenericLog('Game has resumed!');
+    await \HH\Asio\va(
+      Configuration::genUpdate('end_ts', strval($end_ts)), // Set new endtime
+      Configuration::genUpdate('pause_ts', '0'), // Set pause to zero
+      Configuration::genUpdate('game_paused', '0'), // Set gane to not paused
+      Configuration::genUpdate('timer', '1'), // Start timer
+      Progressive::genRun(), // Kick off progressive scoreboard
+      Level::genBaseScoring(), // Kick off scoring for bases
+      Announcement::genCreateAuto('Game has resumed!'), // Announce game resumed
+      ActivityLog::genCreateGenericLog('Game has resumed!'), // Log game resumed
+    );
   }
 
   public static async function genAutoBegin(): Awaitable<void> {
-    // Get start time
-    $config_start_ts = await Configuration::gen('start_ts');
+    // Prevent autorun.php from storing timestamps in local cache, forever (the script runs continuously).
+    Configuration::deleteLocalCache('CONFIGURATION');
+    list($config_start_ts, $config_end_ts, $config_game_paused) =
+      await \HH\Asio\va(
+        Configuration::gen('start_ts'), // Get start time
+        Configuration::gen('end_ts'), // Get end time
+        Configuration::gen('game_paused'), // Get paused status
+      );
     $start_ts = intval($config_start_ts->getValue());
-
-    // Get end time
-    $config_end_ts = await Configuration::gen('end_ts');
     $end_ts = intval($config_end_ts->getValue());
-
-    // Get paused status
-    $config_game_paused = await Configuration::gen('game_paused');
     $game_paused = intval($config_game_paused->getValue());
 
     if (($game_paused === 0) && ($start_ts <= time()) && ($end_ts > time())) {
-      // Start the game
-      await Control::genBegin();
+      await Control::genBegin(); // Start the game
     }
   }
 
   public static async function genAutoEnd(): Awaitable<void> {
-    // Get start time
-    $config_start_ts = await Configuration::gen('start_ts');
+    // Prevent autorun.php from storing timestamps in local cache, forever (the script runs continuously).
+    Configuration::deleteLocalCache('CONFIGURATION');
+    list($config_start_ts, $config_end_ts, $config_game_paused) =
+      await \HH\Asio\va(
+        Configuration::gen('start_ts'), // Get start time
+        Configuration::gen('end_ts'), // Get end time
+        Configuration::gen('game_paused'), // Get paused status
+      );
     $start_ts = intval($config_start_ts->getValue());
-
-    // Get end time
-    $config_end_ts = await Configuration::gen('end_ts');
     $end_ts = intval($config_end_ts->getValue());
-
-    // Get paused status
-    $config_game_paused = await Configuration::gen('game_paused');
     $game_paused = intval($config_game_paused->getValue());
 
     if (($game_paused === 0) && ($end_ts <= time())) {
-      // Start the game
-      await Control::genEnd();
+      await Control::genEnd(); // End the game
     }
   }
 
   public static async function genAutoRun(): Awaitable<void> {
-    // Get start time
-    $config_game = await Configuration::gen('game');
+    // Prevent autorun.php from storing timestamps in local cache, forever (the script runs continuously).
+    Configuration::deleteLocalCache('CONFIGURATION');
+    $config_game = await Configuration::gen('game'); // Get start time
     $game = intval($config_game->getValue());
 
     if ($game === 0) {
-      // Check and start the game
-      await Control::genAutoBegin();
+      await Control::genAutoBegin(); // Check and start the game
     } else {
-      // Check and stop the game
-      await Control::genAutoEnd();
+      await Control::genAutoEnd(); // Check and stop the game
     }
   }
 
@@ -318,16 +277,21 @@ class Control extends Model {
     string $name,
   ): Awaitable<bool> {
     $db = await self::genDb();
+    $host = await Control::genServerAddr();
     $result = await $db->queryf(
-      'SELECT pid FROM scripts WHERE name = %s AND status = 1 LIMIT 1',
+      'SELECT pid FROM scripts WHERE name = %s AND host = %s AND status = 1',
       $name,
+      $host,
     );
+    $status = false;
     if ($result->numRows() >= 1) {
-      $pid = intval(must_have_idx($result->mapRows()[0], 'pid'));
-      $status = file_exists("/proc/$pid");
-      if ($status === false) {
-        await Control::genStopScriptLog($pid);
-        await Control::genClearScriptLog();
+      foreach ($result->mapRows() as $row) {
+        $pid = intval(must_have_idx($row, 'pid'));
+        $status = file_exists("/proc/$pid");
+        if ($status === false) {
+          await Control::genStopScriptLog($pid);
+          await Control::genClearScriptLog();
+        }
       }
       return $status;
     } else {
@@ -422,14 +386,17 @@ class Control extends Model {
     $filename =
       strval(BinaryImporterController::getFilename('attachments_file'));
     $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
-    $directory = $document_root.Attachment::attachmentsDir;
-    $cmd = "tar -zx -C $directory -f $filename";
+    $directory = Attachment::attachmentsDir;
+    $cmd = "tar -zx --mode=600 -C $directory -f $filename";
     exec($cmd, $output, $status);
     if (intval($status) !== 0) {
       return false;
     }
-    $directory_files = scandir($directory);
+    $directory_files = array_slice(scandir($directory), 2);
     foreach ($directory_files as $file) {
+      if (is_dir($file) === true) {
+        continue;
+      }
       $chmod = chmod($directory.$file, 0600);
       invariant(
         $chmod === true,
@@ -461,14 +428,19 @@ class Control extends Model {
 
   public static async function exportGame(): Awaitable<void> {
     $game = array();
-    $logos = await Logo::exportAll();
-    $game['logos'] = $logos;
-    $teams = await Team::exportAll();
-    $game['teams'] = $teams;
-    $categories = await Category::exportAll();
-    $game['categories'] = $categories;
-    $levels = await Level::exportAll();
-    $game['levels'] = $levels;
+    $awaitables = Map {
+      'logos' => Logo::exportAll(),
+      'teams' => Team::exportAll(),
+      'categories' => Category::exportAll(),
+      'levels' => Level::exportAll(),
+    };
+    $awaitables_results = await \HH\Asio\m($awaitables);
+
+    $game['logos'] = $awaitables['logos'];
+    $game['teams'] = $awaitables['teams'];
+    $game['categories'] = $awaitables['categories'];
+    $game['levels'] = $awaitables['levels'];
+
     $output_file = 'fbctf_game.json';
     JSONExporterController::sendJSON($game, $output_file);
     exit();
@@ -507,7 +479,7 @@ class Control extends Model {
     header('Content-Type: application/x-tgz');
     header('Content-Disposition: attachment; filename="'.$filename.'"');
     $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
-    $directory = $document_root.Attachment::attachmentsDir;
+    $directory = Attachment::attachmentsDir;
     $cmd = "tar -cz -C $directory . ";
     passthru($cmd);
     exit();
@@ -548,8 +520,7 @@ class Control extends Model {
   }
 
   public static async function genFlushMemcached(): Awaitable<bool> {
-    $mc = self::getMc();
-    return $mc->flush(0);
+    return self::flushMCCluster();
   }
 
   private static async function genLoadDatabaseFile(

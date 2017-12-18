@@ -4,6 +4,7 @@
     "license": "CC-BY-NC-4.0",
     "require": {
         "facebook/xhp-lib": "2.x",
+        "facebook/graph-sdk": "5.x",
         "google/apiclient": "^2.0"
     },
     "require-dev": {

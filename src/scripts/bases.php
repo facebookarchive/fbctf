@@ -8,6 +8,7 @@ if (php_sapi_name() !== 'cli') {
 require_once (__DIR__.'/../Db.php');
 require_once (__DIR__.'/../Utils.php');
 require_once (__DIR__.'/../models/Model.php');
+require_once (__DIR__.'/../models/Cache.php');
 require_once (__DIR__.'/../models/Importable.php');
 require_once (__DIR__.'/../models/Exportable.php');
 require_once (__DIR__.'/../models/Level.php');
@@ -17,6 +18,8 @@ require_once (__DIR__.'/../models/Configuration.php');
 require_once (__DIR__.'/../models/ScoreLog.php');
 require_once (__DIR__.'/../models/Control.php');
 require_once (__DIR__.'/../models/MultiTeam.php');
+require_once (__DIR__.'/../models/Announcement.php');
+require_once (__DIR__.'/../models/ActivityLog.php');
 
 $conf_game = \HH\Asio\join(Configuration::gen('game'));
 while ($conf_game->getValue() === '1') {
@@ -35,14 +38,14 @@ while ($conf_game->getValue() === '1') {
     if ($response['response']) {
       $code = 0;
       $json_r = json_decode($response['response'])[0];
-      $teamname = $json_r->team;
+      $team_name = $json_r->team;
       // Give points to the team if exists
-      if (\HH\Asio\join(Team::genTeamExist($teamname))) {
-        $team = \HH\Asio\join(Team::genTeamByName($teamname));
+      if (\HH\Asio\join(Team::genTeamExist($team_name))) {
+        $team = \HH\Asio\join(Team::genTeamByName($team_name));
         \HH\Asio\join(Level::genScoreBase($response['id'], $team->getId()));
         //echo "Points\n";
       }
-      //echo "Base(".strval($response['id']).") taken by ".$teamname."\n";
+      //echo "Base(".strval($response['id']).") taken by ".$team_name."\n";
     } else {
       $code = -1;
       //echo "Base(".strval($response['id']).") is DOWN\n";
@@ -58,4 +61,10 @@ while ($conf_game->getValue() === '1') {
   // Wait until next iteration
   $bases_cycle = \HH\Asio\join(Configuration::gen('bases_cycle'));
   sleep(intval($bases_cycle->getValue()));
+
+  // Flush the local cache before the next cycle to ensure the game is still running and the configuration of the bases hasn't changed (the script runs continuously).
+  Model::deleteLocalCache();
+
+  // Get current game status
+  $conf_game = \HH\Asio\join(Configuration::gen('game'));
 }

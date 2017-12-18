@@ -8,6 +8,7 @@ if (php_sapi_name() !== 'cli') {
 require_once (__DIR__.'/../Db.php');
 require_once (__DIR__.'/../Utils.php');
 require_once (__DIR__.'/../models/Model.php');
+require_once (__DIR__.'/../models/Cache.php');
 require_once (__DIR__.'/../models/Importable.php');
 require_once (__DIR__.'/../models/Exportable.php');
 require_once (__DIR__.'/../models/Level.php');
@@ -19,6 +20,8 @@ require_once (__DIR__.'/../models/MultiTeam.php');
 require_once (__DIR__.'/../models/ScoreLog.php');
 require_once (__DIR__.'/../models/HintLog.php');
 require_once (__DIR__.'/../models/FailureLog.php');
+require_once (__DIR__.'/../models/Announcement.php');
+require_once (__DIR__.'/../models/ActivityLog.php');
 
 while (1) {
   \HH\Asio\join(Control::genAutoRun());

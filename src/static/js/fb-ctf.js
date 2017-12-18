@@ -274,7 +274,19 @@ function setupInputListeners() {
         $listview,
         $mapSvg,
         $map,
-        $countryHover;
+        $countryHover,
+        refresh_active_config = false,
+        refresh_active_country = false,
+        refresh_active_map = false,
+        refresh_active_captures = false,
+        refresh_active_announcment = false,
+        refresh_active_activity = false,
+        refresh_active_team_data = false,
+        refresh_active_team_module = false,
+        refresh_active_leaderboard = false,
+        refresh_active_clear_map = false,
+        refresh_active_filter = false,
+        refresh_active_session = false;
 
 
     /**
@@ -509,10 +521,14 @@ function setupInputListeners() {
 
         // Load initial activity
         loadActivityModule();
+        
+        //Get current team captures
+        getCaptureData();
 
-        // Configuration reloader
+        // Configuration/Session reloader
         setInterval(function() {
           loadConfData();
+          checkActiveSession();
         }, FB_CTF.data.CONF.refreshConf);
 
         // Countries and other modules
@@ -521,12 +537,13 @@ function setupInputListeners() {
             // Map
             getCountryData();
             refreshMapData();
+            getCaptureData();
             // Announcements
             if (Widget.getWidgetStatus('Announcements') === 'open') {
               loadAnnouncementsModule();
             }
             // Filter
-            if (Widget.getWidgetStatus('Filter') === 'open') {
+             if (Widget.getWidgetStatus('Filter') === 'open') {
               loadSavedFilterModule();
             }
             // Activity
@@ -559,11 +576,12 @@ function setupInputListeners() {
 
         // Forcefully refreshing all modules every minute
         setInterval(function() {
-          loadAnnouncementsModule();
-          loadSavedFilterModule();
-          loadActivityModule();
-          loadTeamsModule();
-          loadLeaderboardModule();
+          checkActiveSession(true);
+          loadAnnouncementsModule(true);
+          loadSavedFilterModule(true);
+          loadActivityModule(true);
+          loadTeamsModule(true);
+          loadLeaderboardModule(true);
           loadClockModule();
         }, 60000);
 
@@ -897,15 +915,17 @@ function setupInputListeners() {
             owner = data ? data.owner : '',
             attachments = data ? data.attachments : '',
             links = data ? data.links : '';
-
+        
         $('.country-name', $container).text(country);
         $('.country-title', $container).text(title);
         $('input[name=level_id]', $container).attr('value', level_id);
         $('.capture-text', $container).text(intro);
         if (attachments instanceof Array) {
           $.each(attachments, function() {
-            var f = this.substr(this.lastIndexOf('/') + 1);
-            var attachment = $('<a/>').attr('target', '_blank').attr('href', this).text('[ ' + f + ' ]');
+            var filename = this['filename'];
+            var link = this['file_link'];
+            var f = filename.substr(filename.lastIndexOf('/') + 1);
+            var attachment = $('<a/>').attr('target', '_blank').attr('href', link).text('[ ' + f + ' ]');
             $('.capture-links', $container).append(attachment);
             $('.capture-links', $container).append($('<br/>'));
           });
@@ -943,6 +963,12 @@ function setupInputListeners() {
           $('.answer_no_bases').addClass('completely-hidden');
         }
 
+        // Hide flag submission for captured levels
+        if ($.inArray(level_id, FB_CTF.data.CAPTURES) != -1) {
+          $('.answer_no_bases').addClass('completely-hidden');
+          $('.answer_captured').removeClass('completely-hidden');
+        }
+        
         //
         // event listeners
         //
@@ -1015,9 +1041,19 @@ function setupInputListeners() {
             var responseData = JSON.parse(data);
             if (responseData.result === 'OK') {
               console.log('OK');
-              $('input[name=answer]', $container).css("background-color", "#1f7a1f");
+              $($container).on('keypress', function(e) {
+              if (e.keyCode == 13) {
+                  e.preventDefault();
+                } 
+              });
               $('.js-trigger-score', $container).text('YES!');
+              $('input[name=answer]', $container).css("background-color", "#1f7a1f");
+              $('.answer_no_bases > .fb-cta.cta--yellow.js-trigger-score').removeClass('js-trigger-score');
+              refreshMapData(); // Refresh map so capture shows up right away
+              getCaptureData(); // Refresh captured levels so we can't reload the modal and see a submit button
               setTimeout(function() {
+                $('.answer_no_bases').addClass('completely-hidden');
+                $('.answer_captured').removeClass('completely-hidden');
                 $('.js-close-modal', $container).click();
               }, 2000);
             } else {
@@ -1296,10 +1332,16 @@ function setupInputListeners() {
 
         var get = $.get(modulePath, function(data) {
           $self.html(data);
-        }).error(function() {
+        }).error(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the module.");
           console.log(modulePath);
+          console.log(status);
+          console.log(error);
           console.error("/error");
+          if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+              console.log("Redirecting to '/index.php?page=error'");
+              window.location.replace('/index.php?page=error');
+          }
         });
 
         deferredArray.push(get);
@@ -1329,9 +1371,15 @@ function setupInputListeners() {
         $mapSvg = $('#fb-gameboard-map');
         $countryHover = $('[class~="country-hover"]', $mapSvg);
         enableClickAndDrag.init();
-      }, 'html').error(function() {
+      }, 'html').error(function(jqxhr, status, error) {
         console.error("There was a problem loading the svg map");
+        console.log(status);
+        console.log(error);
         console.error("/error");
+        if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+            console.log("Redirecting to '/index.php?page=error'");
+            window.location.replace('/index.php?page=error');
+        }
       });
     }
 
@@ -1349,9 +1397,15 @@ function setupInputListeners() {
         $mapSvg = $('#fb-gameboard-map');
         $countryHover = $('[class~="country-hover"]', $mapSvg);
         enableClickAndDrag.init();
-      }, 'html').error(function() {
+      }, 'html').error(function(jqxhr, status, error) {
         console.error("There was a problem loading the svg map");
+        console.log(status);
+        console.log(error);
         console.error("/error");
+        if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+            console.log("Redirecting to '/index.php?page=error'");
+            window.location.replace('/index.php?page=error');
+        }
       });
     }
 
@@ -1365,9 +1419,15 @@ function setupInputListeners() {
         $listview = $('.fb-listview');
         $listview.html(data);
         listviewEventListeners($listview);
-      }, 'html').error(function() {
+      }, 'html').error(function(jqxhr, status, error) {
         console.error("There was a problem loading the List View");
+        console.log(status);
+        console.log(error);
         console.error("/error");
+        if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+            console.log("Redirecting to '/index.php?page=error'");
+            window.location.replace('/index.php?page=error');
+        }
       });
     }
 
@@ -1383,31 +1443,48 @@ function setupInputListeners() {
             success_callback();
           }
         })
-        .error(function() {
+        .error(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the module.");
           console.log(loadPath);
+          console.log(status);
+          console.log(error);
           console.error("/error");
+          if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+              console.log("Redirecting to '/index.php?page=error'");
+              window.location.replace('/index.php?page=error');
+          }
         });
     }
 
     /**
      * load the teams module
      */
-    function loadTeamsModule() {
-      var teamsModulePath = 'inc/gameboard/modules/teams.php';
-      var teamsTargetSelector = 'aside[data-module="teams"]';
+    function loadTeamsModule(force = false) {
+      if (refresh_active_team_module === false || force === true) {
+        refresh_active_team_module = true;  
+        var teamsModulePath = 'inc/gameboard/modules/teams.php';
+        var teamsTargetSelector = 'aside[data-module="teams"]';
 
-      return loadModuleGeneric(teamsModulePath, teamsTargetSelector);
+        return loadModuleGeneric(teamsModulePath, teamsTargetSelector, function() {
+          refresh_active_team_module = false;
+        });
+      }
     }
 
     /**
      * load the leaderboard module
      */
-    function loadLeaderboardModule() {
-      var leaderboardModulePath = 'inc/gameboard/modules/leaderboard.php';
-      var leaderboardSelector = 'aside[data-module="leaderboard"]';
+    function loadLeaderboardModule(force = false) {
+      if (refresh_active_leaderboard === false || force === true) {
+        refresh_active_leaderboard = true;
 
-      return loadModuleGeneric(leaderboardModulePath, leaderboardSelector);
+        var leaderboardModulePath = 'inc/gameboard/modules/leaderboard.php';
+        var leaderboardSelector = 'aside[data-module="leaderboard"]';
+
+        return loadModuleGeneric(leaderboardModulePath, leaderboardSelector, function() {
+          refresh_active_leaderboard = false;
+        });
+      }
     }
 
     /**
@@ -1427,154 +1504,269 @@ function setupInputListeners() {
     /**
      * load the team data
      */
-    function loadTeamData() {
-      var loadPath = 'data/teams.php';
+    function loadTeamData(force = false) {
+      if (refresh_active_team_data === false || force === true) {
+        refresh_active_team_data = true;
+        var loadPath = 'data/teams.php';
 
-      return $.get(loadPath, function(data) {
-        FB_CTF.data.TEAMS = data;
-        var df = $.Deferred();
-        return df.resolve(FB_CTF.data.TEAMS);
-      }, 'json').error(function(jqhxr, status, error) {
-        console.error("There was a problem retrieving the team data.");
-        console.log(loadPath);
-        console.log(status);
-        console.log(error);
-        console.error("/error");
-      });
+        return $.get(loadPath, function(data) {
+          FB_CTF.data.TEAMS = data;
+          var df = $.Deferred();
+          return df.resolve(FB_CTF.data.TEAMS);
+        }, 'json').error(function(jqxhr, status, error) {
+          console.error("There was a problem retrieving the team data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+          console.error("Team data request failed");
+          if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+              console.log("Redirecting to '/index.php?page=error'");
+              window.location.replace('/index.php?page=error');
+          }
+        }).done(function() {
+          refresh_active_team_data = false;
+        });
+      }
+    }
+    
+    /**
+     * load the team data
+     */
+    function getCaptureData(force = false) {
+      if (refresh_active_captures === false || force === true) {
+        refresh_active_captures = true;
+        var loadPath = 'data/captures.php';
+
+        return $.get(loadPath, function(data) {
+          FB_CTF.data.CAPTURES = data;
+          var df = $.Deferred();
+          return df.resolve(FB_CTF.data.CAPTURES);
+        }, 'json').error(function(jqxhr, status, error) {
+          console.error("There was a problem retrieving the captures data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+          console.error("Captures data request failed");
+          if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+              console.log("Redirecting to '/index.php?page=error'");
+              window.location.replace('/index.php?page=error');
+          }
+        }).done(function() {
+          refresh_active_captures = false;
+        });
+      }
     }
 
     /**
      * load the announcements module
      */
-    function loadAnnouncementsModule() {
-      var announcementsModulePath = 'inc/gameboard/modules/announcements.php';
-      var announcementsTargetSelector = 'aside[data-module="announcements"]';
+    function loadAnnouncementsModule(force = false) {
+      if (refresh_active_announcment === false || force === true) {
+        refresh_active_announcment = true;
+        var announcementsModulePath = 'inc/gameboard/modules/announcements.php';
+        var announcementsTargetSelector = 'aside[data-module="announcements"]';
 
-      return loadModuleGeneric(announcementsModulePath, announcementsTargetSelector);
+        return loadModuleGeneric(announcementsModulePath, announcementsTargetSelector, function() {
+          refresh_active_announcment = false;
+        });
+      }
     }
 
     /**
      * load the filter module
      */
-    function loadFilterModule() {
-      var filterModulePath = 'inc/gameboard/modules/filter.php';
-      var filterTargetSelector = 'aside[data-module="filter"]';
+    function loadFilterModule(force = false) {
+      if (refresh_active_filter === false || force === true) {
+        refresh_active_filter = true;
+        var filterModulePath = 'inc/gameboard/modules/filter.php';
+        var filterTargetSelector = 'aside[data-module="filter"]';
 
-      return loadModuleGeneric(
-        filterModulePath, 
-        filterTargetSelector, 
-        function() {
-          Filter.rememberFilters(filterList);
-        }
-      );
+        return loadModuleGeneric(
+          filterModulePath, 
+          filterTargetSelector, 
+          function() {
+            refresh_active_filter = false;
+            Filter.rememberFilters(filterList);
+          }
+        );
+      }
     }
 
     /**
      * wrapper to load and save/remember the filter module
      */
-    function loadSavedFilterModule() {
+    function loadSavedFilterModule(force = false) {
       // Update variable for all filters to remember them
       filterList = Filter.detectFilters();
       // Load filter module
-      return loadFilterModule();
+      return loadFilterModule(force);
     }
 
     /**
      * load the activity module
      */
-    function loadActivityModule() {
-      var activityModulePath = 'inc/gameboard/modules/activity.php';
-      var activityTargetSelector = 'aside[data-module="activity"]';
+    function loadActivityModule(force = false) {
+      if (refresh_active_activity === false || force === true) {
+        refresh_active_activity = true;
+        var activityModulePath = 'inc/gameboard/modules/activity.php';
+        var activityTargetSelector = 'aside[data-module="activity"]';
 
-      return loadModuleGeneric(activityModulePath, activityTargetSelector);
+        return loadModuleGeneric(activityModulePath, activityTargetSelector, function() {
+          refresh_active_activity = false;
+        });
+      }
     }
 
     /**
      * load the configuration data
      */
-    function loadConfData() {
-      var loadPath = 'data/configuration.php';
+    function loadConfData(force = false) {
+      if (refresh_active_config === false || force === true) {
+        refresh_active_config = true;
+        var loadPath = 'data/configuration.php';
 
-      return $.get(loadPath, function(data) {
-        FB_CTF.data.CONF = data;
-        var df = $.Deferred();
-        return df.resolve(FB_CTF.data.CONF);
-      }, 'json').error(function(jqhxr, status, error) {
-        console.error("There was a problem retrieving the conf data.");
-        console.log(loadPath);
-        console.log(status);
-        console.log(error);
-        console.error("/error");
-      });
+        return $.get(loadPath, function(data) {
+          FB_CTF.data.CONF = data;
+          var df = $.Deferred();
+          return df.resolve(FB_CTF.data.CONF);
+        }, 'json').error(function(jqxhr, status, error) {
+          console.error("There was a problem retrieving the conf data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+          if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+              console.log("Redirecting to '/index.php?page=error'");
+              window.location.replace('/index.php?page=error');
+          }
+        }).done(function() {
+          refresh_active_config = false;
+        });
+      }
+    }
+    
+    /**
+     * verify and active session, or redirect to login
+     */
+    function checkActiveSession(force = false) {
+      if (refresh_active_session === false || force === true) {
+        refresh_active_session = true;
+        var loadPath = 'data/session.php';
+
+        return $.get(loadPath, function(data, response, xhr) {
+          if (xhr.getResponseHeader('Login-Page') === "true") {
+            console.log('Session is not active');
+            console.log("Redirecting to '/index.php?page=login'");
+            window.location.replace('/index.php?page=login');
+          }
+        }).error(function(jqxhr, status, error) {
+          console.error("There was a problem retrieving the session data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+          if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+              console.log("Redirecting to '/index.php?page=error'");
+              window.location.replace('/index.php?page=error');
+          }
+        }).done(function() {
+          refresh_active_session = false;
+        });
+      }
     }
 
     /**
      * refresh the map data
      */
-    function refreshMapData() {
-      var loadPath = 'data/map-data.php';
+    function refreshMapData(force = false) {
+      if (refresh_active_map === false || force === true) {
+        refresh_active_map = true;
 
-      return $.get(loadPath, function(data) {
-        $.each(data, function(key, value) {
-          // First we clear all
-          $('#' + key)[0].classList.remove('active');
-          $('#' + key)[0].parentNode.removeAttribute('data-captured');
-          $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
-          $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
+        var loadPath = 'data/map-data.php';
 
-          // Active country
-          if (value.status === 'active') {
-            if (!$('#' + key).hasClass('active')) {
-              $('#' + key)[0].classList.add('active');
+        return $.get(loadPath, function(data) {
+          FB_CTF.data.MAP = data;
+
+          $.each(data, function(key, value) {
+
+            // First we clear all
+            $('#' + key)[0].classList.remove('active');
+            $('#' + key)[0].parentNode.removeAttribute('data-captured');
+            $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
+            $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
+
+            // Active country
+            if (value.status === 'active') {
+              if (!$('#' + key).hasClass('active')) {
+                $('#' + key)[0].classList.add('active');
+              }
             }
+            /*else { // Inactive country
+             $('#' + key)[0].classList.remove('active');
+             $('#' + key)[0].parentNode.removeAttribute('data-captured');
+             $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
+             $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
+             }*/
+            if (value.captured == 'you') {
+              //$('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
+              $('#' + key)[0].parentNode.children[1].classList.add("captured--you");
+              //$('#' + key)[0].parentNode.removeAttribute('data-captured');
+              $('#' + key)[0].parentNode.setAttribute('data-captured', value.datacaptured);
+            } else if (value.captured == 'opponent') {
+              //$('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
+              $('#' + key)[0].parentNode.children[1].classList.add("captured--opponent");
+              //$('#' + key)[0].parentNode.removeAttribute('data-captured');
+              $('#' + key)[0].parentNode.setAttribute('data-captured', value.datacaptured);
+            }
+          });
+        }, 'json').error(function(jqxhr, status, error) {
+          console.error("There was a problem retrieving the map data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+          if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+              console.log("Redirecting to '/index.php?page=error'");
+              window.location.replace('/index.php?page=error');
           }
-          /*else { // Inactive country
-           $('#' + key)[0].classList.remove('active');
-           $('#' + key)[0].parentNode.removeAttribute('data-captured');
-           $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
-           $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
-           }*/
-          if (value.captured == 'you') {
-            //$('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
-            $('#' + key)[0].parentNode.children[1].classList.add("captured--you");
-            //$('#' + key)[0].parentNode.removeAttribute('data-captured');
-            $('#' + key)[0].parentNode.setAttribute('data-captured', value.datacaptured);
-          } else if (value.captured == 'opponent') {
-            //$('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
-            $('#' + key)[0].parentNode.children[1].classList.add("captured--opponent");
-            //$('#' + key)[0].parentNode.removeAttribute('data-captured');
-            $('#' + key)[0].parentNode.setAttribute('data-captured', value.datacaptured);
-          }
+        }).done(function() {
+          refresh_active_map = false;
         });
-      }, 'json').error(function(jqhxr, status, error) {
-        console.error("There was a problem retrieving the map data.");
-        console.log(loadPath);
-        console.log(status);
-        console.log(error);
-        console.error("/error");
-      });
+      }
     }
 
     /**
      * clear the map data
      */
-    function clearMapData() {
-      var loadPath = 'data/map-data.php';
+    function clearMapData(force = false) {
+      if (refresh_active_clear_map === false || force === true) {
+        refresh_active_clear_map = true;
 
-      return $.get(loadPath, function(data) {
-        $.each(data, function(key) {
-          $('#' + key)[0].classList.remove('active');
-          $('#' + key)[0].parentNode.removeAttribute('data-captured');
-          $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
-          $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
+        var loadPath = 'data/map-data.php';
+
+        return $.get(loadPath, function(data) {
+          $.each(data, function(key) {
+            $('#' + key)[0].classList.remove('active');
+            $('#' + key)[0].parentNode.removeAttribute('data-captured');
+            $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
+            $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
+          });
+        }, 'json').error(function(jqxhr, status, error) {
+          console.error("There was a problem retrieving the map data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+          if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+              console.log("Redirecting to '/index.php?page=error'");
+              window.location.replace('/index.php?page=error');
+          }
+        }).done(function() {
+          refresh_active_clear_map = false;
         });
-      }, 'json').error(function(jqhxr, status, error) {
-        console.error("There was a problem retrieving the map data.");
-        console.log(loadPath);
-        console.log(status);
-        console.log(error);
-        console.error("/error");
-      });
+      }
     }
 
 
@@ -1585,20 +1777,29 @@ function setupInputListeners() {
      * @return Deferred
      *   - indicate that this jqxhr request is all done
      */
-    function getCountryData() {
-      var loadPath = 'data/country-data.php';
+    function getCountryData(force = false) {
+      if (refresh_active_country === false || force === true) {
+        refresh_active_country = true;
+        var loadPath = 'data/country-data.php';
 
-      return $.get(loadPath, function(data) {
-        FB_CTF.data.COUNTRIES = data;
-        var df = $.Deferred();
-        return df.resolve(FB_CTF.data.COUNTRIES);
-      }, 'json').error(function(jqxhr, status, error) {
-        console.error("There was a problem retrieving the game data.");
-        console.log(loadPath);
-        console.log(status);
-        console.log(error);
-        console.error("/error");
-      });
+        return $.get(loadPath, function(data) {
+          FB_CTF.data.COUNTRIES = data;
+          var df = $.Deferred();
+          return df.resolve(FB_CTF.data.COUNTRIES);
+        }, 'json').error(function(jqxhr, status, error) {
+          console.error("There was a problem retrieving the game data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+          if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+              console.log("Redirecting to '/index.php?page=error'");
+              window.location.replace('/index.php?page=error');
+          }
+        }).done(function() {
+          refresh_active_country = false;
+        });
+      }
     }
 
     /**
@@ -1856,25 +2057,35 @@ function setupInputListeners() {
         modalId = 'command-line',
         modalParams = 'p=command-line&modal=command-line',
         $cmdPromptList,
-        $cmdResultsList;
+        $cmdResultsList,
+        refresh_active_command = false;
 
     /**
      * load the commands data
      */
     function loadCommandsData() {
-      var loadPath = 'data/command-line.php';
+      if (refresh_active_command === false) {
+        refresh_active_command = true;
+        var loadPath = 'data/command-line.php';
 
-      return $.get(loadPath, function(data) {
-        FB_CTF.data.COMMAND = data;
-        var df = $.Deferred();
-        return df.resolve(FB_CTF.data.COMMAND);
-      }, 'json').error(function(jqhxr, status, error) {
-        console.error("There was a problem retrieving the commands data.");
-        console.log(loadPath);
-        console.log(status);
-        console.log(error);
-        console.error("/error");
-      });
+        return $.get(loadPath, function(data) {
+          FB_CTF.data.COMMAND = data;
+          var df = $.Deferred();
+          return df.resolve(FB_CTF.data.COMMAND);
+        }, 'json').error(function(jqxhr, status, error) {
+          console.error("There was a problem retrieving the commands data.");
+          console.log(loadPath);
+          console.log(status);
+          console.log(error);
+          console.error("/error");
+          if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+              console.log("Redirecting to '/index.php?page=error'");
+              window.location.replace('/index.php?page=error');
+          }
+        }).done(function() {
+          refresh_active_command = false;
+        });
+      }
     }
 
     /**
@@ -2338,9 +2549,15 @@ function setupInputListeners() {
             });
             eventListeners();
           }
-        }, 'json').error(function() {
+        }, 'json').error(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the commands.");
+          console.log(status);
+          console.log(error);
           console.error("/error");
+          if (jqxhr.status === 500 && jqxhr.getResponseHeader('Error-Redirect') === "true") {
+              console.log("Redirecting to '/index.php?page=error'");
+              window.location.replace('/index.php?page=error');
+          }
         });
       });
     }
@@ -2458,7 +2675,46 @@ function setupInputListeners() {
       Modal.loadPopup('p=action&modal=account', 'action-account');
     });
 
-    // submit account modal
+    // submit account team name modal
+    $body.on('click', '.js-trigger-account-team-name-save', function(event) {
+      event.preventDefault();
+
+      var team_name = $('.team-name-form input[name=team_name]')[0].value;
+      var csrf_token = $('.team-name-form input[name=csrf_token]')[0].value;
+      var team_name_data = {
+        action: 'set_team_name',
+        team_name: team_name,
+        csrf_token: csrf_token
+      };
+
+      $.post(
+        'index.php?p=game&ajax=true',
+        team_name_data
+      ).fail(function() {
+        // TODO: Make this a modal
+        console.log('ERROR');
+      }).done(function(data) {
+        var responseData = JSON.parse(data);
+        if (responseData.result === 'OK') {
+          console.log('OK');
+          $('.team-name-form input[name=team_name]').css("background-color", "#1f7a1f");
+          $('.team-name-form span').text('Team Name updated.');
+        } else {
+          console.log('Failed');
+          $('.team-name-form input[name=team_name]').css("background-color", "#800000");
+          $('.team-name-form span').text('Failed! Please try a different name.');
+        }
+      });
+    });
+
+    $body.on('keypress', '.team-name-form', function(e) {
+      if (e.keyCode == 13) {
+        e.preventDefault();
+        $('.js-trigger-account-team-name-save').click();
+      }
+    });
+
+    // submit account livesync modal
     $body.on('click', '.js-trigger-account-save', function(event) {
         event.preventDefault();
 
@@ -2495,22 +2751,33 @@ function setupInputListeners() {
       });
 
     $body.on('keypress', '.account-link-form', function(e) {
-        if (e.keyCode == 13) {
-          e.preventDefault();
-          $('.js-trigger-account-save').click();
-        }
-      });
+      if (e.keyCode == 13) {
+        e.preventDefault();
+        $('.js-trigger-account-save').click();
+      }
+    });
+
+    // open Facebook OAuth popup
+    $body.on('click', '.js-trigger-facebook-oauth', function(event) {
+      event.preventDefault();
+
+      var popup = window.open('/data/integration_oauth.php?type=facebook', 'Facebook OAuth', 'height=800,width=800,toolbar=no,scrollbars=1,status=no,location=no,directories=no');
+      if (window.focus)  {
+        popup.focus();
+      }
+      return false;
+    });
 
     // open Google OAuth popup
     $body.on('click', '.js-trigger-google-oauth', function(event) {
-        event.preventDefault();
+      event.preventDefault();
 
-            var popup = window.open('/data/google_oauth.php', 'Google OAuth', 'height=800,width=800,toolbar=no,scrollbars=1,status=no,location=no,directories=no');
-            if (window.focus)  {
-                popup.focus();
-            }
-        return false;
-      });
+      var popup = window.open('/data/integration_oauth.php?type=google', 'Google OAuth', 'height=800,width=800,toolbar=no,scrollbars=1,status=no,location=no,directories=no');
+      if (window.focus)  {
+        popup.focus();
+       }
+       return false;
+    });
 
     // click events
     $body.on('click', '.click-effect', function() {

@@ -4,7 +4,7 @@ class IndexController extends Controller {
   <<__Override>>
   public function getTitle(): string {
     $custom_org = \HH\Asio\join(Configuration::gen('custom_org'));
-    return tr($custom_org->getValue()). ' '. tr('CTF');
+    return tr($custom_org->getValue()).' '.tr('CTF');
   }
 
   <<__Override>>
@@ -41,9 +41,15 @@ class IndexController extends Controller {
   public function renderMainContent(): :xhp {
     $custom_org = \HH\Asio\join(Configuration::gen('custom_org'));
     if ($custom_org->getValue() === 'Facebook') {
-      $welcome_msg = tr('Welcome to the Facebook Capture the Flag Competition. By clicking "Play," you will be entered into the official CTF challenge. Good luck in your conquest.');
+      $welcome_msg =
+        tr(
+          'Welcome to the Facebook Capture the Flag Competition. By clicking "Play," you will be entered into the official CTF challenge. Good luck in your conquest.',
+        );
     } else {
-      $welcome_msg = 'Welcome to the ' . $custom_org->getValue() . ' Capture the Flag Competition. By clicking "Play," you will be entered into the official CTF challenge. Good luck in your conquest.';
+      $welcome_msg =
+        'Welcome to the '.
+        $custom_org->getValue().
+        ' Capture the Flag Competition. By clicking "Play," you will be entered into the official CTF challenge. Good luck in your conquest.';
     }
     return
       <div class="fb-row-container full-height fb-scroll">
@@ -112,10 +118,12 @@ class IndexController extends Controller {
           </div>
         </form>;
     }
-    $next_game = await Configuration::gen('next_game');
-    $next_game = $next_game->getValue();
-    $game = await Configuration::gen('game');
-    $game = $game->getValue();
+    list($config_game, $config_next_game) = await \HH\Asio\va(
+      Configuration::gen('game'),
+      Configuration::gen('next_game'),
+    );
+    $game = $config_game->getValue();
+    $next_game = $config_next_game->getValue();
     if ($game === '1') {
       $next_game_text = tr('In Progress');
       $countdown = array('--', '--', '--', '--');
@@ -281,7 +289,60 @@ class IndexController extends Controller {
   }
 
   public async function genRenderRegistrationNames(): Awaitable<:xhp> {
-    $registration_players = await Configuration::gen('registration_players');
+    $awaitables = Map {
+      'login_facebook' => Configuration::gen('login_facebook'),
+      'login_google' => Configuration::gen('login_google'),
+      'registration_players' => Configuration::gen('registration_players'),
+      'registration_facebook' => Configuration::gen('registration_facebook'),
+      'registration_google' => Configuration::gen('registration_google'),
+      'registration_type' => Configuration::gen('registration_type'),
+      'ldap' => Configuration::gen('ldap'),
+      'logos_selection' => $this->genRenderLogosSelection(),
+      'facebook_enabled' => Integration::facebookOAuthEnabled(),
+      'google_enabled' => Integration::googleOAuthEnabled(),
+    };
+    $awaitables_results = await \HH\Asio\m($awaitables);
+
+    $login_facebook = $awaitables_results['login_facebook'];
+    $login_google = $awaitables_results['login_google'];
+    $registration_players = $awaitables_results['registration_players'];
+    $registration_facebook = $awaitables_results['registration_facebook'];
+    $registration_google = $awaitables_results['registration_google'];
+    $registration_type = $awaitables_results['registration_type'];
+    $ldap = $awaitables_results['ldap'];
+    $logos_selection = $awaitables_results['logos_selection'];
+    $facebook_enabled = $awaitables_results['facebook_enabled'];
+    $google_enabled = $awaitables_results['google_enabled'];
+
+    invariant(
+      $login_facebook instanceof Configuration,
+      'login_facebook should be of type Configuration',
+    );
+    invariant(
+      $login_google instanceof Configuration,
+      'login_google should be of type Configuration',
+    );
+    invariant(
+      $registration_players instanceof Configuration,
+      'registration_players should be of type Configuration',
+    );
+    invariant(
+      $registration_facebook instanceof Configuration,
+      'registration_facebook should be of type Configuration',
+    );
+    invariant(
+      $registration_google instanceof Configuration,
+      'registration_google should be of type Configuration',
+    );
+    invariant(
+      $registration_type instanceof Configuration,
+      'registration_type should be of type Configuration',
+    );
+    invariant(
+      $ldap instanceof Configuration,
+      'ldap should be of type Configuration',
+    );
+
     $players = intval($registration_players->getValue());
     $names_ul = <ul></ul>;
 
@@ -302,7 +363,6 @@ class IndexController extends Controller {
       );
     }
 
-    $registration_type = await Configuration::gen('registration_type');
     if ($registration_type->getValue() === '2') {
       $token_field =
         <div class="form-el el--text">
@@ -313,107 +373,210 @@ class IndexController extends Controller {
       $token_field = <div></div>;
     }
 
-    $ldap = await Configuration::gen('ldap');
     $ldap_domain_suffix = "";
     if ($ldap->getValue() === '1') {
       $ldap_domain_suffix = await Configuration::gen('ldap_domain_suffix');
       $ldap_domain_suffix = $ldap_domain_suffix->getValue();
     }
 
-    $logos_section = await $this->genRenderLogosSelection();
+    $page_header =
+      <header class="fb-section-header fb-container">
+        <h1 class="fb-glitch" data-text="Team Registration">
+          {tr('Team Registration')}
+        </h1>
+      </header>;
+
+    $oauth_header = '';
+    $oauth_form = '';
+
+    if ((($facebook_enabled === true) || ($google_enabled === true)) &&
+        (($registration_facebook->getValue() === '1') ||
+         ($registration_google->getValue() === '1'))) {
+      $oauth_header =
+        <header class="fb-section-header fb-container">
+          <p class="inner-container">
+            {tr(
+              'Register to play Capture The Flag with one of the options below. Once you select an option, you will be registered and logged in.',
+            )}
+          </p>
+        </header>;
+      if (($facebook_enabled === true) &&
+          (($login_facebook->getValue() === '1') ||
+           ($registration_facebook->getValue() === '1'))) {
+        $facebook_button =
+          <div class="form-el--actions">
+            <a
+              href="/data/integration_login.php?type=facebook"
+              class="fb-cta cta--yellow">
+              {tr('Register with Facebook Account')}
+            </a>
+          </div>;
+      } else {
+        $facebook_button = '';
+      }
+      if (($google_enabled === true) &&
+          (($login_google->getValue() === '1') ||
+           ($registration_google->getValue() === '1'))) {
+        $google_button =
+          <div class="form-el--actions">
+            <a
+              href="/data/integration_login.php?type=google"
+              class="fb-cta cta--yellow">
+              {tr('Register with Google Account')}
+            </a>
+          </div>;
+      } else {
+        $google_button = '';
+      }
+      $oauth_form =
+        <div class="fb-oauth-registration">
+          {$facebook_button}
+          {$google_button}
+        </div>;
+    }
+
+    $registration_header =
+      <header class="fb-section-header fb-container">
+        <p class="inner-container">
+          {tr(
+            'Or register to use username and password here. Once you have registered, you will be logged in.',
+          )}
+        </p>
+      </header>;
+
+    $registration_form =
+      <div class="fb-registration">
+        <form class="fb-form">
+          <input type="hidden" name="action" value="register_names" />
+          <fieldset class="form-set multiple-registration-list">
+            {$names_ul}
+          </fieldset>
+          <br /><br />
+          <fieldset class="form-set fb-container container--small">
+            <div class="form-el el--text">
+              <label for="">{tr('Team Name')}</label>
+              <input
+                autocomplete="off"
+                name="team_name"
+                type="text"
+                maxlength={20}
+                autofocus={true}
+              />
+              {$ldap_domain_suffix}
+            </div>
+            <div class="form-el el--text">
+              <label for="">{tr('Password')}</label>
+              <input autocomplete="off" name="password" type="password" />
+            </div>
+            {$token_field}
+          </fieldset>
+          <div class="fb-choose-emblem">
+            <h6>{tr('Choose an Emblem')}</h6>
+            <h6>
+              <a href="#" id="custom-emblem-link">
+                {tr('or upload your own')}
+              </a>
+            </h6>
+            <div class="custom-emblem">
+              <input
+                autocomplete="off"
+                name="custom-emblem"
+                id="custom-emblem-input"
+                type="file"
+                accept="image/*"
+              />
+              <img id="custom-emblem-preview" src="" height={62} width={80}>
+              </img>
+            </div>
+            <div class="emblem-carousel">
+              <div id="custom-emblem-carousel-notice">
+                <div class="center-wrapper">
+                  <h6>
+                    <a href="#" id="custom-emblem-clear-link">
+                      {tr(
+                        'Clear your custom emblem to use a default emblem.',
+                      )}
+                    </a>
+                  </h6>
+                </div>
+              </div>
+              {$logos_selection}
+            </div>
+          </div>
+          <div class="form-el--actions fb-container container--small">
+            <p>
+              <button
+                id="register_button"
+                class="fb-cta cta--yellow"
+                type="button">
+                {tr('Sign Up')}
+              </button>
+            </p>
+          </div>
+        </form>
+      </div>;
+
     return
       <main
         role="main"
         class="fb-main page--team-registration full-height fb-scroll">
-        <header class="fb-section-header fb-container">
-          <h1 class="fb-glitch" data-text="Team Registration">
-            {tr('Team Registration')}
-          </h1>
-          <p class="inner-container">
-            {tr(
-              'Register to play Capture The Flag here. Once you have registered, you will be logged in.',
-            )}
-          </p>
-        </header>
-        <div class="fb-registration">
-          <form class="fb-form">
-            <input type="hidden" name="action" value="register_names" />
-            <fieldset class="form-set multiple-registration-list">
-              {$names_ul}
-            </fieldset>
-            <br /><br />
-            <fieldset class="form-set fb-container container--small">
-              <div class="form-el el--text">
-                <label for="">{tr('Team Name')}</label>
-                <input
-                  autocomplete="off"
-                  name="teamname"
-                  type="text"
-                  maxlength={20}
-                  autofocus={true}
-                />
-                {$ldap_domain_suffix}
-              </div>
-              <div class="form-el el--text">
-                <label for="">{tr('Password')}</label>
-                <input autocomplete="off" name="password" type="password" />
-              </div>
-              {$token_field}
-            </fieldset>
-            <div class="fb-choose-emblem">
-              <h6>{tr('Choose an Emblem')}</h6>
-              <h6>
-                <a href="#" id="custom-emblem-link">
-                  {tr('or upload your own')}
-                </a>
-              </h6>
-              <div class="custom-emblem">
-                <input
-                  autocomplete="off"
-                  name="custom-emblem"
-                  id="custom-emblem-input"
-                  type="file"
-                  accept="image/*"
-                />
-                <img
-                  id="custom-emblem-preview"
-                  src=""
-                  height={62}
-                  width={80}>
-                </img>
-              </div>
-              <div class="emblem-carousel">
-                <div id="custom-emblem-carousel-notice">
-                  <div class="center-wrapper">
-                    <h6>
-                      <a href="#" id="custom-emblem-clear-link">
-                        {tr(
-                          'Clear your custom emblem to use a default emblem.',
-                        )}
-                      </a>
-                    </h6>
-                  </div>
-                </div>
-                {$logos_section}
-              </div>
-            </div>
-            <div class="form-el--actions fb-container container--small">
-              <p>
-                <button
-                  id="register_button"
-                  class="fb-cta cta--yellow"
-                  type="button">
-                  {tr('Sign Up')}
-                </button>
-              </p>
-            </div>
-          </form>
-        </div>
+        {$page_header}
+        {$oauth_header}
+        {$oauth_form}
+        {$registration_header}
+        {$registration_form}
       </main>;
   }
 
   public async function genRenderRegistrationNoNames(): Awaitable<:xhp> {
-    $registration_type = await Configuration::gen('registration_type');
+    $awaitables = Map {
+      'login_facebook' => Configuration::gen('login_facebook'),
+      'login_google' => Configuration::gen('login_google'),
+      'registration_facebook' => Configuration::gen('registration_facebook'),
+      'registration_google' => Configuration::gen('registration_google'),
+      'registration_type' => Configuration::gen('registration_type'),
+      'ldap' => Configuration::gen('ldap'),
+      'logos_selection' => $this->genRenderLogosSelection(),
+      'facebook_enabled' => Integration::facebookOAuthEnabled(),
+      'google_enabled' => Integration::googleOAuthEnabled(),
+    };
+    $awaitables_results = await \HH\Asio\m($awaitables);
+
+    $login_facebook = $awaitables_results['login_facebook'];
+    $login_google = $awaitables_results['login_google'];
+    $registration_facebook = $awaitables_results['registration_facebook'];
+    $registration_google = $awaitables_results['registration_google'];
+    $registration_type = $awaitables_results['registration_type'];
+    $ldap = $awaitables_results['ldap'];
+    $logos_selection = $awaitables_results['logos_selection'];
+    $facebook_enabled = $awaitables_results['facebook_enabled'];
+    $google_enabled = $awaitables_results['google_enabled'];
+
+    invariant(
+      $login_facebook instanceof Configuration,
+      'login_facebook should be of type Configuration',
+    );
+    invariant(
+      $login_google instanceof Configuration,
+      'login_google should be of type Configuration',
+    );
+    invariant(
+      $registration_facebook instanceof Configuration,
+      'registration_facebook should be of type Configuration',
+    );
+    invariant(
+      $registration_google instanceof Configuration,
+      'registration_google should be of type Configuration',
+    );
+    invariant(
+      $registration_type instanceof Configuration,
+      'registration_type should be of type Configuration',
+    );
+    invariant(
+      $ldap instanceof Configuration,
+      'ldap should be of type Configuration',
+    );
+
     if ($registration_type->getValue() === '2') {
       $token_field =
         <div class="form-el el--text">
@@ -424,114 +587,250 @@ class IndexController extends Controller {
       $token_field = <div></div>;
     }
 
-    $ldap = await Configuration::gen('ldap');
     $ldap_domain_suffix = "";
     if ($ldap->getValue() === '1') {
       $ldap_domain_suffix = await Configuration::gen('ldap_domain_suffix');
       $ldap_domain_suffix = $ldap_domain_suffix->getValue();
     }
 
-    $logos_section = await $this->genRenderLogosSelection();
+    $page_header =
+      <header class="fb-section-header fb-container">
+        <h1 class="fb-glitch" data-text="Team Registration">
+          {tr('Team Registration')}
+        </h1>
+      </header>;
+
+    $oauth_header = '';
+    $oauth_form = '';
+
+    if ((($facebook_enabled === true) || ($google_enabled === true)) &&
+        (($registration_facebook->getValue() === '1') ||
+         ($registration_google->getValue() === '1'))) {
+      $oauth_header =
+        <header class="fb-section-header fb-container">
+          <p class="inner-container">
+            {tr(
+              'Register to play Capture The Flag with one of the options below. Once you select an option, you will be registered and logged in.',
+            )}
+          </p>
+        </header>;
+      if (($facebook_enabled === true) &&
+          (($login_facebook->getValue() === '1') ||
+           ($registration_facebook->getValue() === '1'))) {
+        $facebook_button =
+          <div class="form-el--actions">
+            <a
+              href="/data/integration_login.php?type=facebook"
+              class="fb-cta cta--yellow">
+              {tr('Register with Facebook Account')}
+            </a>
+          </div>;
+      } else {
+        $facebook_button = '';
+      }
+      if (($google_enabled === true) &&
+          (($login_google->getValue() === '1') ||
+           ($registration_google->getValue() === '1'))) {
+        $google_button =
+          <div class="form-el--actions">
+            <a
+              href="/data/integration_login.php?type=google"
+              class="fb-cta cta--yellow">
+              {tr('Register with Google Account')}
+            </a>
+          </div>;
+      } else {
+        $google_button = '';
+      }
+      $oauth_form =
+        <div class="fb-oauth-registration">
+          {$facebook_button}
+          {$google_button}
+        </div>;
+    }
+
+    $registration_header =
+      <header class="fb-section-header fb-container">
+        <p class="inner-container">
+          {tr(
+            'Or register to use username and password here. Once you have registered, you will be logged in.',
+          )}
+        </p>
+      </header>;
+
+    $registration_form =
+      <div class="fb-registration">
+        <form class="fb-form">
+          <input type="hidden" name="action" value="register_team" />
+          <fieldset class="form-set fb-container container--small">
+            <div class="form-el el--text">
+              <label for="">{tr('Team Name')}</label>
+              <input
+                autocomplete="off"
+                name="team_name"
+                type="text"
+                maxlength={20}
+                autofocus={true}
+              />
+              {$ldap_domain_suffix}
+            </div>
+            <div class="form-el el--text">
+              <label for="">{tr('Password')}</label>
+              <input autocomplete="off" name="password" type="password" />
+            </div>
+            <div id="password_error" class="el--text completely-hidden">
+              <label for=""></label>
+              <h6 style="color:red;">{tr('Password is too simple')}</h6>
+            </div>
+            {$token_field}
+          </fieldset>
+          <div class="fb-choose-emblem">
+            <h6>{tr('Choose an Emblem')}</h6>
+            <h6>
+              <a href="#" id="custom-emblem-link">
+                {tr('or upload your own')}
+              </a>
+            </h6>
+            <div class="custom-emblem">
+              <input
+                autocomplete="off"
+                name="custom-emblem"
+                id="custom-emblem-input"
+                type="file"
+                accept="image/*"
+              />
+              <img id="custom-emblem-preview" src="" height={62} width={80}>
+              </img>
+            </div>
+            <div class="emblem-carousel">
+              <div id="custom-emblem-carousel-notice">
+                <div class="center-wrapper">
+                  <h6>
+                    <a href="#" id="custom-emblem-clear-link">
+                      {tr(
+                        'Clear your custom emblem to use a default emblem.',
+                      )}
+                    </a>
+                  </h6>
+                </div>
+              </div>
+              {$logos_selection}
+            </div>
+          </div>
+          <div class="form-el--actions fb-container container--small">
+            <p>
+              <button
+                id="register_button"
+                class="fb-cta cta--yellow"
+                type="button">
+                {tr('Sign Up')}
+              </button>
+            </p>
+          </div>
+        </form>
+      </div>;
+
     return
       <main
         role="main"
-        class="fb-main page--registration full-height fb-scroll">
-        <header class="fb-section-header fb-container">
-          <h1 class="fb-glitch" data-text={tr('Team Registration')}>
-            {tr('Team Registration')}
-          </h1>
-          <p class="inner-container">
-            {tr(
-              'Register to play Capture The Flag here. Once you have registered, you will be logged in.',
-            )}
-          </p>
-        </header>
-        <div class="fb-registration">
-          <form class="fb-form">
-            <input type="hidden" name="action" value="register_team" />
-            <fieldset class="form-set fb-container container--small">
-              <div class="form-el el--text">
-                <label for="">{tr('Team Name')}</label>
-                <input
-                  autocomplete="off"
-                  name="teamname"
-                  type="text"
-                  maxlength={20}
-                  autofocus={true}
-                />
-                {$ldap_domain_suffix}
-              </div>
-              <div class="form-el el--text">
-                <label for="">{tr('Password')}</label>
-                <input autocomplete="off" name="password" type="password" />
-              </div>
-              <div id="password_error" class="el--text completely-hidden">
-                <label for=""></label>
-                <h6 style="color:red;">{tr('Password is too simple')}</h6>
-              </div>
-              {$token_field}
-            </fieldset>
-            <div class="fb-choose-emblem">
-              <h6>{tr('Choose an Emblem')}</h6>
-              <h6>
-                <a href="#" id="custom-emblem-link">
-                  {tr('or upload your own')}
-                </a>
-              </h6>
-              <div class="custom-emblem">
-                <input
-                  autocomplete="off"
-                  name="custom-emblem"
-                  id="custom-emblem-input"
-                  type="file"
-                  accept="image/*"
-                />
-                <img
-                  id="custom-emblem-preview"
-                  src=""
-                  height={62}
-                  width={80}>
-                </img>
-              </div>
-              <div class="emblem-carousel">
-                <div id="custom-emblem-carousel-notice">
-                  <div class="center-wrapper">
-                    <h6>
-                      <a href="#" id="custom-emblem-clear-link">
-                        {tr(
-                          'Clear your custom emblem to use a default emblem.',
-                        )}
-                      </a>
-                    </h6>
-                  </div>
-                </div>
-                {$logos_section}
-              </div>
-            </div>
-            <div class="form-el--actions fb-container container--small">
-              <p>
-                <button
-                  id="register_button"
-                  class="fb-cta cta--yellow"
-                  type="button">
-                  {tr('Sign Up')}
-                </button>
-              </p>
-            </div>
-          </form>
-        </div>
+        class="fb-main page--team-registration full-height fb-scroll">
+        {$page_header}
+        {$oauth_header}
+        {$oauth_form}
+        {$registration_header}
+        {$registration_form}
       </main>;
   }
 
   public async function genRenderRegistrationContent(): Awaitable<:xhp> {
-    $registration = await Configuration::gen('registration');
-    $registration_names = await Configuration::gen('registration_names');
+    $awaitables = Map {
+      'registration' => Configuration::gen('registration'),
+      'registration_facebook' => Configuration::gen('registration_facebook'),
+      'registration_google' => Configuration::gen('registration_google'),
+      'registration_names' => Configuration::gen('registration_names'),
+      'facebook_enabled' => Integration::facebookOAuthEnabled(),
+      'google_enabled' => Integration::googleOAuthEnabled(),
+    };
+    $awaitables_results = await \HH\Asio\m($awaitables);
+
+    $registration = $awaitables_results['registration'];
+    $registration_facebook = $awaitables_results['registration_facebook'];
+    $registration_google = $awaitables_results['registration_google'];
+    $registration_names = $awaitables_results['registration_names'];
+    $facebook_enabled = $awaitables_results['facebook_enabled'];
+    $google_enabled = $awaitables_results['google_enabled'];
+
+    invariant(
+      $registration instanceof Configuration,
+      'registration should be of type Configuration',
+    );
+    invariant(
+      $registration_facebook instanceof Configuration,
+      'registration_facebook should be of type Configuration',
+    );
+    invariant(
+      $registration_google instanceof Configuration,
+      'registration_google should be of type Configuration',
+    );
+    invariant(
+      $registration_names instanceof Configuration,
+      'registration_names should be of type Configuration',
+    );
+
     if ($registration->getValue() === '1') {
       if ($registration_names->getValue() === '1') {
         return await $this->genRenderRegistrationNames();
       } else {
         return await $this->genRenderRegistrationNoNames();
       }
+    } else if ((($facebook_enabled === true) || ($google_enabled === true)) &&
+               (($registration_facebook->getValue() === '1') ||
+                ($registration_google->getValue() === '1'))) {
+      if (($facebook_enabled === true) &&
+          ($registration_facebook->getValue() === '1')) {
+        $facebook_button =
+          <div class="form-el--actions">
+            <a
+              href="/data/integration_login.php?type=facebook"
+              class="fb-cta cta--yellow">
+              {tr('Register with Facebook Account')}
+            </a>
+          </div>;
+      } else {
+        $facebook_button = '';
+      }
+      if (($google_enabled === true) &&
+          ($registration_google->getValue() === '1')) {
+        $google_button =
+          <div class="form-el--actions">
+            <a
+              href="/data/integration_login.php?type=google"
+              class="fb-cta cta--yellow">
+              {tr('Register with Google Account')}
+            </a>
+          </div>;
+      } else {
+        $google_button = '';
+      }
+      return
+        <main
+          role="main"
+          class="fb-main page--registration full-height fb-scroll">
+          <header class="fb-section-header fb-container">
+            <h1 class="fb-glitch" data-text={tr('Team Registration')}>
+              {tr('Team Registration')}
+            </h1>
+            <p class="inner-container">
+              {tr(
+                'Register to play Capture The Flag with one of the options below. Once you have registered, you will be logged in.',
+              )}
+            </p>
+          </header>
+          <div class="fb-registration">
+            {$facebook_button}
+            {$google_button}
+          </div>
+        </main>;
     } else {
       return
         <div class="fb-row-container full-height fb-scroll">
@@ -563,13 +862,130 @@ class IndexController extends Controller {
   }
 
   public async function genRenderLoginContent(): Awaitable<:xhp> {
-    $login = await Configuration::gen('login');
-    $ldap = await Configuration::gen('ldap');
+    header('Login-Page: true');
+    if (SessionUtils::sessionActive()) {
+      throw new IndexRedirectException();
+    }
+    $awaitables = Map {
+      'login' => Configuration::gen('login'),
+      'login_facebook' => Configuration::gen('login_facebook'),
+      'login_google' => Configuration::gen('login_google'),
+      'registration' => Configuration::gen('registration'),
+      'registration_facebook' => Configuration::gen('registration_facebook'),
+      'registration_google' => Configuration::gen('registration_google'),
+      'ldap' => Configuration::gen('ldap'),
+      'facebook_enabled' => Integration::facebookOAuthEnabled(),
+      'google_enabled' => Integration::googleOAuthEnabled(),
+    };
+    $awaitables_results = await \HH\Asio\m($awaitables);
+
+    $login = $awaitables_results['login'];
+    $login_facebook = $awaitables_results['login_facebook'];
+    $login_google = $awaitables_results['login_google'];
+    $registration = $awaitables_results['registration'];
+    $registration_facebook = $awaitables_results['registration_facebook'];
+    $registration_google = $awaitables_results['registration_google'];
+    $ldap = $awaitables_results['ldap'];
+    $facebook_enabled = $awaitables_results['facebook_enabled'];
+    $google_enabled = $awaitables_results['google_enabled'];
+
+    invariant(
+      $login instanceof Configuration,
+      'login should be of type Configuration',
+    );
+    invariant(
+      $login_facebook instanceof Configuration,
+      'login_facebook should be of type Configuration',
+    );
+    invariant(
+      $login_google instanceof Configuration,
+      'login_google should be of type Configuration',
+    );
+    invariant(
+      $registration instanceof Configuration,
+      'registration should be of type Configuration',
+    );
+    invariant(
+      $registration_facebook instanceof Configuration,
+      'registration_facebook should be of type Configuration',
+    );
+    invariant(
+      $registration_google instanceof Configuration,
+      'registration_google should be of type Configuration',
+    );
+    invariant(
+      $ldap instanceof Configuration,
+      'ldap should be of type Configuration',
+    );
+
     $ldap_domain_suffix = "";
     if ($ldap->getValue() === '1') {
       $ldap_domain_suffix = await Configuration::gen('ldap_domain_suffix');
       $ldap_domain_suffix = $ldap_domain_suffix->getValue();
     }
+
+    if ((($facebook_enabled === true) || ($google_enabled === true)) &&
+        (($login_facebook->getValue() === '1') ||
+         ($login_google->getValue() === '1'))) {
+      if (($facebook_enabled === true) &&
+          ($login_facebook->getValue() === '1')) {
+        $facebook_button_text = tr('Login with Facebook Account');
+        if ($registration_facebook->getValue() === '1') {
+          $facebook_button_text =
+            tr('Login or Register with Facebook Account');
+        }
+        $facebook_button =
+          <div class="form-el--actions">
+            <a
+              href="/data/integration_login.php?type=facebook"
+              class="fb-cta cta--yellow">
+              {$facebook_button_text}
+            </a>
+          </div>;
+      } else {
+        $facebook_button = '';
+      }
+      if (($google_enabled === true) && ($login_google->getValue() === '1')) {
+        $google_button_text = tr('Login with Google Account');
+        if ($registration_google->getValue() === '1') {
+          $google_button_text = tr('Login or Register with Google Account');
+        }
+        $google_button =
+          <div class="form-el--actions">
+            <a
+              href="/data/integration_login.php?type=google"
+              class="fb-cta cta--yellow">
+              {$google_button_text}
+            </a>
+          </div>;
+      } else {
+        $google_button = '';
+      }
+      $oauth_header_message =
+        tr(
+          'Or login with these one of these options (existing account is required):',
+        );
+      if (($registration_facebook->getValue() === '1') ||
+          ($registration_google->getValue() === '1')) {
+        $oauth_header_message =
+          tr('Or login/register with these one of these options:');
+      }
+      $oauth_header =
+        <header class="fb-section-header fb-container">
+          <p class="inner-container">
+            {$oauth_header_message}
+          </p>
+        </header>;
+      $oauth_form =
+        <div class="fb-login">
+          {$facebook_button}
+          {$google_button}
+        </div>;
+    } else {
+      $oauth_header = '';
+      $oauth_form = '';
+    }
+
     if ($login->getValue() === '1') {
       $login_team =
         <input
@@ -596,54 +1012,68 @@ class IndexController extends Controller {
         }
       }
 
-      return
+      $registration_button = '';
+      if ($registration->getValue() === '1') {
+        $registration_button =
+          <a href="/index.php?page=registration" class="fb-cta cta--blue">
+            {tr('Sign Up')}
+          </a>;
+        $header_message =
+          tr(
+            'Please login here with username and password. If you have not registered, you may do so by clicking "Sign Up" below.',
+          );
+      } else {
+        $header_message = tr('Please login here with username and password.');
+      }
+
+      $login_header =
+        <header class="fb-section-header fb-container">
+          <h1 class="fb-glitch" data-text={tr('Team Login')}>
+            {tr('Team Login')}
+          </h1>
+          <p class="inner-container">
+            {$header_message}
+          </p>
+        </header>;
+
+      $login_form =
+        <div class="fb-login">
+          <form class="fb-form">
+            <input type="hidden" name="action" value="login_team" />
+            <input type="hidden" name="login_select" value={$login_select} />
+            <fieldset class="form-set fb-container container--small">
+              <div class="form-el el--text">
+                <label for="">{tr('Team Name')}</label>
+                {$login_team} {$ldap_domain_suffix}
+              </div>
+              <div class="form-el el--text">
+                <label for="">{tr('Password')}</label>
+                <input autocomplete="off" name="password" type="password" />
+              </div>
+            </fieldset>
+            <div class="form-el--actions">
+              <button
+                id="login_button"
+                class="fb-cta cta--yellow"
+                type="button">
+                {tr('Login')}
+              </button>
+            </div>
+            <div class="form-el--footer">
+              {$registration_button}
+            </div>
+          </form>
+        </div>;
+
+      $login_form =
         <main role="main" class="fb-main page--login full-height fb-scroll">
-          <header class="fb-section-header fb-container">
-            <h1 class="fb-glitch" data-text={tr('Team Login')}>
-              {tr('Team Login')}
-            </h1>
-            <p class="inner-container">
-              {tr(
-                'Please login here. If you have not registered, you may do so by clicking "Sign Up" below. ',
-              )}
-            </p>
-          </header>
-          <div class="fb-login">
-            <form class="fb-form">
-              <input type="hidden" name="action" value="login_team" />
-              <input
-                type="hidden"
-                name="login_select"
-                value={$login_select}
-              />
-              <fieldset class="form-set fb-container container--small">
-                <div class="form-el el--text">
-                  <label for="">{tr('Team Name')}</label>
-                  {$login_team} {$ldap_domain_suffix}
-                </div>
-                <div class="form-el el--text">
-                  <label for="">{tr('Password')}</label>
-                  <input
-                    autocomplete="off"
-                    name="password"
-                    type="password"
-                  />
-                </div>
-              </fieldset>
-              <div class="form-el--actions">
-                <button
-                  id="login_button"
-                  class="fb-cta cta--yellow"
-                  type="button">
-                  {tr('Login')}
-                </button>
-              </div>
-              <div class="form-el--footer">
-                <a href="/index.php?page=registration">{tr('Sign Up')}</a>
-              </div>
-            </form>
-          </div>
+          {$login_header}
+          {$login_form}
+          {$oauth_header}
+          {$oauth_form}
         </main>;
+
+      return $login_form;
     } else if (Utils::getGET()->get('admin') === 'true') {
       return
         <main role="main" class="fb-main page--login full-height fb-scroll">
@@ -689,6 +1119,41 @@ class IndexController extends Controller {
                 </button>
               </div>
             </form>
+          </div>
+        </main>;
+    } else if ((($facebook_enabled === true) || ($google_enabled === true)) &&
+               (($login_facebook->getValue() === '1') ||
+                ($login_google->getValue() === '1'))) {
+
+      if (($registration_facebook->getValue() === '1') ||
+          ($registration_google->getValue() === '1')) {
+        $header_message =
+          tr('Login/Register with these one of these options:');
+      } else {
+        $header_message =
+          tr(
+            'Login with these one of these options (existing account is required):',
+          );
+      }
+
+      $login_header =
+        <header class="fb-section-header fb-container">
+          <h1 class="fb-glitch" data-text={tr('Team Login')}>
+            {tr('Team Login')}
+          </h1>
+          <p class="inner-container">
+            {$header_message}
+          </p>
+        </header>;
+
+      return
+        <main role="main" class="fb-main page--login full-height fb-scroll">
+          {$login_header}
+          {$oauth_form}
+          <div class="form-el--actions">
+            <a href="/index.php?page=login&admin=true" class="fb-cta">
+              {tr('Admin Login')}
+            </a>
           </div>
         </main>;
     } else {
@@ -754,6 +1219,11 @@ class IndexController extends Controller {
               )}
             </p>
             <p>{tr('Thank you.')}</p>
+            <div class="fb-actionable">
+              <a href="/index.php" class="fb-cta cta--yellow">
+                {tr('Reload')}
+              </a>
+            </div>
           </div>
         </main>
         <div class="row-fixed">
@@ -811,7 +1281,7 @@ class IndexController extends Controller {
         </li>
       </ul>;
     $branding_gen = await $this->genRenderBranding();
-    $branding = 
+    $branding =
       <div class="branding">
         <a href="/">
           <div class="branding-rules">
@@ -855,8 +1325,10 @@ class IndexController extends Controller {
 
   <<__Override>>
   public async function genRenderBody(string $page): Awaitable<:xhp> {
-    $rendered_page = await $this->genRenderPage($page);
-    $rendered_nav = await $this->genRenderMainNav();
+    list($rendered_page, $rendered_nav) = await \HH\Asio\va(
+      $this->genRenderPage($page),
+      $this->genRenderMainNav(),
+    );
     return
       <body data-section="pages">
         <div class="fb-sprite" id="fb-svg-sprite"></div>

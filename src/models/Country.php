@@ -55,14 +55,12 @@ class Country extends Model {
   // Make sure all the countries used field is good
   public static async function genUsedAdjust(): Awaitable<void> {
     $db = await self::genDb();
-    await $db->queryf(
+    $queries = Vector {
       'UPDATE countries SET used = 1 WHERE id IN (SELECT entity_id FROM levels)',
-    );
-    await $db->queryf(
       'UPDATE countries SET used = 0 WHERE id NOT IN (SELECT entity_id FROM levels)',
-    );
-
-    self::invalidateMCRecords(); // Invalidate Memcached Country data.
+    };
+    await $db->multiQuery($queries);
+    self::invalidateMCRecords();
   }
 
   // Enable or disable a country
@@ -76,7 +74,7 @@ class Country extends Model {
       $status ? 1 : 0,
       $country_id,
     );
-    self::invalidateMCRecords(); // Invalidate Memcached Country data.
+    self::invalidateMCRecords();
   }
 
   // Set the used flag for a country
@@ -90,7 +88,7 @@ class Country extends Model {
       $status ? 1 : 0,
       $country_id,
     );
-    self::invalidateMCRecords(); // Invalidate Memcached Country data.
+    self::invalidateMCRecords();
   }
 
   private static async function genAll(
@@ -219,7 +217,7 @@ class Country extends Model {
   public static async function genIsActiveLevel(
     int $country_id,
   ): Awaitable<bool> {
-    return Level::genWhoUses($country_id) != null;
+    return Level::genWhoUses($country_id) !== null;
   }
 
   // Get a country by id.

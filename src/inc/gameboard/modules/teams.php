@@ -2,12 +2,13 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-/* HH_IGNORE_ERROR[1002] */
-SessionUtils::sessionStart();
-SessionUtils::enforceLogin();
-
-class TeamModuleController {
+class TeamModuleController extends ModuleController {
   public async function genRender(): Awaitable<:xhp> {
+
+    /* HH_IGNORE_ERROR[1002] */
+    SessionUtils::sessionStart();
+    SessionUtils::enforceLogin();
+
     await tr_start();
     $leaderboard = await MultiTeam::genLeaderboard();
     $rank = 1;
@@ -16,8 +17,19 @@ class TeamModuleController {
 
     $gameboard = await Configuration::gen('gameboard');
     if ($gameboard->getValue() === '1') {
-      foreach ($leaderboard as $leader) {
-        $logo_model = await $leader->getLogoModel();
+      $leaderboard_size = count($leaderboard);
+      $leaderboard_limit = await Configuration::gen('leaderboard_limit');
+      $leaderboard_limit_value = intval($leaderboard_limit->getValue());
+
+      if (($leaderboard_size <= $leaderboard_limit_value) ||
+          ($leaderboard_limit_value === 0)) {
+        $leaderboard_count = $leaderboard_size;
+      } else {
+        $leaderboard_count = $leaderboard_limit_value;
+      }
+      for ($i = 0; $i < $leaderboard_count; $i++) {
+        $leader = $leaderboard[$i];
+        $logo_model = await $leader->getLogoModel(); // TODO: Combine Awaits
         if ($logo_model->getCustom()) {
           $image =
             <img class="icon--badge" src={$logo_model->getLogo()}></img>;
@@ -66,5 +78,6 @@ class TeamModuleController {
   }
 }
 
+/* HH_IGNORE_ERROR[1002] */
 $teams_generated = new TeamModuleController();
-echo \HH\Asio\join($teams_generated->genRender());
+$teams_generated->sendRender();

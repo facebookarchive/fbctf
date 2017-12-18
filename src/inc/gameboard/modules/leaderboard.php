@@ -2,20 +2,23 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-/* HH_IGNORE_ERROR[1002] */
-SessionUtils::sessionStart();
-SessionUtils::enforceLogin();
-
-class LeaderboardModuleController {
+class LeaderboardModuleController extends ModuleController {
   public async function genRender(): Awaitable<:xhp> {
+
+    /* HH_IGNORE_ERROR[1002] */
+    SessionUtils::sessionStart();
+    SessionUtils::enforceLogin();
+
     await tr_start();
     $leaderboard_ul = <ul></ul>;
 
-    $my_team = await MultiTeam::genTeam(SessionUtils::sessionTeam());
-    $my_rank = await Team::genMyRank(SessionUtils::sessionTeam());
+    list($my_team, $my_rank, $gameboard) = await \HH\Asio\va(
+      MultiTeam::genTeam(SessionUtils::sessionTeam()),
+      Team::genMyRank(SessionUtils::sessionTeam()),
+      Configuration::gen('gameboard'),
+    );
 
     // If refresing is enabled, do the needful
-    $gameboard = await Configuration::gen('gameboard');
     if ($gameboard->getValue() === '1') {
       $leaders = await MultiTeam::genLeaderboard();
       $rank = 1;
@@ -24,7 +27,7 @@ class LeaderboardModuleController {
         $team = $leaders[$i];
 
         // TODO also duplicated in modules/teams.php. Needs to be un-duplicated.
-        $logo_model = await $team->getLogoModel();
+        $logo_model = await $team->getLogoModel(); // TODO: Combine Awaits
         if ($logo_model->getCustom()) {
           $image =
             <img class="icon--badge" src={$logo_model->getLogo()}></img>;
@@ -56,6 +59,15 @@ class LeaderboardModuleController {
       }
     }
 
+    if ($my_team->getVisible() === true) {
+      $leaderboard_limit = await Configuration::gen('leaderboard_limit');
+      if ($my_rank >= intval($leaderboard_limit->getValue())) {
+        $my_rank = intval($leaderboard_limit->getValue()) + 1 ."+";
+      }
+    } else {
+      $my_rank = "N/A";
+    }
+
     return
       <div>
         <header class="module-header">
@@ -81,5 +93,6 @@ class LeaderboardModuleController {
   }
 }
 
+/* HH_IGNORE_ERROR[1002] */
 $leaderboard_generated = new LeaderboardModuleController();
-echo \HH\Asio\join($leaderboard_generated->genRender());
+$leaderboard_generated->sendRender();

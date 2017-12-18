@@ -2,47 +2,79 @@
 
 require_once ($_SERVER['DOCUMENT_ROOT'].'/../vendor/autoload.php');
 
-/* HH_IGNORE_ERROR[1002] */
-SessionUtils::sessionStart();
-SessionUtils::enforceLogin();
-
 class CountryDataController extends DataController {
   public async function genGenerateData(): Awaitable<void> {
-    $my_team = await MultiTeam::genTeam(SessionUtils::sessionTeam());
+
+    /* HH_IGNORE_ERROR[1002] */
+    SessionUtils::sessionStart();
+    SessionUtils::enforceLogin();
+
+    list($my_team, $gameboard, $all_active_levels) = await \HH\Asio\va(
+      MultiTeam::genTeam(SessionUtils::sessionTeam()),
+      Configuration::gen('gameboard'),
+      Level::genAllActiveLevels(),
+    );
 
     $countries_data = (object) array();
 
     // If gameboard refresing is disabled, exit
-    $gameboard = await Configuration::gen('gameboard');
     if ($gameboard->getValue() === '0') {
       $this->jsonSend($countries_data);
       exit(1);
     }
 
-    $all_active_levels = await Level::genAllActiveLevels();
     foreach ($all_active_levels as $level) {
-      $country = await Country::gen(intval($level->getEntityId()));
+      $awaitables = Map {
+        'country' => Country::gen(intval($level->getEntityId())),
+        'category' => Category::genSingleCategory($level->getCategoryId()),
+        'attachments_list' => Attachment::genAllAttachmentsFileNamesLinks(
+          $level->getId(),
+        ),
+        'links_list' => Link::genAllLinksValues($level->getId()),
+        'completed_by' => MultiTeam::genCompletedLevelTeamNames(
+          $level->getId(),
+        ),
+      };
+      $awaitables_results = await \HH\Asio\m($awaitables); // TODO: Combine Awaits
+
+      $country = $awaitables_results['country'];
+      $category = $awaitables_results['category'];
+      $attachments_list = $awaitables_results['attachments_list'];
+      $links_list = $awaitables_results['links_list'];
+      $completed_by = $awaitables_results['completed_by'];
+
+      invariant(
+        $country instanceof Country,
+        'country should be of type Country',
+      );
+      invariant(
+        $category instanceof Category,
+        'category should be of type Category',
+      );
+
       if (!$country) {
         continue;
       }
 
-      $category = await Category::genSingleCategory($level->getCategoryId());
       if ($level->getHint() !== '') {
         // There is hint, can this team afford it?
         if ($level->getPenalty() > $my_team->getPoints()) { // Not enough points
           $hint_cost = -2;
           $hint = 'no';
         } else {
-          $hint = await HintLog::genPreviousHint(
-            $level->getId(),
-            $my_team->getId(),
-            false,
-          );
-          $score = await ScoreLog::genPreviousScore(
-            $level->getId(),
-            $my_team->getId(),
-            false,
-          );
+          list($hint, $score) = await \HH\Asio\va(
+            HintLog::genPreviousHint(
+              $level->getId(),
+              $my_team->getId(),
+              false,
+            ),
+            ScoreLog::genPreviousScore(
+              $level->getId(),
+              $my_team->getId(),
+              false,
+            ),
+          ); // TODO: Combine Awaits
+
           // Has this team requested this hint or scored this level before?
           if ($hint || $score) {
             $hint_cost = 0;
@@ -56,37 +88,9 @@ class CountryDataController extends DataController {
         $hint = 'no';
       }
 
-      // All attachments for this level
-      $attachments_list = array();
-      $has_attachments = await Attachment::genHasAttachments($level->getId());
-      if ($has_attachments) {
-        $all_attachments =
-          await Attachment::genAllAttachments($level->getId());
-        foreach ($all_attachments as $attachment) {
-          array_push($attachments_list, $attachment->getFilename());
-        }
-      }
-
-      // All links for this level
-      $links_list = array();
-      $has_links = await Link::genHasLinks($level->getId());
-      if ($has_links) {
-        $all_links = await Link::genAllLinks($level->getId());
-        foreach ($all_links as $link) {
-          array_push($links_list, $link->getLink());
-        }
-      }
-
-      // All teams that have completed this level
-      $completed_by = array();
-      $completed_level = await MultiTeam::genCompletedLevel($level->getId());
-      foreach ($completed_level as $c) {
-        array_push($completed_by, $c->getName());
-      }
-
       // Who is the first owner of this level
-      if ($completed_level) {
-        $owner = await MultiTeam::genFirstCapture($level->getId());
+      if ($completed_by) {
+        $owner = await MultiTeam::genFirstCapture($level->getId()); // TODO: Combine Awaits
         $owner = $owner->getName();
       } else {
         $owner = 'Uncaptured';
@@ -116,4 +120,4 @@ class CountryDataController extends DataController {
 }
 
 $countryData = new CountryDataController();
-\HH\Asio\join($countryData->genGenerateData());
+$countryData->sendData();

@@ -36,7 +36,7 @@ CREATE TABLE `levels` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `active` tinyint(1) NOT NULL,
   `type` varchar(4) NOT NULL,
-  `title` text NOT NULL,
+  `title` varchar(255) NOT NULL,
   `description` text NOT NULL,
   `entity_id` int(11) NOT NULL,
   `category_id` int(11) NOT NULL,
@@ -48,7 +48,9 @@ CREATE TABLE `levels` (
   `hint` text NOT NULL,
   `penalty` int(11) NOT NULL,
   `created_ts` timestamp NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `entity_id` (`entity_id`),
+  KEY `active` (`active`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -61,7 +63,7 @@ DROP TABLE IF EXISTS `categories`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `categories` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `category` text NOT NULL,
+  `category` varchar(255) NOT NULL,
   `protected` tinyint(1) NOT NULL,
   `created_ts` timestamp NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
@@ -116,8 +118,8 @@ DROP TABLE IF EXISTS `teams`;
 CREATE TABLE `teams` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `active` tinyint(1) NOT NULL DEFAULT 1,
-  `name` text NOT NULL,
-  `password_hash` text NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
   `points` int(11) NOT NULL DEFAULT 0,
   `last_score` timestamp NOT NULL,
   `logo` text NOT NULL,
@@ -125,7 +127,9 @@ CREATE TABLE `teams` (
   `protected` tinyint(1) NOT NULL DEFAULT 0,
   `visible` tinyint(1) NOT NULL DEFAULT 1,
   `created_ts` timestamp NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `visible` (`visible`),
+  KEY `active` (`active`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -147,6 +151,22 @@ CREATE TABLE `livesync` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `teams_oauth`
+--
+
+DROP TABLE IF EXISTS `teams_oauth`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `teams_oauth` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `type` text NOT NULL,
+  `team_id` int(11) NOT NULL,
+  `token` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `teams_data`
 --
 
@@ -156,10 +176,11 @@ DROP TABLE IF EXISTS `teams_data`;
 CREATE TABLE `teams_data` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `team_id` int(11) NOT NULL,
-  `name` text NOT NULL,
-  `email` text NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
   `created_ts` timestamp NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `team_id` (`team_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -172,13 +193,14 @@ DROP TABLE IF EXISTS `sessions`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `sessions` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `cookie` text NOT NULL,
+  `cookie` varchar(200) NOT NULL,
   `data` text NOT NULL,
   `team_id` int(11) NOT NULL,
   `created_ts` timestamp NOT NULL DEFAULT 0,
   `last_access_ts` timestamp NOT NULL,
-  `last_page_access` text NOT NULL,
-  PRIMARY KEY (`id`)
+  `last_page_access` varchar(200) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `cookie` (`cookie`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -215,10 +237,16 @@ INSERT INTO `configuration` (field, value, description) VALUES("auto_announce", 
 INSERT INTO `configuration` (field, value, description) VALUES("progressive_cycle", "300", "(Integer) Frequency to take progressive scoreboard in seconds");
 INSERT INTO `configuration` (field, value, description) VALUES("bases_cycle", "5", "(Integer) Frequency to score base levels in seconds");
 INSERT INTO `configuration` (field, value, description) VALUES("autorun_cycle", "30", "(Integer) Frequency to cycle autorun in seconds");
+INSERT INTO `configuration` (field, value, description) VALUES("gameboard_cycle", "5", "(Integer) Frequency to cycle gameboard in seconds");
+INSERT INTO `configuration` (field, value, description) VALUES("conf_cycle", "10", "(Integer) Frequency to cycle configuration and commandline in seconds");
+INSERT INTO `configuration` (field, value, description) VALUES("leaderboard_limit", "50", "(Integer) Maximum number of teams to show on the leaderboard");
 INSERT INTO `configuration` (field, value, description) VALUES("registration", "0", "(Boolean) Ability to register teams");
 INSERT INTO `configuration` (field, value, description) VALUES("registration_names", "0", "(Boolean) Registration will ask for names");
 INSERT INTO `configuration` (field, value, description) VALUES("registration_type", "1", "(Integer) Type of registration: 1 - Open; 2 - Tokenized;");
 INSERT INTO `configuration` (field, value, description) VALUES("registration_players", "3", "(Integer) Number of players per team");
+INSERT INTO `configuration` (field, value, description) VALUES("registration_facebook", "0", "(Boolean) Allow Facebook Registration");
+INSERT INTO `configuration` (field, value, description) VALUES("registration_google", "0", "(Boolean) Allow Google Registration");
+INSERT INTO `configuration` (field, value, description) VALUES("registration_prefix", "Hacker", "(String) Automated Team Registation Name Prefix");
 INSERT INTO `configuration` (field, value, description) VALUES("ldap", "0", "(Boolean) Ability to use LDAP to login");
 INSERT INTO `configuration` (field, value, description) VALUES("ldap_server", "ldap://localhost", "(String) LDAP Server");
 INSERT INTO `configuration` (field, value, description) VALUES("ldap_port", "389", "(Integer) LDAP Port");
@@ -226,6 +254,8 @@ INSERT INTO `configuration` (field, value, description) VALUES("ldap_domain_suff
 INSERT INTO `configuration` (field, value, description) VALUES("login", "1", "(Boolean) Ability to login");
 INSERT INTO `configuration` (field, value, description) VALUES("login_select", "0", "(Boolean) Login selecting the team");
 INSERT INTO `configuration` (field, value, description) VALUES("login_strongpasswords", "0", "(Boolean) Enforce using strong passwords");
+INSERT INTO `configuration` (field, value, description) VALUES("login_facebook", "0", "(Boolean) Allow Facebook Login");
+INSERT INTO `configuration` (field, value, description) VALUES("login_google", "0", "(Boolean) Allow Google Login");
 INSERT INTO `configuration` (field, value, description) VALUES("password_type", "1", "(Integer) Type of passwords: See table password_types");
 INSERT INTO `configuration` (field, value, description) VALUES("default_bonus", "30", "(Integer) Default value for bonus in levels");
 INSERT INTO `configuration` (field, value, description) VALUES("default_bonusdec", "10", "(Integer) Default bonus decrement in levels");
@@ -291,12 +321,13 @@ DROP TABLE IF EXISTS `registration_tokens`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `registration_tokens` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `token` text NOT NULL,
+  `token` varchar(250) NOT NULL,
   `used` tinyint(1) NOT NULL,
   `team_id` int(11) NOT NULL,
   `created_ts` timestamp NOT NULL DEFAULT 0,
   `use_ts` timestamp NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `token` (`token`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -314,7 +345,9 @@ CREATE TABLE `scores_log` (
   `points` int(11) NOT NULL,
   `level_id` int(11) NOT NULL,
   `type` varchar(4) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `level_id` (`level_id`),
+  KEY `team_id` (`team_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -331,7 +364,8 @@ CREATE TABLE `bases_log` (
   `code` int(11) NOT NULL,
   `response` text NOT NULL,
   `level_id` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `level_id` (`level_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -344,12 +378,16 @@ DROP TABLE IF EXISTS `scripts`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `scripts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `host` varchar(1024) NOT NULL,
   `ts` timestamp NULL,
   `pid` int(11) NOT NULL,
-  `name` text NOT NULL,
+  `name` varchar(255) NOT NULL,
   `cmd` text NOT NULL,
   `status` tinyint(1) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `host` (`host`),
+  KEY `status` (`status`),
+  KEY `name` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -366,7 +404,9 @@ CREATE TABLE `failures_log` (
   `team_id` int(11) NOT NULL,
   `level_id` int(11) NOT NULL,
   `flag` text NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `team_id` (`team_id`),
+  KEY `level_id` (`level_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -383,7 +423,9 @@ CREATE TABLE `hints_log` (
   `level_id` int(11) NOT NULL,
   `team_id` int(11) NOT NULL,
   `penalty` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `level_id` (`level_id`),
+  KEY `team_id` (`team_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

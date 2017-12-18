@@ -2,8 +2,7 @@
 
 class :fbbranding extends :x:element {
   category %flow;
-  attribute
-    string brandingText;
+  attribute string brandingText;
 
   protected string $tagName = 'fbbranding';
 

@@ -8,6 +8,7 @@ if (php_sapi_name() !== 'cli') {
 require_once (__DIR__.'/../Db.php');
 require_once (__DIR__.'/../Utils.php');
 require_once (__DIR__.'/../models/Model.php');
+require_once (__DIR__.'/../models/Cache.php');
 require_once (__DIR__.'/../models/Importable.php');
 require_once (__DIR__.'/../models/Exportable.php');
 require_once (__DIR__.'/../models/Level.php');
@@ -19,7 +20,11 @@ require_once (__DIR__.'/../models/Configuration.php');
 require_once (__DIR__.'/../models/Country.php');
 require_once (__DIR__.'/../models/Control.php');
 require_once (__DIR__.'/../models/MultiTeam.php');
+require_once (__DIR__.'/../models/Integration.php');
 require_once (__DIR__.'/../models/Model.php');
+require_once
+  (__DIR__.'/../../vendor/facebook/graph-sdk/src/Facebook/autoload.php')
+;
 
 $long_opts = array('url:', 'sleep:', 'disable-ssl-verification', 'debug');
 $options = getopt('', $long_opts);
@@ -65,22 +70,22 @@ class LiveSyncImport {
           continue;
         }
         foreach ($data as $level) {
-          $mandatories_set = await self::genMandatoriesSet($level);
+          $mandatories_set = await self::genMandatoriesSet($level); // TODO: Combine Awaits
           if ($mandatories_set === false) {
             self::debug(true, $url, '!!!', 'Mandatory Values Not Set');
             continue;
           }
-          $level = await self::genDefaults($level);
-          $level_id = await self::genLevel($url, $level, $debug);
+          $level = await self::genDefaults($level); // TODO: Combine Awaits
+          $level_id = await self::genLevel($url, $level, $debug); // TODO: Combine Awaits
           $teams =
-            await self::genTeamCaptures($url, $level, $level_id, $debug);
+            await self::genTeamCaptures($url, $level, $level_id, $debug); // TODO: Combine Awaits
           await self::genRecalculateScores(
             $url,
             $level,
             $level_id,
             $teams,
             $debug,
-          );
+          ); // TODO: Combine Awaits
         }
       } else {
         self::debug(
@@ -183,8 +188,10 @@ class LiveSyncImport {
     }
     $level_exists = await self::genLevelExists($level);
     if ($level_exists === false) {
-      $category_id = await self::genCategory($url, $level, $debug);
-      $country = await Country::genCountry(strval($level->entity_iso_code));
+      list($category_id, $country) = await \HH\Asio\va(
+        self::genCategory($url, $level, $debug),
+        Country::genCountry(strval($level->entity_iso_code)),
+      );
       $country_id = $country->getId();
       $level_id = await Level::genCreate(
         strval($level->type),
@@ -362,6 +369,10 @@ class LiveSyncImport {
     $teams_array = array();
     $teams = await self::genTeamDefaults($teams);
     foreach ($teams as $team_livesync_key => $team_data) {
+      list($type, $username, $key) = explode(':', $team_livesync_key);
+      if ($type === 'general') {
+        continue;
+      }
       $team_exists =
         await Team::genLiveSyncKeyExists(strval($team_livesync_key));
       if ($team_exists === true) {
@@ -431,7 +442,7 @@ class LiveSyncImport {
     int $hint,
     bool $debug,
   ): Awaitable<bool> {
-    $team = await Team::genTeam($team_id);
+    $team = await MultiTeam::genTeam($team_id);
     $team_name = $team->getName();
     $hint_used = false;
     if ($hint === 1) {
@@ -475,9 +486,12 @@ class LiveSyncImport {
     bool $debug,
   ): Awaitable<void> {
     if ($capture === 1) {
-      $team = await Team::genTeam($team_id);
+      list($team, $level_capture) = await \HH\Asio\va(
+        MultiTeam::genTeam($team_id),
+        Level::genScoreLevel($level_id, $team_id),
+      );
       $team_name = $team->getName();
-      $level_capture = await Level::genScoreLevel($level_id, $team_id);
+
       if ($level_capture === true) {
         $scorelog = await ScoreLog::genLevelScoreByTeam($team_id, $level_id);
         await ScoreLog::genScoreLogUpdate(
@@ -518,7 +532,7 @@ class LiveSyncImport {
     bool $debug,
   ): Awaitable<void> {
     if (($hint === 1) && ($hint_used === true)) {
-      $team = await Team::genTeam($team_id);
+      $team = await MultiTeam::genTeam($team_id);
       $team_name = $team->getName();
       await Team::genUpdate(
         strval($team_name),
@@ -542,7 +556,7 @@ class LiveSyncImport {
       if (intval($team_data['capture']) === 0) {
         continue;
       }
-      $team = await Team::genTeam($team_id);
+      $team = await MultiTeam::genTeam($team_id);
       $team_name = $team->getName();
       $current_bonus =
         $level->bonus - (intval($level->bonus_dec) * $level_captured);
@@ -554,8 +568,10 @@ class LiveSyncImport {
       $existing_points = $scorelog->getPoints();
       $total_points = $team->getPoints();
       $total_points += $points - $existing_points;
-      await Team::genTeamUpdatePoints($team_id, $total_points);
-      await ScoreLog::genUpdateScoreLogBonus($level_id, $team_id, $points);
+      await \HH\Asio\va(
+        Team::genTeamUpdatePoints($team_id, $total_points),
+        ScoreLog::genUpdateScoreLogBonus($level_id, $team_id, $points),
+      );
       $level_captured++;
     }
     if ($level_captured > 0) {
@@ -592,4 +608,7 @@ while (1) {
     LiveSyncImport::genProcess($urls, $check_certificates, $debug),
   );
   sleep($sleep);
+
+  // Flush the local cache before the next import cycle to ensure we get up-to-date team and level data (the script runs continuously).
+  Model::deleteLocalCache();
 }
