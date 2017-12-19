@@ -278,6 +278,12 @@ class Country extends Model {
     return self::countryFromRow($result->mapRows()[0]);
   }
 
+  // Get a random, unused country.
+  public static async function genRandomAvailableCountry(): Awaitable<Country> {
+    $countries = await genAllAvailableCountries();
+    return $countries[array_rand($countries)];
+  }
+
   // Get a random enabled, unused country ID
   public static async function genRandomAvailableCountryId(): Awaitable<int> {
     $db = await self::genDb();

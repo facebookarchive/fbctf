@@ -123,8 +123,7 @@ class LiveSyncImport {
       $level->type = 'flag';
     }
     if (property_exists($level, 'entity_iso_code') === false) {
-      $countries = await Country::genAllAvailableCountries();
-      $country = $countries[array_rand($countries)];
+      $country = await Country::genRandomAvailableCountry();
       $country_id = $country->getId();
       $level->entity_iso_code = $country->getIsoCode();
       $level->random_country = true;
@@ -261,8 +260,7 @@ class LiveSyncImport {
         intval($level->points),
       );
       if ($level_exists === false) {
-        $countries = await Country::genAllAvailableCountries();
-        $new_country = $countries[array_rand($countries)];
+        $new_country = await Country::genRandomAvailableCountry();
         self::debug(
           $debug,
           $url,

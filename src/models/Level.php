@@ -151,7 +151,7 @@ class Level extends Model implements Importable, Exportable {
     foreach ($elements as $level) {
       $title = must_have_string($level, 'title');
       $type = must_have_string($level, 'type');
-      $entity_iso_code = must_have_string($level, 'entity_iso_code');
+      $entity_iso_code = must_have_string($level, 'entity_iso_code') or await Country::genRandomAvailableCountry()->getIsoCode();
       $c = must_have_string($level, 'category');
       $exist = await self::genAlreadyExist($type, $title, $entity_iso_code);
       list($entity_exist, $category_exist) = await \HH\Asio\va(
