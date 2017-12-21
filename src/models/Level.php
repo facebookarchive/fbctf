@@ -1256,6 +1256,7 @@ class Level extends Model implements Importable, Exportable {
       curl_setopt($curl_handlers[$base_id], CURLOPT_RETURNTRANSFER, 1);
       curl_setopt($curl_handlers[$base_id], CURLOPT_PORT, 12345);
       curl_setopt($curl_handlers[$base_id], CURLOPT_TIMEOUT, 3);
+      curl_setopt($curl_handlers[$base_id], CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
       curl_multi_add_handle($multi_handler, $curl_handlers[$base_id]);
     }
 
