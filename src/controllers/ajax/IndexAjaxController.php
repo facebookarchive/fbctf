@@ -278,7 +278,7 @@ class IndexAjaxController extends AjaxController {
       } else {
         $redirect = 'game';
       }
-      return Utils::ok_response('Login succesful', $redirect);
+      return Utils::ok_response('Login successful', $redirect);
     } else {
       return Utils::error_response('Login failed', 'login');
     }
