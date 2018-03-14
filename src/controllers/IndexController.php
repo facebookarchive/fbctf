@@ -124,6 +124,7 @@ class IndexController extends Controller {
     );
     $game = $config_game->getValue();
     $next_game = $config_next_game->getValue();
+    $remaining = 0;
     if ($game === '1') {
       $next_game_text = tr('In Progress');
       $countdown = array('--', '--', '--', '--');
@@ -137,6 +138,7 @@ class IndexController extends Controller {
       $now = new DateTime('now');
       $countdown_diff = $now->diff($game_start);
       $countdown = explode('-', $countdown_diff->format('%d-%h-%i-%s'));
+      $remaining = $game_start->getTimestamp() - $now->getTimestamp();
     }
     return
       <div class="fb-row-container full-height fb-scroll">
@@ -149,21 +151,21 @@ class IndexController extends Controller {
             <h1 class="fb-glitch" data-text={$next_game_text}>
               {$next_game_text}
             </h1>
-            <ul class="upcoming-game-countdown">
+            <ul class="upcoming-game-countdown" data-remaining={$remaining}>
               <li>
-                <span class="count-number">{$countdown[0]}</span>
+                <span class="count-number countdown-days">{$countdown[0]}</span>
                 {tr('_days')}
               </li>
               <li>
-                <span class="count-number">{$countdown[1]}</span>
+                <span class="count-number countdown-hours">{$countdown[1]}</span>
                 {tr('_hours')}
               </li>
               <li>
-                <span class="count-number">{$countdown[2]}</span>
+                <span class="count-number countdown-minutes">{$countdown[2]}</span>
                 {tr('_minutes')}
               </li>
               <li>
-                <span class="count-number">{$countdown[3]}</span>
+                <span class="count-number countdown-seconds">{$countdown[3]}</span>
                 {tr('_seconds')}
               </li>
             </ul>
