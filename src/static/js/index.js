@@ -17,14 +17,16 @@ function teamLoginFormError() {
 }
 
 function teamPasswordFormError(toosimple) {
-  $('.el--text')[1].classList.add('form-error');
+  var $passwordError = $('#password_error');
+  var $passwordField = $('input[name="password"]').parent('.el--text');
+  $passwordField.addClass('form-error');
   if (toosimple) {
-    $('#password_error')[0].classList.remove('completely-hidden');
+    $passwordError.removeClass('completely-hidden');
   }
   $('.fb-form input[name="password"]').on('change', function() {
-    $('.el--text')[1].classList.remove('form-error');
+    $passwordField.removeClass('form-error');
     if (toosimple) {
-      $('#password_error')[0].classList.add('completely-hidden');
+      $passwordError.addClass('completely-hidden');
     }
   });
 }
