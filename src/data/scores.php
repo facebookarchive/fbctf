@@ -14,14 +14,12 @@ class ScoresDataController extends DataController {
     $leaderboard = await MultiTeam::genLeaderboard(false);
     foreach ($leaderboard as $team) {
       $values = array();
-      $i = 1;
       $progressive_scoreboard =
         await Progressive::genProgressiveScoreboard($team->getName()); // TODO: Combine Awaits
       foreach ($progressive_scoreboard as $progress) {
         $score =
-          (object) array('time' => $i, 'score' => $progress->getPoints());
+          (object) array('time' => $progress->getIteration(), 'score' => $progress->getPoints());
         array_push($values, $score);
-        $i++;
       }
       $color = substr(md5($team->getName()), 0, 6);
       $element = (object) array(
