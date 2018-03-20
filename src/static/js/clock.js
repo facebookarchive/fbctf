@@ -2,6 +2,13 @@
 
 var $ = require('jquery');
 
+var lastValues = {
+  seconds: -1,
+  minutes: -1,
+  hours: -1,
+  days: -1
+};
+
 function formatNumber(value) {
   return (value > 9) ? value : '0' + value;
 }
@@ -20,23 +27,39 @@ function setMilliseconds(value) {
 }
 
 function setSeconds(value) {
-  var formatted = formatNumber(value);
-  $('aside[data-module="game-clock"] .clock-seconds').text(formatted);
+  if(value !== lastValues.seconds) {
+    lastValues.seconds = value;
+
+    var formatted = formatNumber(value);
+    $('aside[data-module="game-clock"] .clock-seconds').text(formatted);
+  }
 }
 
 function setMinutes(value) {
-  var formatted = formatNumber(value);
-  $('aside[data-module="game-clock"] .clock-minutes').text(formatted);
+  if(value !== lastValues.minutes) {
+    lastValues.minutes = value;
+
+    var formatted = formatNumber(value);
+    $('aside[data-module="game-clock"] .clock-minutes').text(formatted);
+  }
 }
 
 function setHours(value) {
-  var formatted = formatNumber(value);
-  $('aside[data-module="game-clock"] .clock-hours').text(formatted);
+  if(value !== lastValues.hours) {
+    lastValues.hours = value;
+
+    var formatted = formatNumber(value);
+    $('aside[data-module="game-clock"] .clock-hours').text(formatted);
+  }
 }
 
 function setDays(value) {
-  var formatted = formatNumber(value);
-  $('aside[data-module="game-clock"] .clock-days').text(formatted);
+  if(value !== lastValues.days) {
+    lastValues.days = value;
+
+    var formatted = formatNumber(value);
+    $('aside[data-module="game-clock"] .clock-days').text(formatted);
+  }
 }
 
 function getMilli() {
@@ -101,13 +124,13 @@ module.exports = {
     if(remaining <= 0) {
       return this.stopClock();
     }
-    
+
     var milliseconds = remaining % 1000;
     var seconds = Math.floor((remaining / 1000) % 60);
     var minutes = Math.floor((remaining / (1000 * 60)) % 60);
     var hours = Math.floor((remaining / (1000 * 60 * 60)) % 24);
     var days = Math.floor(remaining / (1000 * 60 * 60 * 24));
-    
+
     setMilliseconds(milliseconds);
     setSeconds(seconds);
     setMinutes(minutes);
