@@ -105,7 +105,7 @@ class ClockModuleController extends ModuleController {
             <h6>Game Clock</h6>
           </header>
           <div class="module-content module-scrollable">
-            <div class="game-clock fb-numbers">
+            <div class="game-clock fb-numbers" data-remaining={$init}>
               <span class={$clock_days_class}>{$days}</span>:
               <span class="clock-hours">{$hours}</span>:
               <span class="clock-minutes">{$minutes}</span>:
@@ -128,7 +128,7 @@ class ClockModuleController extends ModuleController {
             <h6>Game Clock</h6>
           </header>
           <div class="module-content module-scrollable">
-            <div class="game-clock fb-numbers">
+            <div class="game-clock fb-numbers" data-remaining={$init}>
               <span class="clock-days" style="display: none;">{$days}</span>
               <span class="clock-hours">{$hours}</span>:
               <span class="clock-minutes">{$minutes}</span>:
