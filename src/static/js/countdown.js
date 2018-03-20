@@ -11,8 +11,7 @@ function noCountdown(container) {
 
 module.exports = {
   _container: null,
-  _remaining: 0,
-  _timeDiff: 0,
+  _endTime: 0,
   _interval: null,
   
   startCountdown: function() {
@@ -20,25 +19,26 @@ module.exports = {
     if( !this._container.length ) {
       return;
     }
-    
-    this._remaining = parseInt(this._container.data().remaining);
-    
-    if(!this._container.length || !this._remaining) {
+
+    var remaining = parseInt(this._container.data().remaining);
+    if(!remaining || remaining <= 0) {
       return noCountdown(this._container);
     }
+    
+    // Round up as a < 1s delay is better than the clock jumping at the beginning
+    this._endTime = Math.ceil(new Date().getTime()/1000) + remaining;
 
     var self = this;
     this._interval = setInterval(
       function() {
         self.setTimeRemaining();
       },
-      1000
+      500
     );
   },
   
   setTimeRemaining: function setTimeRemaining() {
-    this._remaining -= 1;
-    var secs = this._remaining;
+    var secs = this._endTime - Math.ceil(new Date().getTime()/1000);
 
     if( secs < 0 ) {
       noCountdown(this._container);
