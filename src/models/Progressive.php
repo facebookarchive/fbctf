@@ -147,7 +147,7 @@ class Progressive extends Model {
   // Kick off the progressive scoreboard in the background.
   public static async function genRun(): Awaitable<void> {
     Utils::logMessage('Starting background script: progressive scoreboard');
-    $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
+    $document_root = Utils::get_src_root();
     $cmd =
       'hhvm -vRepo.Central.Path=/var/run/hhvm/.hhvm.hhbc_progressive '.
       $document_root.

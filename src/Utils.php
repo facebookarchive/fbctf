@@ -108,6 +108,10 @@ class Utils {
     return new Map($_FILES);
   }
 
+  public static function get_src_root() : string {
+    return preg_replace(':/src/.*$:', '/src', __DIR__);
+  }
+
   public static function redirect(string $location): void {
     header('Location: '.$location);
   }
