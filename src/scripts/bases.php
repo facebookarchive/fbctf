@@ -23,6 +23,8 @@ require_once (__DIR__.'/../models/ActivityLog.php');
 
 $conf_game = \HH\Asio\join(Configuration::gen('game'));
 while ($conf_game->getValue() === '1') {
+  Utils::logMessage('Fetching base endpoints');
+
   // Get all active base levels
   $bases_endpoints = array();
   foreach (\HH\Asio\join(Level::genAllActiveBases()) as $base) {
@@ -30,6 +32,7 @@ while ($conf_game->getValue() === '1') {
       'id' => $base->getId(),
       'url' => \HH\Asio\join(Level::genBaseIP($base->getId())),
     );
+    Utils::logMessage("Adding endpoint to call for level ${endpoint['id']}: ${endpoint['url']}");
     array_push($bases_endpoints, $endpoint);
   }
 
@@ -45,10 +48,10 @@ while ($conf_game->getValue() === '1') {
         \HH\Asio\join(Level::genScoreBase($response['id'], $team->getId()));
         //echo "Points\n";
       }
-      //echo "Base(".strval($response['id']).") taken by ".$team_name."\n";
+      Utils::logMessage("Base(".strval($response['id']).") taken by $team_name.");
     } else {
       $code = -1;
-      //echo "Base(".strval($response['id']).") is DOWN\n";
+      Utils::logMessage("Base(".strval($response['id']).") is DOWN");
     }
     \HH\Asio\join(
       Level::genLogBaseEntry(
@@ -60,7 +63,9 @@ while ($conf_game->getValue() === '1') {
   }
   // Wait until next iteration
   $bases_cycle = \HH\Asio\join(Configuration::gen('bases_cycle'));
-  sleep(intval($bases_cycle->getValue()));
+  $sleep_length = $bases_cycle->getValue();
+  Utils::logMessage("Sleeping for $sleep_length seconds");
+  sleep(intval($sleep_length));
 
   // Flush the local cache before the next cycle to ensure the game is still running and the configuration of the bases hasn't changed (the script runs continuously).
   Model::deleteLocalCache();
@@ -68,3 +73,4 @@ while ($conf_game->getValue() === '1') {
   // Get current game status
   $conf_game = \HH\Asio\join(Configuration::gen('game'));
 }
+Utils::logMessage('Game is no longer running. Shutting down.');

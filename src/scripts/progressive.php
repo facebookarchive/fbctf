@@ -12,6 +12,8 @@ require_once (__DIR__.'/../models/Configuration.php');
 require_once (__DIR__.'/../models/Progressive.php');
 
 while (\HH\Asio\join(Progressive::genGameStatus())) {
+  Utils::logMessage('Progressive scoreboard cycling');
   \HH\Asio\join(Progressive::genTake());
   sleep(\HH\Asio\join(Progressive::genCycle()));
 }
+Utils::logMessage('Game is no longer running. Shutting down.');

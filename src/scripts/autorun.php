@@ -23,6 +23,8 @@ require_once (__DIR__.'/../models/FailureLog.php');
 require_once (__DIR__.'/../models/Announcement.php');
 require_once (__DIR__.'/../models/ActivityLog.php');
 
+Utils::logMessage('Starting autorun');
+
 while (1) {
   \HH\Asio\join(Control::genAutoRun());
 

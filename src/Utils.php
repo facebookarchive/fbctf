@@ -140,4 +140,21 @@ class Utils {
   ): string {
     return self::request_response('ERROR', $msg, $redirect);
   }
+
+  public static function logMessage(
+    string $message
+  ): void {
+    $date = date('m/d/Y h:i:s a', time());
+    $message = "[$date] $message\n";
+
+    if (php_sapi_name() === 'cli') {
+      fwrite(STDOUT, $message);
+    } else {
+      $filename = '/var/log/fbctf/web.log';
+      if ($handle = fopen($filename, 'a')) {
+        fwrite($handle, $message);
+        fclose($handle);
+      }
+    }
+  }
 }

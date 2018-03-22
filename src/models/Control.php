@@ -65,6 +65,7 @@ class Control extends Model {
   }
 
   public static async function genBegin(): Awaitable<void> {
+    Utils::logMessage('Starting game');
     await \HH\Asio\va(
       Announcement::genDeleteAll(), // Clear announcements log
       ActivityLog::genDeleteAll(), // Clear activity log
@@ -129,6 +130,7 @@ class Control extends Model {
       Progressive::genReset(), // Reset and kick off progressive scoreboard
     );
 
+    Utils::logMessage('Starting background scripts');
     await \HH\Asio\va(
       Progressive::genRun(),
       Level::genBaseScoring(), // Kick off scoring for bases
@@ -136,6 +138,7 @@ class Control extends Model {
   }
 
   public static async function genEnd(): Awaitable<void> {
+    Utils::logMessage('Ending game');
     await \HH\Asio\va(
       Announcement::genCreateAuto('Game has ended!'), // Announce game ending
       ActivityLog::genCreateGenericLog('Game has ended!'), // Log game ending
@@ -152,6 +155,7 @@ class Control extends Model {
     $game_paused = $pause->getValue() === '1';
 
     if (!$game_paused) {
+      Utils::logMessage('Stopping background scripts');
       // Stop bases scoring process
       // Stop progressive scoreboard process
       await \HH\Asio\va(Level::genStopBaseScoring(), Progressive::genStop());
@@ -260,6 +264,7 @@ class Control extends Model {
   public static async function genRunAutoRunScript(): Awaitable<void> {
     $autorun_status = await Control::checkScriptRunning('autorun');
     if ($autorun_status === false) {
+      Utils::logMessage('Starting background script: autorun');
       $autorun_location = escapeshellarg(
         must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT').
         '/scripts/autorun.php',
@@ -267,7 +272,8 @@ class Control extends Model {
       $cmd =
         'hhvm -vRepo.Central.Path=/var/run/hhvm/.hhvm.hhbc_autorun '.
         $autorun_location.
-        ' > /dev/null 2>&1 & echo $!';
+        ' >> /var/log/fbctf/autorun.log 2>&1 & echo $!';
+      Utils::logMessage("Using command: [$cmd]");
       $pid = shell_exec($cmd);
       await Control::genStartScriptLog(intval($pid), 'autorun', $cmd);
     }

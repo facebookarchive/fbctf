@@ -1283,11 +1283,13 @@ class Level extends Model implements Importable, Exportable {
 
   // Bases processing and scoring.
   public static async function genBaseScoring(): Awaitable<void> {
+    Utils::logMessage('Starting background script: bases');
     $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
     $cmd =
       'hhvm -vRepo.Central.Path=/var/run/hhvm/.hhvm.hhbc_bases '.
       $document_root.
-      '/scripts/bases.php > /dev/null 2>&1 & echo $!';
+      '/scripts/bases.php >> /var/log/fbctf/bases.log 2>&1 & echo $!';
+    Utils::logMessage("Using command: [$cmd]");
     $pid = shell_exec($cmd);
     await Control::genStartScriptLog(intval($pid), 'bases', $cmd);
   }

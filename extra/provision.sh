@@ -60,6 +60,7 @@ DOMAIN="none"
 EMAIL="none"
 CODE_PATH="/vagrant"
 CTF_PATH="/var/www/fbctf"
+LOG_PATH="/var/log/fbctf"
 HHVM_CONFIG_PATH="/etc/hhvm/server.ini"
 DOCKER=false
 MULTIPLE_SERVERS=false
@@ -332,6 +333,10 @@ fi
     log "Creating custom logos folder, and setting ownership to www-data"
     sudo mkdir -p "$CTF_PATH/src/data/customlogos"
     sudo chown -R www-data:www-data "$CTF_PATH/src/data/customlogos"
+
+    log "Creating scripts log folder, and setting ownership to www-data"
+    sudo mkdir -p "$LOG_PATH"
+    sudo chown -R www-data:www-data "$LOG_PATH"
 fi
 
 # If multiple servers are being utilized, ensure provision was called from the "cache" server
