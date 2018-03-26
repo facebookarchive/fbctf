@@ -939,7 +939,8 @@ function setupInputListeners() {
             } else {
               var ip = this.split(':')[0];
               var port = this.split(':')[1];
-              link = $('<input/>').attr('type', 'text').attr('disabled', true).attr('value', 'nc ' + ip + ' ' + port);
+              var value = port ? 'nc ' + ip + ' ' + port : ip;
+              link = $('<input/>').attr('type', 'text').attr('readonly', true).attr('value', value);
             }
             $('.capture-links', $container).append(link);
             $('.capture-links', $container).append($('<br/>'));
