@@ -393,6 +393,45 @@ class ScoreLog extends Model {
     return $captured;
   }
 
+  // Log successful base capture or hold score.
+  public static async function genLogBaseScore(
+    int $level_id,
+    int $team_id,
+    int $points,
+  ): Awaitable<bool> {
+    $completed_level = await MultiTeam::genCompletedLevel($level_id);
+    Utils::logMessage( "Teams who have completed level ($level_id): " . var_export($completed_level, true));
+    $captured = empty($completed_level) || end($completed_level)->getId() != $team_id;
+
+    $db = await self::genDb();
+    $result =
+      await $db->queryf(
+        'INSERT INTO scores_log (ts, level_id, team_id, points, type) SELECT NOW(), %d, %d, %d, %s FROM DUAL',
+        $level_id,
+        $team_id,
+        $points,
+        'base',
+      );
+
+    if ($captured === true) {
+      await ActivityLog::genCaptureLog($team_id, $level_id);
+    } else {
+      await ActivityLog::genHoldLog($team_id, $level_id);
+    }
+    self::invalidateMCRecords(); // Invalidate Memcached ScoreLog data.
+    ActivityLog::invalidateMCRecords('ALL_ACTIVITY'); // Invalidate Memcached ActivityLog data.
+    MultiTeam::invalidateMCRecords('ALL_TEAMS'); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('POINTS_BY_TYPE'); // Invalidate Memcached MultiTeam data.
+    MultiTeam::invalidateMCRecords('LEADERBOARD'); // Invalidate Memcached MultiTeam data.
+    $completed_level = await MultiTeam::genCompletedLevel($level_id);
+    if (count($completed_level) === 0) {
+      MultiTeam::invalidateMCRecords('TEAMS_FIRST_CAP'); // Invalidate Memcached MultiTeam data.
+    }
+    MultiTeam::invalidateMCRecords('TEAMS_BY_LEVEL'); // Invalidate Memcached MultiTeam data.
+
+    return $captured;
+  }
+
   public static async function genScoreLogUpdate(
     int $level_id,
     int $team_id,

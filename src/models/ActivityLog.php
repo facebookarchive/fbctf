@@ -195,6 +195,20 @@ class ActivityLog extends Model {
     );
   }
 
+  public static async function genHoldLog(
+    int $team_id,
+    int $level_id,
+  ): Awaitable<void> {
+    $country_id = await Level::genCountryIdForLevel($level_id);
+    await self::genCreateActionLog(
+      "Team",
+      $team_id,
+      "held",
+      "Country",
+      $country_id,
+    );
+  }
+
   public static async function genCreateActionLog(
     string $subject_class,
     int $subject_id,
@@ -278,14 +292,21 @@ class ActivityLog extends Model {
   }
 
   public static async function genAllActivity(
+    array<string> $exclude_actions = array(''),
     bool $refresh = false,
   ): Awaitable<array<ActivityLog>> {
     $mc_result = self::getMCRecords('ALL_ACTIVITY');
     if (!$mc_result || count($mc_result) === 0 || $refresh) {
+      $excludes = new Vector();
+      foreach ($exclude_actions as $exclude) {
+        $excludes->add($exclude);
+      }
+
       $db = await self::genDb();
       $activity_log_lines = array();
-      $result = await $db->query(
-        'SELECT * FROM activity_log ORDER BY ts DESC LIMIT 100',
+      $result = await $db->queryf(
+        'SELECT * FROM activity_log WHERE action NOT IN (%Ls) ORDER BY ts DESC LIMIT 100',
+        $excludes
       );
       foreach ($result->mapRows() as $row) {
         $activity_log = self::activitylogFromRow($row);

@@ -1188,7 +1188,7 @@ class Level extends Model implements Importable, Exportable {
           );
 
           // Log the score...
-          await ScoreLog::genLogValidScore(
+          await ScoreLog::genLogBaseScore(
             $level_id,
             $team_id,
             $points,
