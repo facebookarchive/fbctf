@@ -602,6 +602,10 @@ $translations = array(
     'INACTIVE',
   'PTS' =>
     'PTS',
+  'Capture' =>
+    'Capture',
+  'Hold' =>
+    'Hold',
   'category' =>
     'category',
   'capture_' =>

@@ -382,7 +382,8 @@ table {
 /**
  * --point circles
  */
-.points-display {
+.points-display,
+.bonus-display {
   @include flexbox;
 
   @include align-center;
@@ -397,16 +398,23 @@ table {
   width: 80px;
   height: 80px;
 
-  .points-number {
+  .points-number,
+  .bonus-number {
     font-size: 3em;
     display: block;
     line-height: 1;
   }
 
-  .points-label {
+  .points-label,
+  .bonus-label {
     font-size: .8em;
     text-transform: uppercase;
   }
+}
+
+.bonus-display {
+  margin-left: 10px;
+  margin-right: -10px;
 }
 
 /* --------------------------------------------

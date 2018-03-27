@@ -145,6 +145,12 @@ class CountryModalController extends ModalController {
                   <div class="points-display">
                     <span class="points-number fb-numbers"></span>
                     <span class="points-label">{tr('PTS')}</span>
+                    <span class="base-points completely-hidden">{tr('Capture')}</span>
+                  </div>
+                  <div class="bonus-display completely-hidden">
+                    <span class="bonus-number fb-numbers"></span>
+                    <span class="bonus-label">{tr('PTS')}</span>
+                    <span class="base-bonus">{tr('Hold')}</span>
                   </div>
                   <div class="country-stats">
                     <dl>
@@ -241,6 +247,12 @@ class CountryModalController extends ModalController {
                   <div class="points-display">
                     <span class="points-number fb-numbers"></span>
                     <span class="points-label">{tr('PTS')}</span>
+                    <span class="base-points completely-hidden">{tr('Capture')}</span>
+                  </div>
+                  <div class="bonus-display completely-hidden">
+                    <span class="bonus-number fb-numbers"></span>
+                    <span class="bonus-label">{tr('PTS')}</span>
+                    <span class="base-bonus">{tr('Hold')}</span>
                   </div>
                   <div class="country-stats">
                     <dl>
