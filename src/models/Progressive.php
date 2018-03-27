@@ -146,25 +146,11 @@ class Progressive extends Model {
 
   // Kick off the progressive scoreboard in the background.
   public static async function genRun(): Awaitable<void> {
-    Utils::logMessage('Starting background script: progressive scoreboard');
-    $document_root = Utils::get_src_root();
-    $cmd =
-      'hhvm -vRepo.Central.Path=/var/run/hhvm/.hhvm.hhbc_progressive '.
-      $document_root.
-      "/scripts/progressive.php >> /var/log/fbctf/progressive.log 2>&1 & echo $!";
-    Utils::logMessage("Using command: [$cmd]");
-    $pid = shell_exec($cmd);
-    await Control::genStartScriptLog(intval($pid), 'progressive', $cmd);
+    await Control::genRunScript('progressive');
   }
 
   // Stop the progressive scoreboard process in the background
   public static async function genStop(): Awaitable<void> {
-    // Kill running process
-    $pid = await Control::genScriptPid('progressive');
-    if ($pid > 0) {
-      exec('kill -9 '.escapeshellarg(strval($pid)));
-    }
-    // Mark process as stopped
-    await Control::genStopScriptLog($pid);
+    await Control::genStopScript('progressive');
   }
 }
