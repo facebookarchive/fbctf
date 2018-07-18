@@ -139,7 +139,11 @@ function letsencrypt_cert() {
 EOF
     sudo chmod +x /root/tmp/certbot.sh
   else
-    /usr/bin/certbot-auto certonly -n --agree-tos --standalone --standalone-supported-challenges tls-sni-01 -m "$__myemail" -d "$__mydomain"
+    if [ -f /sys/hypervisor/uuid ] && [ `head -c 3 /sys/hypervisor/uuid` == ec2 ]; then
+      /usr/bin/certbot-auto certonly -n --agree-tos --standalone -m "$__myemail" -d "$__mydomain"
+    else
+      /usr/bin/certbot-auto certonly -n --agree-tos --standalone --standalone-supported-challenges tls-sni-01 -m "$__myemail" -d "$__mydomain"
+    fi
     sudo ln -s "/etc/letsencrypt/live/$__mydomain/fullchain.pem" "$1" || true
     sudo ln -s "/etc/letsencrypt/live/$__mydomain/privkey.pem" "$2" || true
   fi
