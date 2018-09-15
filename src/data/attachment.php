@@ -26,7 +26,7 @@ class AttachmentDataController extends DataController {
         // Remove all non alpahnum characters from filename - allow international chars, dash, underscore, and period
         $filename = preg_replace('/[^\p{L}\p{N}_\-.]+/u', '_', $filename);
 
-        $data = file_get_contents(Attachment::attachmentsDir.$filename);
+        $data = readfile(Attachment::attachmentsDir.$filename);
       }
     }
 
