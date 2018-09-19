@@ -108,6 +108,10 @@ class Utils {
     return new Map($_FILES);
   }
 
+  public static function get_src_root() : string {
+    return preg_replace(':/src/.*$:', '/src', __DIR__);
+  }
+
   public static function redirect(string $location): void {
     header('Location: '.$location);
   }
@@ -139,5 +143,22 @@ class Utils {
     string $redirect,
   ): string {
     return self::request_response('ERROR', $msg, $redirect);
+  }
+
+  public static function logMessage(
+    string $message
+  ): void {
+    $date = date('m/d/Y h:i:s a', time());
+    $message = "[$date] $message\n";
+
+    if (php_sapi_name() === 'cli') {
+      fwrite(STDOUT, $message);
+    } else {
+      $filename = '/var/log/fbctf/web.log';
+      if ($handle = fopen($filename, 'a')) {
+        fwrite($handle, $message);
+        fclose($handle);
+      }
+    }
   }
 }

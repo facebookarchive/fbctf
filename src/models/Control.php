@@ -52,7 +52,37 @@ class Control extends Model {
     if ($result->numRows() > 0) {
       $pid = intval(must_have_idx($result->mapRows()[0], 'pid'));
     }
-    return $pid;
+
+    // Check that the process is actually running
+    $actual_pid = await self::genRunningScriptPid($name);
+    if ($pid == $actual_pid) {
+      return $pid;
+    }
+    if ($actual_pid == 0 && $pid != 0) {
+      Utils::logMessage("Warning: Script ($name) started as PID $pid but is no longer running");
+      await self::genStopScriptLog($pid);
+    } else if ($actual_pid != 0 && $pid == 0) {
+      Utils::logMessage("Warning: Script ($name) was not started, but is running as PID $actual_pid");
+    } else if ($actual_pid != $pid) {
+      Utils::logMessage("Warning: Script ($name) started as PID $pid but is actually running as $actual_pid");
+      await self::genStopScriptLog($pid);
+    }
+
+    return $actual_pid;
+  }
+
+  public static async function genRunningScriptPid(string $name): Awaitable<int> {
+    $lines = array();
+    exec( "ps -C hhvm --format 'pid args' | grep '$name.php'", $lines );
+    if (count($lines) === 0) {
+      return 0;
+    } else if (count($lines) > 1) {
+      Utils::logMessage("Error: multiple instances of ($name.php) running!");
+    }
+
+    $matches = array();
+    $results = preg_match('/\s*([0-9]+)\s/', $lines[0], $matches);
+    return $results > 0 ? intval($matches[1]) : 0;
   }
 
   public static async function genClearScriptLog(): Awaitable<void> {
@@ -65,6 +95,7 @@ class Control extends Model {
   }
 
   public static async function genBegin(): Awaitable<void> {
+    Utils::logMessage('Starting game');
     await \HH\Asio\va(
       Announcement::genDeleteAll(), // Clear announcements log
       ActivityLog::genDeleteAll(), // Clear activity log
@@ -129,6 +160,7 @@ class Control extends Model {
       Progressive::genReset(), // Reset and kick off progressive scoreboard
     );
 
+    Utils::logMessage('Starting background scripts');
     await \HH\Asio\va(
       Progressive::genRun(),
       Level::genBaseScoring(), // Kick off scoring for bases
@@ -136,6 +168,7 @@ class Control extends Model {
   }
 
   public static async function genEnd(): Awaitable<void> {
+    Utils::logMessage('Ending game');
     await \HH\Asio\va(
       Announcement::genCreateAuto('Game has ended!'), // Announce game ending
       ActivityLog::genCreateGenericLog('Game has ended!'), // Log game ending
@@ -152,6 +185,7 @@ class Control extends Model {
     $game_paused = $pause->getValue() === '1';
 
     if (!$game_paused) {
+      Utils::logMessage('Stopping background scripts');
       // Stop bases scoring process
       // Stop progressive scoreboard process
       await \HH\Asio\va(Level::genStopBaseScoring(), Progressive::genStop());
@@ -162,6 +196,7 @@ class Control extends Model {
   }
 
   public static async function genPause(): Awaitable<void> {
+    Utils::logMessage('Pausing game');
     await \HH\Asio\va(
       Announcement::genCreateAuto('Game has been paused!'), // Announce game paused
       ActivityLog::genCreateGenericLog('Game has been paused!'), // Log game paused
@@ -179,6 +214,7 @@ class Control extends Model {
   }
 
   public static async function genUnpause(): Awaitable<void> {
+    Utils::logMessage('Unpausing game');
     await Configuration::genUpdate('scoring', '1'); // Enable scoring
     list($config_pause_ts, $config_start_ts, $config_end_ts) =
       await \HH\Asio\va(
@@ -260,6 +296,7 @@ class Control extends Model {
   public static async function genRunAutoRunScript(): Awaitable<void> {
     $autorun_status = await Control::checkScriptRunning('autorun');
     if ($autorun_status === false) {
+      Utils::logMessage('Starting background script: autorun');
       $autorun_location = escapeshellarg(
         must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT').
         '/scripts/autorun.php',
@@ -267,36 +304,54 @@ class Control extends Model {
       $cmd =
         'hhvm -vRepo.Central.Path=/var/run/hhvm/.hhvm.hhbc_autorun '.
         $autorun_location.
-        ' > /dev/null 2>&1 & echo $!';
+        ' >> /var/log/fbctf/autorun.log 2>&1 & echo $!';
+      Utils::logMessage("Using command: [$cmd]");
       $pid = shell_exec($cmd);
       await Control::genStartScriptLog(intval($pid), 'autorun', $cmd);
     }
   }
 
+  public static async function genRunScript(
+    string $name
+  ): Awaitable<void> {
+    Utils::logMessage("Starting background script: $name");
+    $running = await self::checkScriptRunning($name);
+    if ($running) {
+      Utils::logMessage("Warning: $name is already running");
+    }
+
+    $document_root = Utils::get_src_root();
+    $cmd =
+      "hhvm -vRepo.Central.Path=/var/run/hhvm/.hhvm.hhbc_$name ".
+      $document_root.
+      "/scripts/$name.php >> /var/log/fbctf/$name.log 2>&1 & echo $!";
+    Utils::logMessage("Using command: [$cmd]");
+    $pid = shell_exec($cmd);
+    await Control::genStartScriptLog(intval($pid), $name, $cmd);
+  }
+
+  public static async function genStopScript(
+    string $name
+  ): Awaitable<void> {
+    Utils::logMessage("Stopping background script: $name");
+
+    do {
+      // Kill running process
+      $pid = await Control::genScriptPid($name);
+      if ($pid > 0) {
+        Utils::logMessage("Killing $name with PID $pid");
+        exec('kill -9 '.escapeshellarg(strval($pid)));
+      }
+      // Mark process as stopped
+      await Control::genStopScriptLog($pid);
+    } while ($pid > 0); // In case there are multiple instances
+  }
+
   public static async function checkScriptRunning(
     string $name,
   ): Awaitable<bool> {
-    $db = await self::genDb();
-    $host = await Control::genServerAddr();
-    $result = await $db->queryf(
-      'SELECT pid FROM scripts WHERE name = %s AND host = %s AND status = 1',
-      $name,
-      $host,
-    );
-    $status = false;
-    if ($result->numRows() >= 1) {
-      foreach ($result->mapRows() as $row) {
-        $pid = intval(must_have_idx($row, 'pid'));
-        $status = file_exists("/proc/$pid");
-        if ($status === false) {
-          await Control::genStopScriptLog($pid);
-          await Control::genClearScriptLog();
-        }
-      }
-      return $status;
-    } else {
-      return false;
-    }
+    $pid = await self::genScriptPid($name);
+    return $pid !== 0;
   }
 
   public static async function importGame(): Awaitable<bool> {
