@@ -516,6 +516,8 @@ $translations = array(
   //Translations for inc/* and inc/gameboard/*
   'captured' =>
     'captured',
+  'held' =>
+    'held',
   'Status' =>
     'Status',
   'Completed' =>
@@ -600,6 +602,10 @@ $translations = array(
     'INACTIVE',
   'PTS' =>
     'PTS',
+  'Capture' =>
+    'Capture',
+  'Hold' =>
+    'Hold',
   'category' =>
     'category',
   'capture_' =>

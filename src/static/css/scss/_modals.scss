@@ -165,6 +165,22 @@
 }
 
 /**
+ * --country modal
+ */
+.modal--country-capture {
+  // link display
+  .capture-links {
+    @include flexbox;
+    flex-wrap: wrap;
+
+    & > a,
+    & > input {
+      @include flex(1 0 100%);
+    }
+  }
+}
+
+/**
  * --tutorial
  */
 .fb-tutorial {

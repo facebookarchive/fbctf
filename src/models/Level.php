@@ -148,9 +148,11 @@ class Level extends Model implements Importable, Exportable {
   public static async function importAll(
     array<string, array<string, mixed>> $elements,
   ): Awaitable<bool> {
+    Utils::logMessage('Beginning import of '.count($elements).' levels');
     foreach ($elements as $level) {
       $title = must_have_string($level, 'title');
       $type = must_have_string($level, 'type');
+      Utils::logMessage("> Importing $type level: $title");
       $entity_iso_code = must_have_string($level, 'entity_iso_code');
       $c = must_have_string($level, 'category');
       $exist = await self::genAlreadyExist($type, $title, $entity_iso_code);
@@ -158,11 +160,21 @@ class Level extends Model implements Importable, Exportable {
         Country::genCheckExists($entity_iso_code),
         Category::genCheckExists($c),
       ); // TODO: Combine Awaits
-      if (!$exist && $entity_exist && $category_exist) {
+      if ($exist) {
+        Utils::logMessage('>> Level already exists');
+      } else if (!$entity_exist) {
+        Utils::logMessage(">> Country ($entity_iso_code) does not exist");
+      } else if (!$category_exist) {
+        Utils::logMessage(">> Category ($c) does not exist");
+      } else {
         list($entity, $category) = await \HH\Asio\va(
           Country::genCountry($entity_iso_code),
           Category::genSingleCategoryByName($c),
         ); // TODO: Combine Awaits
+
+        // Handle previous versions
+        $level = self::correctForVersion($level);
+
         $level_id = await self::genCreate(
           $type,
           $title,
@@ -178,6 +190,7 @@ class Level extends Model implements Importable, Exportable {
           must_have_int($level, 'penalty'),
         );
         if (array_key_exists('links', $level)) {
+          Utils::logMessage('>> Importing links');
           $links = must_have_idx($level, 'links');
           invariant(is_array($links), 'links must be of type array');
           foreach ($links as $link) {
@@ -185,6 +198,7 @@ class Level extends Model implements Importable, Exportable {
           }
         }
         if (array_key_exists('attachments', $level)) {
+          Utils::logMessage('>> Importing attachments');
           $attachments = must_have_idx($level, 'attachments');
           invariant(
             is_array($attachments),
@@ -198,9 +212,27 @@ class Level extends Model implements Importable, Exportable {
             ); // TODO: Combine Awaits
           }
         }
+        Utils::logMessage('>> Success');
       }
     }
     return true;
+  }
+
+  private static function correctForVersion(
+    array<string, mixed> $level
+  ): array<string, mixed> {
+    $version = (isset($level['version']) && !is_null($level['version'])) ? $level['version'] : 1;
+    // base versions < 2.0 had bonus & points reversed
+    if ($level['type'] === 'base' && $version < 2) {
+      Utils::logMessage('>> Base version is < 2. Correcting data.');
+      $capture_points = $level['bonus'];
+      $hold_points = $level['points'];
+      $level['points'] = $capture_points;
+      $level['bonus'] = $hold_points;
+      $level['bonus_fix'] = $hold_points;
+    }
+
+    return $level;
   }
 
   // Export levels.
@@ -244,6 +276,7 @@ class Level extends Model implements Importable, Exportable {
         'penalty' => $level->getPenalty(),
         'links' => $link_array,
         'attachments' => $attachment_array,
+        'version' => 2.0
       );
       array_push($all_levels_data, $one_level);
     }
@@ -1140,8 +1173,10 @@ class Level extends Model implements Importable, Exportable {
           $score =
             await ScoreLog::genAllPreviousScore($level_id, $team_id, false);
           if ($score) {
-            $points = $level->getPoints();
+            // If the team has already captured this base, only give the bonus
+            $points = $level->getBonus();
           } else {
+            // Otherwise give capture points
             $points = $level->getPoints() + $level->getBonus();
           }
 
@@ -1153,7 +1188,7 @@ class Level extends Model implements Importable, Exportable {
           );
 
           // Log the score...
-          await ScoreLog::genLogValidScore(
+          await ScoreLog::genLogBaseScore(
             $level_id,
             $team_id,
             $points,
@@ -1232,7 +1267,8 @@ class Level extends Model implements Importable, Exportable {
   public static async function genBaseIP(int $base_id): Awaitable<string> {
     $links = await Link::genAllLinks($base_id);
     $link = $links[0];
-    $ip = explode(':', $link->getLink())[0];
+    $ip = preg_replace('$[a-zA-Z]+://$', '', $link->getLink());
+    $ip = explode(':', $ip)[0];
 
     return $ip;
   }

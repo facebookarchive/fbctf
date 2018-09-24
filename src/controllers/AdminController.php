@@ -2540,13 +2540,13 @@ class AdminController extends Controller {
                   <div
                     class=
                       "form-el--required col col-1-2 el--block-label el--full-text">
-                    <label>{tr('Keep Points')}</label>
+                    <label>{tr('Capture Points')}</label>
                     <input name="points" type="text" />
                   </div>
                   <div
                     class=
                       "form-el--required col col-1-2 el--block-label el--full-text">
-                    <label>{tr('Capture points')}</label>
+                    <label>{tr('Keep points')}</label>
                     <input name="bonus" type="text" />
                   </div>
                 </div>
@@ -2894,7 +2894,7 @@ class AdminController extends Controller {
                   <div
                     class=
                       "form-el--required col col-1-2 el--block-label el--full-text">
-                    <label>{tr('Points')}</label>
+                    <label>{tr('Capture Points')}</label>
                     <input
                       name="points"
                       type="text"
@@ -2903,7 +2903,7 @@ class AdminController extends Controller {
                     />
                   </div>
                   <div class="col col-1-2 el--block-label el--full-text">
-                    <label>{tr('Bonus')}</label>
+                    <label>{tr('Keep points')}</label>
                     <input
                       name="bonus"
                       type="text"

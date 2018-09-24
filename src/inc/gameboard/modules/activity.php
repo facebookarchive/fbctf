@@ -13,7 +13,7 @@ class ActivityModuleController extends ModuleController {
     $activity_ul = <ul class="activity-stream"></ul>;
 
     list($all_activity, $config) = await \HH\Asio\va(
-      ActivityLog::genAllActivity(),
+      ActivityLog::genAllActivity(array('held')),
       Configuration::gen('language'),
     );
     $language = $config->getValue();

@@ -909,6 +909,7 @@ function setupInputListeners() {
             hint = data ? data.hint : '',
             hint_cost = data ? data.hint_cost : -1,
             points = data ? data.points : '',
+            bonus = data ? data.bonus : '',
             category = data ? data.category : '',
             type = data ? data.type : '',
             completed = data ? data.completed : '',
@@ -939,14 +940,15 @@ function setupInputListeners() {
             } else {
               var ip = this.split(':')[0];
               var port = this.split(':')[1];
-              link = $('<input/>').attr('type', 'text').attr('disabled', true).attr('value', 'nc ' + ip + ' ' + port);
+              var value = port ? 'nc ' + ip + ' ' + port : ip;
+              link = $('<input/>').attr('type', 'text').attr('readonly', true).attr('value', value);
             }
             $('.capture-links', $container).append(link);
-            $('.capture-links', $container).append($('<br/>'));
             link_c++;
           });
         }
         $('.points-number', $container).text(points);
+        $('.bonus-number', $container).text(bonus);
         $('.country-type', $container).text(type);
         $('.country-category', $container).text(category);
         $('.country-owner', $container).text(owner);
@@ -958,9 +960,11 @@ function setupInputListeners() {
           });
         }
 
-        // Hide flag submission for bases
+        // Hide flag submission for bases & display base-style points
+        console.log('Country type:', type);
         if (type === 'base') {
-          $('.answer_no_bases').addClass('completely-hidden');
+          $('.answer_no_bases, .points-label, .bonus-label').addClass('completely-hidden');
+          $('.bonus-display, .base-bonus, .base-points').removeClass('completely-hidden');
         }
 
         // Hide flag submission for captured levels
@@ -1105,6 +1109,7 @@ function setupInputListeners() {
             top: mouse_y + 'px'
           }),
               points = data ? data.points : '',
+              bonus = data ? data.bonus : '',
               category = data ? data.category : '',
               title = data ? data.title : '',
               type = data ? data.type : '';
@@ -1112,6 +1117,7 @@ function setupInputListeners() {
           $('.country-name', $container).text(country);
           $('.country-title', $container).text(title);
           $('.points-number', $container).text(points);
+          $('.bonus-number', $container).text(bonus);
           $('.country-type', $container).text(type);
           $('.country-category', $container).text(category);
         });
