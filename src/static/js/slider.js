@@ -13,7 +13,8 @@ module.exports = {
       pager: false,
       minSlides: 2,
       maxSlides: 5,
-      moveSlides: 1
+      moveSlides: 1,
+      touchEnabled: false
     });
   }
 };
