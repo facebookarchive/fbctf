@@ -90,6 +90,9 @@ CREATE TABLE `attachments` (
   `created_ts` timestamp NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+
+-- Temp Fix by having a dummy row to prevent constant SELECT queries
+INSERT INTO attachments (filename, type, level_id, created_ts) VALUES ("test", "text/plain", 0, NOW());
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -257,8 +260,8 @@ INSERT INTO `configuration` (field, value, description) VALUES("login_strongpass
 INSERT INTO `configuration` (field, value, description) VALUES("login_facebook", "0", "(Boolean) Allow Facebook Login");
 INSERT INTO `configuration` (field, value, description) VALUES("login_google", "0", "(Boolean) Allow Google Login");
 INSERT INTO `configuration` (field, value, description) VALUES("password_type", "1", "(Integer) Type of passwords: See table password_types");
-INSERT INTO `configuration` (field, value, description) VALUES("default_bonus", "30", "(Integer) Default value for bonus in levels");
-INSERT INTO `configuration` (field, value, description) VALUES("default_bonusdec", "10", "(Integer) Default bonus decrement in levels");
+INSERT INTO `configuration` (field, value, description) VALUES("default_bonus", "0", "(Integer) Default value for bonus in levels");
+INSERT INTO `configuration` (field, value, description) VALUES("default_bonusdec", "0", "(Integer) Default bonus decrement in levels");
 INSERT INTO `configuration` (field, value, description) VALUES("language", "en", "(String) Language of the system");
 INSERT INTO `configuration` (field, value, description) VALUES("livesync", "0", "(Boolean) LiveSync functionality");
 INSERT INTO `configuration` (field, value, description) VALUES("livesync_auth_key", "", "(String) Optional LiveSync Auth Key");

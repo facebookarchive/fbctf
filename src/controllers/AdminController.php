@@ -251,7 +251,7 @@ class AdminController extends Controller {
         $team = await MultiTeam::genTeam($token->getTeamId()); // TODO: Combine Awaits
         $token_status =
           <span class="highlighted--red">
-            {tr('Used by')} {$team->getName()}
+            {tr('Used by')}&nbsp;{$team->getName()}
           </span>;
       } else {
         $token_status =
@@ -410,11 +410,11 @@ class AdminController extends Controller {
     if ($start_ts->getValue() !== '0' && $start_ts->getValue() !== 'NaN') {
       $game_start_ts = $start_ts->getValue();
       $game_start_array = array();
-      $game_start_array['year'] = gmdate('Y', $game_start_ts);
-      $game_start_array['mon'] = gmdate('m', $game_start_ts);
-      $game_start_array['mday'] = gmdate('d', $game_start_ts);
-      $game_start_array['hours'] = gmdate('H', $game_start_ts);
-      $game_start_array['minutes'] = gmdate('i', $game_start_ts);
+      $game_start_array['year'] = date('Y', $game_start_ts);
+      $game_start_array['mon'] = date('m', $game_start_ts);
+      $game_start_array['mday'] = date('d', $game_start_ts);
+      $game_start_array['hours'] = date('H', $game_start_ts);
+      $game_start_array['minutes'] = date('i', $game_start_ts);
     } else {
       $game_start_ts = '0';
       $game_start_array['year'] = '0';
@@ -428,11 +428,11 @@ class AdminController extends Controller {
     if ($end_ts->getValue() !== '0' && $end_ts->getValue() !== 'NaN') {
       $game_end_ts = $end_ts->getValue();
       $game_end_array = array();
-      $game_end_array['year'] = gmdate('Y', $game_end_ts);
-      $game_end_array['mon'] = gmdate('m', $game_end_ts);
-      $game_end_array['mday'] = gmdate('d', $game_end_ts);
-      $game_end_array['hours'] = gmdate('H', $game_end_ts);
-      $game_end_array['minutes'] = gmdate('i', $game_end_ts);
+      $game_end_array['year'] = date('Y', $game_end_ts);
+      $game_end_array['mon'] = date('m', $game_end_ts);
+      $game_end_array['mday'] = date('d', $game_end_ts);
+      $game_end_array['hours'] = date('H', $game_end_ts);
+      $game_end_array['minutes'] = date('i', $game_end_ts);
     } else {
       $game_end_ts = '0';
       $game_end_array['year'] = '0';
@@ -1033,6 +1033,7 @@ class AdminController extends Controller {
                         type="number"
                         value={strval($game_start_array['year'])}
                         name="fb--schedule--start_year"
+                        tabindex="1"
                       />
                     </div>
                     <div class="form-el el--block-label el--full-text">
@@ -1041,6 +1042,7 @@ class AdminController extends Controller {
                         type="number"
                         value={strval($game_end_array['year'])}
                         name="fb--schedule--end_year"
+                        tabindex="6"
                       />
                     </div>
                   </div>
@@ -1051,6 +1053,7 @@ class AdminController extends Controller {
                         type="number"
                         value={strval($game_start_array['mon'])}
                         name="fb--schedule--start_month"
+                        tabindex="2"
                       />
                     </div>
                     <div class="form-el el--block-label el--full-text">
@@ -1059,6 +1062,7 @@ class AdminController extends Controller {
                         type="number"
                         value={strval($game_end_array['mon'])}
                         name="fb--schedule--end_month"
+                        tabindex="7"
                       />
                     </div>
                   </div>
@@ -1069,6 +1073,7 @@ class AdminController extends Controller {
                         type="number"
                         value={strval($game_start_array['mday'])}
                         name="fb--schedule--start_day"
+                        tabindex="3"
                       />
                     </div>
                     <div class="form-el el--block-label el--full-text">
@@ -1077,6 +1082,7 @@ class AdminController extends Controller {
                         type="number"
                         value={strval($game_end_array['mday'])}
                         name="fb--schedule--end_day"
+                        tabindex="8"
                       />
                     </div>
                   </div>
@@ -1087,6 +1093,7 @@ class AdminController extends Controller {
                         type="number"
                         value={strval($game_start_array['hours'])}
                         name="fb--schedule--start_hour"
+                        tabindex="4"
                       />
                     </div>
                     <div class="form-el el--block-label el--full-text">
@@ -1095,6 +1102,7 @@ class AdminController extends Controller {
                         type="number"
                         value={strval($game_end_array['hours'])}
                         name="fb--schedule--end_hour"
+                        tabindex="9"
                       />
                     </div>
                   </div>
@@ -1105,6 +1113,7 @@ class AdminController extends Controller {
                         type="number"
                         value={strval($game_start_array['minutes'])}
                         name="fb--schedule--start_min"
+                        tabindex="5"
                       />
                     </div>
                     <div class="form-el el--block-label el--full-text">
@@ -1113,6 +1122,7 @@ class AdminController extends Controller {
                         type="number"
                         value={strval($game_end_array['minutes'])}
                         name="fb--schedule--end_min"
+                        tabindex="10"
                       />
                     </div>
                   </div>

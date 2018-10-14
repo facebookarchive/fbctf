@@ -30,8 +30,7 @@ var filterList = {};
 $(document).on('keypress', 'input', function(e) {
   if (e.keyCode == Keycode.codes['enter']) {
     e.preventDefault();
-    var form_action = $('input[name=action]', e.target.form)[0].value;
-    if (form_action == 'register_team') {
+    if (e.target.form[0].value == 'register_team') {
       Index.registerTeam();
     }
     if (e.target.form[0].value == 'login_team') {
@@ -467,6 +466,7 @@ function setupInputListeners() {
 
       $.when(mapLoaded, countryDataLoaded).done(function() {
         renderCountryData();
+        refreshMapData();
       });
 
       // do stuff when the map and modules are loaded
@@ -615,23 +615,6 @@ function setupInputListeners() {
     function clearActivity() {
       var $announcements = $('aside[data-module="activity"] .activity-stream');
       $('li', $announcements).remove();
-    }
-
-    /**
-     * get the owner of the given country, and return the markup
-     *  for rendering somewhere
-     *
-     * @param capturedBy (string)
-     *   - the capturing team
-     */
-    function getCapturedByMarkup(capturedBy) {
-      if (capturedBy === undefined) {
-        return "Uncaptured";
-      }
-
-      var capturedClass = (capturedBy === FB_CTF.data.CONF.currentTeam) ? 'your-name' : 'opponent-name';
-      var span = $('<span/>').attr('class', capturedClass).text(capturedBy);
-      return span;
     }
 
     /**
@@ -784,7 +767,6 @@ function setupInputListeners() {
      */
     function captureCountry(country) {
       var $selectCountry = $('.countries .land[title="' + country + '"]', $mapSvg),
-          capturedBy = getCapturedByMarkup($selectCountry.closest('g').data('captured')),
           showAnimation = !(is_ie || LIST_VIEW),
           animationDuration = !showAnimation ? 0 : 600;
 
@@ -824,7 +806,7 @@ function setupInputListeners() {
         }, animationDuration);
       } else {
         setTimeout(function() {
-          launchCaptureModal(country, capturedBy);
+          launchCaptureModal(country);
         }, animationDuration);
       }
     } // function countryClick();
@@ -834,9 +816,6 @@ function setupInputListeners() {
      *
      * @param country (string)
      *   - the country being captured
-     *
-     * @param capturedBy (string)
-     *   - the user or team who has captured this country
      *
      * @param capturingTeam (string)
      *   - an optional parameter for the team that is attempting
@@ -895,8 +874,6 @@ function setupInputListeners() {
      * @param country (string)
      *   - the country that is being captured
      *
-     * @param capturedBy (string)
-     *   - the user or team who has captured this country
      */
     function launchCaptureModal(country) {
       var data = FB_CTF.data.COUNTRIES[country];
@@ -1332,7 +1309,7 @@ function setupInputListeners() {
 
         var get = $.get(modulePath, function(data) {
           $self.html(data);
-        }).error(function(jqxhr, status, error) {
+        }).fail(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the module.");
           console.log(modulePath);
           console.log(status);
@@ -1371,7 +1348,7 @@ function setupInputListeners() {
         $mapSvg = $('#fb-gameboard-map');
         $countryHover = $('[class~="country-hover"]', $mapSvg);
         enableClickAndDrag.init();
-      }, 'html').error(function(jqxhr, status, error) {
+      }, 'html').fail(function(jqxhr, status, error) {
         console.error("There was a problem loading the svg map");
         console.log(status);
         console.log(error);
@@ -1397,7 +1374,7 @@ function setupInputListeners() {
         $mapSvg = $('#fb-gameboard-map');
         $countryHover = $('[class~="country-hover"]', $mapSvg);
         enableClickAndDrag.init();
-      }, 'html').error(function(jqxhr, status, error) {
+      }, 'html').fail(function(jqxhr, status, error) {
         console.error("There was a problem loading the svg map");
         console.log(status);
         console.log(error);
@@ -1419,7 +1396,7 @@ function setupInputListeners() {
         $listview = $('.fb-listview');
         $listview.html(data);
         listviewEventListeners($listview);
-      }, 'html').error(function(jqxhr, status, error) {
+      }, 'html').fail(function(jqxhr, status, error) {
         console.error("There was a problem loading the List View");
         console.log(status);
         console.log(error);
@@ -1443,7 +1420,7 @@ function setupInputListeners() {
             success_callback();
           }
         })
-        .error(function(jqxhr, status, error) {
+        .fail(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the module.");
           console.log(loadPath);
           console.log(status);
@@ -1513,7 +1490,7 @@ function setupInputListeners() {
           FB_CTF.data.TEAMS = data;
           var df = $.Deferred();
           return df.resolve(FB_CTF.data.TEAMS);
-        }, 'json').error(function(jqxhr, status, error) {
+        }, 'json').fail(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the team data.");
           console.log(loadPath);
           console.log(status);
@@ -1542,7 +1519,7 @@ function setupInputListeners() {
           FB_CTF.data.CAPTURES = data;
           var df = $.Deferred();
           return df.resolve(FB_CTF.data.CAPTURES);
-        }, 'json').error(function(jqxhr, status, error) {
+        }, 'json').fail(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the captures data.");
           console.log(loadPath);
           console.log(status);
@@ -1631,7 +1608,7 @@ function setupInputListeners() {
           FB_CTF.data.CONF = data;
           var df = $.Deferred();
           return df.resolve(FB_CTF.data.CONF);
-        }, 'json').error(function(jqxhr, status, error) {
+        }, 'json').fail(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the conf data.");
           console.log(loadPath);
           console.log(status);
@@ -1661,7 +1638,7 @@ function setupInputListeners() {
             console.log("Redirecting to '/index.php?page=login'");
             window.location.replace('/index.php?page=login');
           }
-        }).error(function(jqxhr, status, error) {
+        }).fail(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the session data.");
           console.log(loadPath);
           console.log(status);
@@ -1714,6 +1691,7 @@ function setupInputListeners() {
               $('#' + key)[0].parentNode.children[1].classList.add("captured--you");
               //$('#' + key)[0].parentNode.removeAttribute('data-captured');
               $('#' + key)[0].parentNode.setAttribute('data-captured', value.datacaptured);
+              $('#' + key)[0].parentNode.setAttribute('data-status', 'completed');
             } else if (value.captured == 'opponent') {
               //$('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
               $('#' + key)[0].parentNode.children[1].classList.add("captured--opponent");
@@ -1721,7 +1699,7 @@ function setupInputListeners() {
               $('#' + key)[0].parentNode.setAttribute('data-captured', value.datacaptured);
             }
           });
-        }, 'json').error(function(jqxhr, status, error) {
+        }, 'json').fail(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the map data.");
           console.log(loadPath);
           console.log(status);
@@ -1753,7 +1731,7 @@ function setupInputListeners() {
             $('#' + key)[0].parentNode.children[1].classList.remove("captured--you");
             $('#' + key)[0].parentNode.children[1].classList.remove("captured--opponent");
           });
-        }, 'json').error(function(jqxhr, status, error) {
+        }, 'json').fail(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the map data.");
           console.log(loadPath);
           console.log(status);
@@ -1786,7 +1764,7 @@ function setupInputListeners() {
           FB_CTF.data.COUNTRIES = data;
           var df = $.Deferred();
           return df.resolve(FB_CTF.data.COUNTRIES);
-        }, 'json').error(function(jqxhr, status, error) {
+        }, 'json').fail(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the game data.");
           console.log(loadPath);
           console.log(status);
@@ -1821,9 +1799,7 @@ function setupInputListeners() {
           // add the category
           $group.attr('data-category', data.category);
           // add the status
-          var completed_list = data.completed;
-          var data_status = (completed_list.indexOf(FB_CTF.data.CONF.currentTeam) >= 0) ? 'completed' : 'remaining';
-          $group.attr('data-status', data_status);
+          $group.attr('data-status', 'remaining');
         }
       });
     }
@@ -2072,7 +2048,7 @@ function setupInputListeners() {
           FB_CTF.data.COMMAND = data;
           var df = $.Deferred();
           return df.resolve(FB_CTF.data.COMMAND);
-        }, 'json').error(function(jqxhr, status, error) {
+        }, 'json').fail(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the commands data.");
           console.log(loadPath);
           console.log(status);
@@ -2549,7 +2525,7 @@ function setupInputListeners() {
             });
             eventListeners();
           }
-        }, 'json').error(function(jqxhr, status, error) {
+        }, 'json').fail(function(jqxhr, status, error) {
           console.error("There was a problem retrieving the commands.");
           console.log(status);
           console.log(error);
@@ -2574,12 +2550,12 @@ function setupInputListeners() {
   FB_CTF.init = function() {
     $body = $('body');
 
-    $('#login_button').click(Index.loginTeam);
+    $('#login_button').on('click', Index.loginTeam);
     var names_required = $('input[name=action]').val() === 'register_names';
     if (names_required) {
-      $('#register_button').click(Index.registerNames);
+      $('#register_button').on('click', Index.registerNames);
     } else {
-      $('#register_button').click(Index.registerTeam);
+      $('#register_button').on('click', Index.registerTeam);
     }
 
     // load the svg sprite. This is in the FB_CTF namespace
@@ -2601,7 +2577,7 @@ function setupInputListeners() {
       // load the sliders
       Slider.init(5);
 
-      // load the grpahics
+      // load the graphics
       Graphics.init(FB_CTF.data);
     }).trigger('content-loaded');
 
@@ -2837,7 +2813,7 @@ function setupInputListeners() {
       $customEmblemInput.trigger('click');
     });
     // on file input change, set image preview and emblem carousel notice
-    $customEmblemInput.change(function() {
+    $customEmblemInput.on('change', function() {
       var input = this;
       if (input.files && input.files[0]) {
         if (input.files[0].size > (1000*1024)) {

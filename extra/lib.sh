@@ -228,6 +228,7 @@ function install_hhvm() {
   local __multiservers=$3
 
   package software-properties-common
+  package apt-transport-https
 
   log "Adding HHVM keys"
   sudo DEBIAN_FRONTEND=noninteractive apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0x5a16e7281be7a449

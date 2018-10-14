@@ -215,6 +215,7 @@ package_repo_update
 package git
 package curl
 package rsync
+package unzip
 
 # Check for available memory, should be over 1GB
 AVAILABLE_RAM=`free -mt | grep Total | awk '{print $2}'`

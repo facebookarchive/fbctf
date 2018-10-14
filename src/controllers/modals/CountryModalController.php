@@ -49,7 +49,7 @@ class CountryModalController extends ModalController {
                 <span class="points-label">{tr('PTS')}</span>
               </div>
               <div class="country-stats">
-                <dl>
+                <dl class="pop-up">
                   <dt>{tr('type')}</dt>
                   <dd class="country-type"></dd>
                   <dt>{tr('category')}</dt>
@@ -86,7 +86,7 @@ class CountryModalController extends ModalController {
               </div>
               <form class="fb-form country-capture-form">
                 <input name="level_id" type="hidden" value="" />
-                <textarea rows={4} class="capture-text" disabled={true}>
+                <textarea rows={4} class="capture-text" readonly={true}>
                 </textarea>
                 <br />
                 <div class="capture-links"></div>
@@ -141,13 +141,13 @@ class CountryModalController extends ModalController {
               <footer class="modal-footer fb-column-container">
                 <div
                   class=
-                    "col col-1-2 country-capture-stats fb-column-container">
+                    "col country-capture-stats fb-column-container">
                   <div class="points-display">
                     <span class="points-number fb-numbers"></span>
                     <span class="points-label">{tr('PTS')}</span>
                   </div>
-                  <div class="country-stats">
-                    <dl>
+                  <div class="col country-stats">
+                    <dl class="country-window">
                       <dt>{tr('type')}</dt>
                       <dd class="country-type"></dd>
 
@@ -158,12 +158,6 @@ class CountryModalController extends ModalController {
                       <dd class="opponent-name country-owner"></dd>
                     </dl>
                   </div>
-                </div>
-                <div
-                  class=
-                    "col col-1-2 country-capture-completed fb-column-container">
-                  <span>{tr('completed_by')} &gt;</span>
-                  <ul class="completed-list"></ul>
                 </div>
               </footer>
             </div>;
@@ -185,7 +179,7 @@ class CountryModalController extends ModalController {
               </div>
               <form class="fb-form country-capture-form">
                 <input name="level_id" type="hidden" value="" />
-                <textarea rows={4} class="capture-text" disabled={true}>
+                <textarea rows={4} class="capture-text" readonly={true}>
                 </textarea>
                 <br />
                 <div class="capture-links"></div>
@@ -237,13 +231,13 @@ class CountryModalController extends ModalController {
               <footer class="modal-footer fb-column-container">
                 <div
                   class=
-                    "col col-1-2 country-capture-stats fb-column-container">
+                    "col country-capture-stats fb-column-container">
                   <div class="points-display">
                     <span class="points-number fb-numbers"></span>
                     <span class="points-label">{tr('PTS')}</span>
                   </div>
-                  <div class="country-stats">
-                    <dl>
+                  <div class="col country-stats">
+                    <dl class="country-window">
                       <dt>{tr('type')}</dt>
                       <dd class="country-type"></dd>
 
@@ -254,12 +248,6 @@ class CountryModalController extends ModalController {
                       <dd class="opponent-name country-owner"></dd>
                     </dl>
                   </div>
-                </div>
-                <div
-                  class=
-                    "col col-1-2 country-capture-completed fb-column-container">
-                  <span>{tr('completed_by')} &gt;</span>
-                  <ul class="completed-list"></ul>
                 </div>
               </footer>
             </div>;

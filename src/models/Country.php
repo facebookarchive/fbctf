@@ -316,32 +316,13 @@ class Country extends Model {
     $db = await self::genDb();
 
     $result = await $db->queryf(
-      'SELECT COUNT(*) FROM countries WHERE iso_code = %s',
+      'SELECT EXISTS(SELECT * FROM countries WHERE iso_code = %s)',
       $country,
     );
 
     if ($result->numRows() > 0) {
       invariant($result->numRows() === 1, 'Expected exactly one result');
-      return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
-    } else {
-      return false;
-    }
-  }
-
-  // Check if a country already exists, by id
-  public static async function genCheckExistsById(
-    int $entity_id,
-  ): Awaitable<bool> {
-    $db = await self::genDb();
-
-    $result = await $db->queryf(
-      'SELECT COUNT(*) FROM countries WHERE id = %d',
-      $entity_id,
-    );
-
-    if ($result->numRows() > 0) {
-      invariant($result->numRows() === 1, 'Expected exactly one result');
-      return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
+      return intval($result->mapRows()[0]->firstValue()) > 0;
     } else {
       return false;
     }

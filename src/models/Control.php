@@ -75,6 +75,7 @@ class Control extends Model {
       self::genResetBases(), // Clear bases log
       self::genClearScriptLog(),
       Configuration::genUpdate('registration', '0'), // Disable registration
+      Configuration::genUpdate('login', '1'), // Enable login
     );
 
     await \HH\Asio\va(

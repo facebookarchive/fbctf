@@ -116,13 +116,13 @@ class Token extends Model {
 
     $result =
       await $db->queryf(
-        'SELECT COUNT(*) FROM registration_tokens WHERE used = 0 AND token = %s',
+        'SELECT EXISTS(SELECT * FROM registration_tokens WHERE used = 0 AND token = %s)',
         $token,
       );
 
     if ($result->numRows() > 0) {
       invariant($result->numRows() === 1, 'Expected exactly one result');
-      return (intval($result->mapRows()[0]['COUNT(*)']) > 0);
+      return intval($result->mapRows()[0]->firstValue()) > 0;
     } else {
       return false;
     }

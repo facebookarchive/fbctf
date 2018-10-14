@@ -90,7 +90,6 @@ class Category extends Model implements Importable, Exportable {
       }
       self::setMCRecords('ALL_CATEGORIES', $categories);
       return $categories;
-      return $categories;
     } else {
       invariant(
         is_array($mc_result),
@@ -105,13 +104,13 @@ class Category extends Model implements Importable, Exportable {
     $db = await self::genDb();
 
     $result = await $db->queryf(
-      'SELECT COUNT(*) FROM levels WHERE category_id = %d',
+      'SELECT EXISTS(SELECT * FROM levels WHERE category_id = %d)',
       $category_id,
     );
 
     if ($result->numRows() > 0) {
       invariant($result->numRows() === 1, 'Expected exactly one result');
-      return intval($result->mapRows()[0]['COUNT(*)']) > 0;
+      return intval($result->mapRows()[0]->firstValue()) > 0;
     } else {
       return false;
     }
@@ -236,13 +235,13 @@ class Category extends Model implements Importable, Exportable {
     $db = await self::genDb();
 
     $result = await $db->queryf(
-      'SELECT COUNT(*) FROM categories WHERE category = %s',
+      'SELECT EXISTS(SELECT * FROM categories WHERE category = %s)',
       $category,
     );
 
     if ($result->numRows() > 0) {
       invariant($result->numRows() === 1, 'Expected exactly one result');
-      return (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0);
+      return intval($result->mapRows()[0]->firstValue()) > 0;
     } else {
       return false;
     }

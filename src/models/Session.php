@@ -164,11 +164,11 @@ class Session extends Model {
     if (!$mc_result || count($mc_result) === 0 || $refresh) {
       $db = await self::genDb();
       $result = await $db->queryf(
-        'SELECT COUNT(*) FROM sessions WHERE cookie = %s',
+        'SELECT EXISTS(SELECT * FROM sessions WHERE cookie = %s)',
         $cookie,
       );
       invariant($result->numRows() === 1, 'Expected exactly one result');
-      if (intval(idx($result->mapRows()[0], 'COUNT(*)')) > 0) {
+      if (intval($result->mapRows()[0]->firstValue()) > 0) {
         await self::genCreateCacheSession($cookie);
         return true;
       }

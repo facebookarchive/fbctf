@@ -252,7 +252,7 @@ class IndexAjaxController extends AjaxController {
     // Check if login is disabled and this isn't an admin
     if (($login->getValue() === '0') &&
         ($team === null || $team->getAdmin() === false)) {
-      return Utils::error_response('Login failed', 'login');
+      return Utils::error_response('Login closed', 'login');
     }
 
     // Otherwise let's login any valid attempt

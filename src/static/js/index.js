@@ -130,6 +130,9 @@ function sendIndexRequest(request_data) {
       if (responseData.message === 'Login failed') {
         teamLoginFormError();
       }
+      if (responseData.message ===  'Login closed') {
+        window.location.replace("/index.php?page=countdown");
+      }
       if (responseData.message === 'Registration failed') {
         teamNameFormError();
         teamTokenFormError();

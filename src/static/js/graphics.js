@@ -166,7 +166,7 @@ module.exports = {
           var xCoor = d3.mouse(this)[0];
           d3.select('.mouseline').attr('transform', 'translate(' + xCoor + ',0)');
         });
-    }, 'json').error(function(jqxhr, status, error) {
+    }, 'json').fail(function(jqxhr, status, error) {
       console.error("There was a problem retrieving the game scores.");
       console.log(status);
       console.log(error);

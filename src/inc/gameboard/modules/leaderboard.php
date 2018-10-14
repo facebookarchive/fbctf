@@ -13,7 +13,7 @@ class LeaderboardModuleController extends ModuleController {
     $leaderboard_ul = <ul></ul>;
 
     list($my_team, $my_rank, $gameboard) = await \HH\Asio\va(
-      MultiTeam::genTeam(SessionUtils::sessionTeam()),
+      MultiTeam::genTeam(SessionUtils::sessionTeam(), TRUE),
       Team::genMyRank(SessionUtils::sessionTeam()),
       Configuration::gen('gameboard'),
     );

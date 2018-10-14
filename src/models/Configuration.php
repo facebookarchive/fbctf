@@ -107,13 +107,13 @@ class Configuration extends Model {
   public static async function genValidField(string $field): Awaitable<bool> {
     $db = await self::genDb();
     $result = await $db->queryf(
-      'SELECT COUNT(*) FROM configuration WHERE field = %s',
+      'SELECT EXISTS(SELECT * FROM configuration WHERE field = %s)',
       $field,
     );
 
     invariant($result->numRows() === 1, 'Expected exactly one result');
 
-    return intval(idx(firstx($result->mapRows()), 'COUNT(*)')) > 0;
+    return intval($result->mapRows()[0]->firstValue()) > 0;
   }
 
   // All the password types.

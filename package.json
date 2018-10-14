@@ -23,7 +23,7 @@
     "d3": "^3.5.16",
     "dropkickjs": "2.1.10",
     "hoverintent-jqplugin": "^0.2.1",
-    "jquery": "^2.2.3",
+    "jquery": "^3.0.0",
     "keycode": "^2.1.1",
     "typed.js": "^1.1.1",
     "bxslider": "4.2.6"

@@ -88,6 +88,11 @@
       border-left: 1px solid $teal-blue;
     }
 
+    .col dt, .col dd {
+      width: auto;
+      display: inline-block;
+    }
+
     .country-capture-stats {
       padding: 10px;
     }

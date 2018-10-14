@@ -319,17 +319,20 @@ class MultiTeam extends Team {
           'SELECT level_id, team_id FROM scores_log WHERE level_id IS NOT NULL ORDER BY ts',
         );
       $team_scores_awaitables = Map {};
+      $all_teams = await self::genAllTeamsCache($refresh);
+
       foreach ($scores->items() as $score) {
+        $team = $all_teams->get(intval($score->get('team_id')));
+        invariant($team instanceof Team, 'team should be of type Team and not null');
         $team_scores_awaitables->add(
           Pair {
             $score->get('level_id'),
-            self::genTeam(intval($score->get('team_id'))),
+            $team,
           },
         );
       }
-      $team_scores = await \HH\Asio\m($team_scores_awaitables);
-
-      foreach ($team_scores as $level_id_key => $team) {
+      
+      foreach ($team_scores_awaitables as $level_id_key => $team) {
         if ($team->getActive() === true && $team->getVisible() === true) {
           $teams_by_completed_level[intval($level_id_key)][] = $team;
         }

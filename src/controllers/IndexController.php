@@ -131,7 +131,7 @@ class IndexController extends Controller {
       $next_game_text = tr('Soon');
       $countdown = array('--', '--', '--', '--');
     } else {
-      $next_game_text = date(tr('date and time format'), $next_game);
+      $next_game_text = date('H:i:s T D m/d/y', $next_game);
       $game_start = new DateTime();
       $game_start->setTimestamp(intval($next_game));
       $now = new DateTime('now');

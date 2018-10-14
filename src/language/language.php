@@ -6,6 +6,7 @@ $lang = null;
 
 async function tr_start(): Awaitable<void> {
   $config = await Configuration::gen('language');
+  global $language; // temporary fix
   $language = $config->getValue();
   $document_root = must_have_string(Utils::getSERVER(), 'DOCUMENT_ROOT');
   if (preg_match('/^[^,;]+$/', $language) &&
@@ -28,8 +29,12 @@ function tr(string $word): string {
   /* HH_IGNORE_ERROR[2049] */
   /* HH_IGNORE_ERROR[4106] */
   global $lang;
+  global $language;
   /* HH_IGNORE_ERROR[2050] */
-  if (array_key_exists($word, $lang)) {
+  if ($language === 'en' && $word != 'date and time format') { // temporary fix for 
+    return $word;           // reducing function calls to
+  }                         // tr()
+  elseif (array_key_exists($word, $lang)) {
     /* HH_IGNORE_ERROR[2050] */
     return $lang[$word];
   } else {

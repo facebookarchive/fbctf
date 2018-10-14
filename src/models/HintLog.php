@@ -64,6 +64,8 @@ class HintLog extends Model {
   public static async function genResetHints(): Awaitable<void> {
     $db = await self::genDb();
     await $db->queryf('DELETE FROM hints_log WHERE id > 0');
+    // Temp fix by having a dummy row
+    await $db->query('INSERT INTO hints_log (ts, level_id, team_id, penalty) VALUES (NOW(), 0, 0, 0)');
   }
 
   // Check if there is a previous hint.

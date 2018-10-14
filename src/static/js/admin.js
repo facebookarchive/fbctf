@@ -1057,119 +1057,145 @@ module.exports = {
           valid;
 
       // Route the actions
-      if (action === 'save') {
-        valid = validateAdminForm($self);
-        if (valid) {
-          saveLevel($section, lockClass);
+      switch(action) {
+        case 'save':
+            valid = validateAdminForm($self);
+            if (valid) {
+            saveLevel($section, lockClass);
+            }
+            break;
+        case 'save-no-validation':
+            saveLevel();
+            break;
+        case 'add-new':
+            addNewSection($self);
+            break;
+        case 'save-category':
+            updateCategory($section);
+            break;
+        case 'create':
+            valid = validateAdminForm($self);
+            if (valid) {
+            createElement($section);
+            }
+            break;
+        case 'create-announcement':
+            createAnnouncement($section);
+            break;
+        case 'export-attachments':
+            attachmentsExport();
+            break;
+        case 'backup-db':
+            databaseBackup();
+            break;
+        case 'import-game':
+            importGame();
+            break;
+        case 'export-game':
+            exportCurrentGame();
+            break;
+        case 'import-teams':
+            importTeams();
+            break;
+        case 'export-teams':
+            exportCurrentTeams();
+            break;
+        case 'import-logos':
+            importLogos();
+            break;
+        case 'export-logos':
+            exportCurrentLogos();
+            break;
+        case 'import-levels':
+            importLevels();
+            break;
+        case 'import-attachments':
+            importAttachments();
+            break;
+        case 'export-levels':
+            exportCurrentLevels();
+            break;
+        case 'import-categories':
+            importCategories();
+            break;
+        case 'export-categories':
+            exportCurrentCategories();
+            break;
+        case 'flush-memcached':
+            flushMemcached();
+            break;
+        case 'reset-game-schedule':
+            resetGameSchedule();
+            break;
+        case 'create-tokens':
+            createTokens();
+            break;
+        case 'export-tokens':
+            exportTokens();
+            break;
+        case 'edit':
+            $section.removeClass(lockClass);
+            $('input[type="text"], input[type="password"], textarea', $section).prop('disabled', false);
+            var entity_select = $('[name=entity_id]', $section)[0];
+            var category_select = $('[name=category_id]', $section)[0];
+            if (entity_select !== undefined) {
+                Dropkick(entity_select).disable(false);
+            }
+            if (category_select !== undefined) {
+                Dropkick(category_select).disable(false);
+            }
+            break;
+        case 'delete':
+            $section.remove();
+            deleteElement($section);
+            break;
+        case 'disable-logo':
+            toggleLogo($section);
+            break;
+        case 'enable-logo':
+            toggleLogo($section);
+            break;
+        case 'disable-country':
+            toggleCountry($section);
+            break;
+        case 'enable-country':
+            toggleCountry($section);
+            break;
+        case 'add-attachment':
+            addNewAttachment($section);
+            break;
+        case 'create-attachment':
+            $containingDiv = $self.closest('.new-attachment');
+            createAttachment($containingDiv);
+            break;
+        case 'delete-new-attachment':
+            $containingDiv = $self.closest('.new-attachment');
+            $containingDiv.remove();
+            deleteAttachment($containingDiv);
+            break;
+        case 'delete-attachment':
+            $containingDiv = $self.closest('.existing-attachment');
+            $containingDiv.remove();
+            deleteAttachment($containingDiv);
+            break;
+        case 'add-link':
+            addNewLink($section);
+            break;
+        case 'create-link':
+            $containingDiv = $self.closest('.new-link');
+            createLink($containingDiv);
+            break;
+        case 'delete-new-link':
+            $containingDiv = $self.closest('.new-link');
+            $containingDiv.remove();
+            deleteLink($containingDiv);
+            break;
+        case 'delete-link':
+            $containingDiv = $self.closest('.existing-link');
+            $containingDiv.remove();
+            deleteLink($containingDiv);
+            break;
         }
-      } else if (action === 'save-no-validation') {
-        saveLevel();
-      } else if (action === 'add-new') {
-        addNewSection($self);
-      } else if (action === 'save-category') {
-        updateCategory($section);
-      } else if (action === 'create') {
-        valid = validateAdminForm($self);
-        if (valid) {
-          createElement($section);
-        }
-      } else if (action === 'create-announcement') {
-        createAnnouncement($section);
-      } else if (action === 'export-attachments') {
-        attachmentsExport();
-      } else if (action === 'backup-db') {
-        databaseBackup();
-      } else if (action === 'import-game') {
-        importGame();
-      } else if (action === 'create-tokens') {
-        createTokens($section);
-      } else if (action === 'export-tokens') {
-        exportTokens($section);
-      } else if (action === 'export-game') {
-        exportCurrentGame();
-      } else if (action === 'import-teams') {
-        importTeams();
-      } else if (action === 'export-teams') {
-        exportCurrentTeams();
-      } else if (action === 'import-logos') {
-        importLogos();
-      } else if (action === 'export-logos') {
-        exportCurrentLogos();
-      } else if (action === 'import-levels') {
-        importLevels();
-      } else if (action === 'import-attachments') {
-        importAttachments();
-      } else if (action === 'export-levels') {
-        exportCurrentLevels();
-      } else if (action === 'import-categories') {
-        importCategories();
-      } else if (action === 'export-categories') {
-        exportCurrentCategories();
-      } else if (action === 'flush-memcached') {
-        flushMemcached();
-      } else if (action === 'reset-game-schedule') {
-        resetGameSchedule();
-      } else if (action === 'create-tokens') {
-        createTokens();
-      } else if (action === 'export-tokens') {
-        exportTokens();
-      } else if (action === 'edit') {
-        $section.removeClass(lockClass);
-        $('input[type="text"], input[type="password"], textarea', $section).prop('disabled', false);
-        var entity_select = $('[name=entity_id]', $section)[0];
-        var category_select = $('[name=category_id]', $section)[0];
-        if (entity_select !== undefined) {
-          Dropkick(entity_select).disable(false);
-        }
-        if (category_select !== undefined) {
-          Dropkick(category_select).disable(false);
-        }
-      } else if (action === 'delete') {
-        $section.remove();
-        deleteElement($section);
-        // rename the section boxes
-        /*$('.admin-box').each(function(i, el){
-         var $titleObj  = $('.admin-box-header h3', el),
-         title     = $titleObj.text(),
-         newTitle  = title.substring( 0, title.lastIndexOf(" ") + 1 ) + (i + 1);
-
-         $titleObj.text(newTitle);
-         });*/
-      } else if (action === 'disable-logo') {
-        toggleLogo($section);
-      } else if (action === 'enable-logo') {
-        toggleLogo($section);
-      } else if (action === 'disable-country') {
-        toggleCountry($section);
-      } else if (action === 'enable-country') {
-        toggleCountry($section);
-      } else if (action === 'add-attachment') {
-        addNewAttachment($section);
-      } else if (action === 'create-attachment') {
-        $containingDiv = $self.closest('.new-attachment');
-        createAttachment($containingDiv);
-      } else if (action === 'delete-new-attachment') {
-        $containingDiv = $self.closest('.new-attachment');
-        $containingDiv.remove();
-        deleteAttachment($containingDiv);
-      } else if (action === 'delete-attachment') {
-        $containingDiv = $self.closest('.existing-attachment');
-        $containingDiv.remove();
-        deleteAttachment($containingDiv);
-      } else if (action === 'add-link') {
-        addNewLink($section);
-      } else if (action === 'create-link') {
-        $containingDiv = $self.closest('.new-link');
-        createLink($containingDiv);
-      } else if (action === 'delete-new-link') {
-        $containingDiv = $self.closest('.new-link');
-        $containingDiv.remove();
-        deleteLink($containingDiv);
-      } else if (action === 'delete-link') {
-        $containingDiv = $self.closest('.existing-link');
-        $containingDiv.remove();
-        deleteLink($containingDiv);
-      }
 
       if (actionModal) {
         Modal.loadPopup('p=action&model=' + actionModal, 'action-' + actionModal, function() {
@@ -1222,7 +1248,7 @@ module.exports = {
       var start_day = $('input[type="number"][name="fb--schedule--start_day"]')[0].value;
       var start_hour = $('input[type="number"][name="fb--schedule--start_hour"]')[0].value;
       var start_min = $('input[type="number"][name="fb--schedule--start_min"]')[0].value;
-      var start_ts = Date.UTC(start_year, start_month - 1, start_day, start_hour, start_min) / 1000;
+      var start_ts = new Date(start_year, start_month - 1, start_day, start_hour, start_min) / 1000;
       if ($.isNumeric(start_ts)) {
         changeConfiguration("start_ts", start_ts);
         changeConfiguration("next_game", start_ts);
@@ -1232,7 +1258,7 @@ module.exports = {
       var end_day = $('input[type="number"][name="fb--schedule--end_day"]')[0].value;
       var end_hour = $('input[type="number"][name="fb--schedule--end_hour"]')[0].value;
       var end_min = $('input[type="number"][name="fb--schedule--end_min"]')[0].value;
-      var end_ts = Date.UTC(end_year, end_month - 1, end_day, end_hour, end_min) / 1000;
+      var end_ts = new Date(end_year, end_month - 1, end_day, end_hour, end_min) / 1000;
       if ($.isNumeric(end_ts)) {
         changeConfiguration("end_ts", end_ts);
       }

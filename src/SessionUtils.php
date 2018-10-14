@@ -98,8 +98,6 @@ class SessionUtils {
       $params["httponly"],
     );
     session_destroy();
-
-    throw new IndexRedirectException();
   }
 
   public static function sessionActive(): bool {
