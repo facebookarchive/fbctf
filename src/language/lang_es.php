@@ -350,7 +350,7 @@ $translations = array(
   'Description' =>
     'Descripción',
   'Level description' =>
-    'Descripción del divel',
+    'Descripción del nivel',
   'Category' =>
     'Categoría',
   'Flag' =>
