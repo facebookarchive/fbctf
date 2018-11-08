@@ -7,6 +7,7 @@ var Utils = require('./utils');
 var Modal = require('./modal');
 var Slider = require('./slider');
 var Clock = require('./clock');
+var Countdown = require('./countdown');
 var Graphics = require('./graphics');
 
 var d3 = require('d3');
@@ -2861,6 +2862,9 @@ function setupInputListeners() {
       $customEmblemPreview.attr('src', '');
       $customEmblemCarouselNotice.removeClass('active');
     });
+
+    // Start the countdown clock
+    Countdown.startCountdown();
 
   }; // FB_CTF.init()
 })(window.FB_CTF = {});
