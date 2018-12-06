@@ -3789,7 +3789,7 @@ class AdminController extends Controller {
         <header class="admin-page-header">
           <h3>{tr('Team Management')}</h3>
           <span class="admin-section--status">
-            status_<span class="highlighted">{tr('OK')}</span>
+            {tr('status_')}<span class="highlighted">{tr('OK')}</span>
           </span>
         </header>
         {$adminsections}
