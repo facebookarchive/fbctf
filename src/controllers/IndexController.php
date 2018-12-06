@@ -381,7 +381,7 @@ class IndexController extends Controller {
 
     $page_header =
       <header class="fb-section-header fb-container">
-        <h1 class="fb-glitch" data-text="Team Registration">
+        <h1 class="fb-glitch" data-text={tr('Team Registration')}>
           {tr('Team Registration')}
         </h1>
       </header>;
@@ -595,7 +595,7 @@ class IndexController extends Controller {
 
     $page_header =
       <header class="fb-section-header fb-container">
-        <h1 class="fb-glitch" data-text="Team Registration">
+        <h1 class="fb-glitch" data-text={tr('Team Registration')}>
           {tr('Team Registration')}
         </h1>
       </header>;
