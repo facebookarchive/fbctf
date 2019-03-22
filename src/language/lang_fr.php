@@ -107,6 +107,8 @@ $translations = array(
     'Connexion d\'équipe',
   'Please login here. If you have not registered, you may do so by clicking "Sign Up" below. ' =>
     'Connectez-vous ici. Si vous n\'êtes pas inscrit, vous pouvez le faire en cliquant sur "Inscription" ci-dessous. ',
+  'Register to play Capture The Flag with one of the options below. Once you select an option, you will be registered and logged in.' =>
+    'Inscrivez-vous pour jouer à la capture de drapeau avec l\'une des options ci-dessous. Une fois que vous avez sélectionné une option, vous serez enregistré et connecté.',
   'Team Login will be open soon, stay tuned!' =>
     'La connexion d\'équipe sera bientôt ouverte, restez à l\'écoute!',
   'ERROR' =>
