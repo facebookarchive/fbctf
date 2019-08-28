@@ -131,6 +131,7 @@ class Control extends Model {
 
     await \HH\Asio\va(
       Progressive::genRun(),
+      Level::genSetStatusAll(true, 'all'), //Sets all levels to enabled?
       Level::genBaseScoring(), // Kick off scoring for bases
     );
   }
