@@ -1,4 +1,4 @@
-<?hh // strict
+<?hh // strict 
 
 class Control extends Model {
 
@@ -81,6 +81,7 @@ class Control extends Model {
     await \HH\Asio\va(
       Announcement::genCreateAuto('Game has started!'), // Announce game starting
       Configuration::genUpdate('game', '1'), // Mark game as started
+      Level::genSetStatusAll(true, 'all'), //Sets all levels to enabled
       Configuration::genUpdate('scoring', '1'), // Enable scoring
     );
 
