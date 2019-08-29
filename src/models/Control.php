@@ -1,4 +1,4 @@
-<?hh // strict
+<?hh // strict 
 
 class Control extends Model {
 
