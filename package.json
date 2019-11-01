@@ -6,7 +6,7 @@
     "babel-eslint": "^6.0.4",
     "babel-preset-react": "^6.5.0",
     "babelify": "^7.3.0",
-    "eslint": "^2.9.0",
+    "eslint": "^6.6.0",
     "eslint-plugin-flowtype": "^2.2.7",
     "grunt": "^1.0.1",
     "grunt-browserify": "^5.0.0",
