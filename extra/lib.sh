@@ -53,7 +53,8 @@ function package() {
 
 function install_unison() {
   cd /
-  dl_pipe "https://www.archlinux.org/packages/extra/x86_64/unison/download/" | sudo tar Jx
+  #dl_pipe "https://www.archlinux.org/packages/extra/x86_64/unison/download/" | sudo tar Jx
+  dl_pipe "https://github.com/bcpierce00/unison/releases/download/v2.53.3/unison-2.53.3-ubuntu-x86_64.tar.gz" | tar zx
 }
 
 function repo_osquery() {
